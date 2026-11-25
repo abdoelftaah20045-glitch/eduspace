@@ -73,9 +73,16 @@ Future<void> initRecoveryListener() async {
   _sub = auth.onAuthStateChange.listen((st) async {
     if (st.event == AuthChangeEvent.passwordRecovery) {
       _enter();
-    } else if (st.event == AuthChangeEvent.signedIn &&
-        await _looksLikeRecovery(st.session)) {
-      _enter();
+    } else if (st.event == AuthChangeEvent.signedIn) {
+      if (await _looksLikeRecovery(st.session)) {
+        _enter();
+      } else {
+        // Global guard: a successful sign-in always lands on the auth gate
+        // (which shows Home), whatever screen the user was on.
+        rootNavigatorKey.currentState?.popUntil((r) => r.isFirst);
+      }
+    } else if (st.event == AuthChangeEvent.signedOut) {
+      rootNavigatorKey.currentState?.popUntil((r) => r.isFirst);
     }
   });
   // The link that launched the app may already have been exchanged before
