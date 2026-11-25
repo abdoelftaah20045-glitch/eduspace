@@ -41,44 +41,11 @@ jobs:
           [ -f android/app/build.gradle.kts ] && GRADLE=android/app/build.gradle.kts
           echo "Gradle file: $GRADLE"
           if [ "$GRADLE" = "android/app/build.gradle.kts" ]; then
-            cat >> "$GRADLE" <<'KTS'
-
-android {
-    signingConfigs {
-        create("release") {
-            storeFile = file("keystore.jks")
-            storePassword = System.getenv("KEYSTORE_PASSWORD")
-            keyAlias = System.getenv("KEY_ALIAS") ?: "eduspace"
-            keyPassword = System.getenv("KEY_PASSWORD")
-        }
-    }
-    buildTypes {
-        release {
-            signingConfig = if (System.getenv("KEYSTORE_PASSWORD").isNullOrEmpty()) signingConfigs.getByName("debug") else signingConfigs.getByName("release")
-        }
-    }
-}
-KTS
+            cat ci/release-signing.gradle.kts >> "$GRADLE"
           else
-            cat >> "$GRADLE" <<'GROOVY'
-
-android {
-    signingConfigs {
-        release {
-            storeFile file('keystore.jks')
-            storePassword System.getenv('KEYSTORE_PASSWORD')
-            keyAlias System.getenv('KEY_ALIAS') ?: 'eduspace'
-            keyPassword System.getenv('KEY_PASSWORD')
-        }
-    }
-    buildTypes {
-        release {
-            signingConfig System.getenv('KEYSTORE_PASSWORD') ? signingConfigs.release : signingConfigs.debug
-        }
-    }
-}
-GROOVY
+            cat ci/release-signing.gradle >> "$GRADLE"
           fi
+          tail -20 "$GRADLE"
 
       - name: Install dependencies
         run: flutter pub get

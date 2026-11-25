@@ -1,0 +1,17 @@
+
+// Appended by CI: stable release signing when keystore secrets exist, debug signing otherwise.
+android {
+    signingConfigs {
+        release {
+            storeFile file('keystore.jks')
+            storePassword System.getenv('KEYSTORE_PASSWORD')
+            keyAlias System.getenv('KEY_ALIAS') ?: 'eduspace'
+            keyPassword System.getenv('KEY_PASSWORD')
+        }
+    }
+    buildTypes {
+        release {
+            signingConfig System.getenv('KEYSTORE_PASSWORD') ? signingConfigs.release : signingConfigs.debug
+        }
+    }
+}
