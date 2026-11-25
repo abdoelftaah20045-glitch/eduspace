@@ -138,6 +138,8 @@ class _LiveSheetState extends State<_LiveSheet> {
       TextEditingController(text: widget.session?.hostName ?? '');
   late final _joinUrl =
       TextEditingController(text: widget.session?.joinUrl ?? '');
+  late final _recording =
+      TextEditingController(text: widget.session?.recordingUrl ?? '');
   late final _duration = TextEditingController(
       text: (widget.session?.durationMinutes ?? 60).toString());
   String? _courseId;
@@ -162,6 +164,7 @@ class _LiveSheetState extends State<_LiveSheet> {
     _description.dispose();
     _host.dispose();
     _joinUrl.dispose();
+    _recording.dispose();
     _duration.dispose();
     super.dispose();
   }
@@ -180,6 +183,8 @@ class _LiveSheetState extends State<_LiveSheet> {
       'description': _description.text.trim(),
       'host_name': _host.text.trim().isEmpty ? null : _host.text.trim(),
       'join_url': _joinUrl.text.trim(),
+      'recording_url':
+          _recording.text.trim().isEmpty ? null : _recording.text.trim(),
       'platform': _platform,
       'course_id': _courseId,
       'starts_at': _startsAt!.toUtc().toIso8601String(),
@@ -240,6 +245,15 @@ class _LiveSheetState extends State<_LiveSheet> {
                 validator: (v) => (v == null || v.trim().isEmpty)
                     ? s.t('required_field')
                     : null,
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _recording,
+                keyboardType: TextInputType.url,
+                decoration: InputDecoration(
+                  labelText: s.t('live_recording_url'),
+                  helperText: s.t('live_recording_hint'),
+                ),
               ),
               const SizedBox(height: 12),
               Row(

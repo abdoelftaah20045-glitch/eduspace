@@ -1,3 +1,4 @@
+import '../../core/in_app_player.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/intl.dart';
@@ -557,8 +558,9 @@ class _UpcomingLives extends StatelessWidget {
                       ),
                       TextButton(
                         onPressed: l.canJoinNow
-                            ? () => launchUrl(Uri.parse(l.joinUrl),
-                                mode: LaunchMode.externalApplication)
+                            ? () => Navigator.of(context).push(MaterialPageRoute(
+                                builder: (_) => InAppPlayerScreen(
+                                    url: l.joinUrl, title: l.title)))
                             : null,
                         child: Text(s.t('join_live')),
                       ),

@@ -184,8 +184,10 @@ class _LessonEditScreenState extends State<LessonEditScreen> {
               controller: _mediaUrl,
               decoration: InputDecoration(
                 labelText: s.t('media_url'),
-                helperText: s.t('media_url_hint'),
-                suffixIcon: !_uploadableType
+                helperText: _type == 'video'
+                    ? s.t('video_link_hint')
+                    : s.t('media_url_hint'),
+                suffixIcon: (!_uploadableType || _type == 'video')
                     ? null
                     : _uploading
                         ? const Padding(

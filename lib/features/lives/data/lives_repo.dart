@@ -14,6 +14,7 @@ class LiveSession {
     required this.startsAt,
     this.durationMinutes = 60,
     this.status = 'scheduled',
+    this.recordingUrl,
   });
 
   final String id;
@@ -26,6 +27,7 @@ class LiveSession {
   final DateTime startsAt;
   final int durationMinutes;
   final String status;
+  final String? recordingUrl;
 
   DateTime get endsAt => startsAt.add(Duration(minutes: durationMinutes));
 
@@ -53,6 +55,7 @@ class LiveSession {
                 DateTime.now(),
         durationMinutes: (m['duration_minutes'] as num?)?.toInt() ?? 60,
         status: (m['status'] as String?) ?? 'scheduled',
+        recordingUrl: m['recording_url'] as String?,
       );
 }
 

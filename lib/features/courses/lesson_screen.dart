@@ -1,3 +1,4 @@
+import '../../core/in_app_player.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -120,6 +121,15 @@ class _LessonScreenState extends State<LessonScreen> {
             final resolved = snap.data;
             if (resolved == null) {
               return const Center(child: CircularProgressIndicator());
+            }
+            if (!isDirectVideoUrl(resolved)) {
+              return AspectRatio(
+                aspectRatio: 16 / 9,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: InAppWebPlayer(url: resolved),
+                ),
+              );
             }
             return _VideoLesson(
               key: ValueKey(lesson.id),
