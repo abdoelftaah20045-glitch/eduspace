@@ -1,5 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../core/tenant.dart';
+
 /// Admin panel data: users review, dashboard counts, enrollments,
 /// certificates management. RLS enforces admin rights server-side.
 class AdminPanelRepository {
@@ -18,7 +20,10 @@ class AdminPanelRepository {
     String? status,
     int limit = 100,
   }) async {
-    var q = _c.from('profiles').select();
+    var q = _c
+        .from('profiles')
+        .select('*, tenant_memberships!inner(tenant_id)')
+        .eq('tenant_memberships.tenant_id', TenantContext.id);
     if (status != null) q = q.eq('status', status);
     if (query.trim().isNotEmpty) {
       final esc = _safe(query);
@@ -41,22 +46,40 @@ class AdminPanelRepository {
   // ---------- dashboard ----------
 
   static Future<int> _count(String table) async {
-    final rows = await _c.from(table).select('id');
+    final rows = await _c
+        .from(table)
+        .select('id')
+        .eq('tenant_id', TenantContext.id);
     return rows.length;
   }
 
   static Future<int> _countWhere(
       String table, String column, String value) async {
-    final rows = await _c.from(table).select('id').eq(column, value);
+    final rows = await _c
+        .from(table)
+        .select('id')
+        .eq(column, value)
+        .eq('tenant_id', TenantContext.id);
+    return rows.length;
+  }
+
+  /// Member-scoped profile counts (profiles have no tenant_id).
+  static Future<int> _countMembers({String? status}) async {
+    var q = _c
+        .from('profiles')
+        .select('id, tenant_memberships!inner(tenant_id)')
+        .eq('tenant_memberships.tenant_id', TenantContext.id);
+    if (status != null) q = q.eq('status', status);
+    final rows = await q;
     return rows.length;
   }
 
   /// Simple totals for the admin dashboard.
   static Future<Map<String, int>> fetchCounts() async {
     final results = await Future.wait([
-      _count('profiles'),
-      _countWhere('profiles', 'status', 'active'),
-      _countWhere('profiles', 'status', 'pending'),
+      _countMembers(),
+      _countMembers(status: 'active'),
+      _countMembers(status: 'pending'),
       _count('courses'),
       _count('enrollments'),
       _count('exams'),
@@ -81,6 +104,7 @@ class AdminPanelRepository {
         .from('enrollments')
         .select('*, profiles(full_name, email)')
         .eq('course_id', courseId)
+        .eq('tenant_id', TenantContext.id)
         .order('created_at', ascending: false)
         .limit(200);
     return rows;
@@ -99,6 +123,7 @@ class AdminPanelRepository {
     await _c.from('enrollments').upsert({
       'user_id': userId,
       'course_id': courseId,
+      'tenant_id': TenantContext.id,
       'status': 'active',
       'source': 'manual',
       'granted_by': _c.auth.currentUser?.id,
@@ -116,7 +141,7 @@ class AdminPanelRepository {
     String query = '',
     int limit = 100,
   }) async {
-    var q = _c.from('certificates').select();
+    var q = _c.from('certificates').select().eq('tenant_id', TenantContext.id);
     if (query.trim().isNotEmpty) {
       final esc = _safe(query);
       q = q.or(

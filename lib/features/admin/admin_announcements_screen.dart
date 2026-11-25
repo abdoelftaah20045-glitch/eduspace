@@ -31,6 +31,7 @@ class _AdminAnnouncementsScreenState extends State<AdminAnnouncementsScreen> {
       final rows = await _c
           .from('announcements')
           .select()
+          .eq('tenant_id', TenantContext.id)
           .order('created_at', ascending: false)
           .limit(100);
       if (mounted) setState(() => _items = rows);
@@ -195,6 +196,7 @@ class _AnnouncementSheetState extends State<_AnnouncementSheet> {
         'title': _title.text.trim(),
         'body': _body.text.trim(),
         'audience': _audience,
+        'tenant_id': TenantContext.id,
         'ends_at': _endsAt?.toIso8601String(),
         'created_by': Supabase.instance.client.auth.currentUser?.id,
       });

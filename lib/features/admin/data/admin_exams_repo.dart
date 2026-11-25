@@ -1,5 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../core/tenant.dart';
+
 import '../../exams/data/exam_models.dart';
 
 /// Admin-side exams data: exam CRUD, question bank CRUD, exam composition.
@@ -15,15 +17,18 @@ class AdminExamsRepository {
 
   /// Every exam regardless of status, newest first.
   static Future<List<Map<String, dynamic>>> fetchAllExams() async {
-    final rows =
-        await _c.from('exams').select().order('created_at', ascending: false);
+    final rows = await _c
+        .from('exams')
+        .select()
+        .eq('tenant_id', TenantContext.id)
+        .order('created_at', ascending: false);
     return rows;
   }
 
   static Future<String> createExam(Map<String, dynamic> values) async {
     final row = await _c
         .from('exams')
-        .insert({...values, 'created_by': _uid})
+        .insert({...values, 'created_by': _uid, 'tenant_id': TenantContext.id})
         .select('id')
         .single();
     return row['id'] as String;
@@ -43,7 +48,11 @@ class AdminExamsRepository {
   // ---------- question bank ----------
 
   static Future<List<Map<String, dynamic>>> fetchBanks() async {
-    final rows = await _c.from('question_banks').select().order('name');
+    final rows = await _c
+        .from('question_banks')
+        .select()
+        .eq('tenant_id', TenantContext.id)
+        .order('name');
     return rows;
   }
 
@@ -54,6 +63,7 @@ class AdminExamsRepository {
           'name': name,
           'description': description,
           'created_by': _uid,
+          'tenant_id': TenantContext.id,
         })
         .select('id')
         .single();
@@ -62,7 +72,10 @@ class AdminExamsRepository {
 
   /// Bank questions with their options, newest first.
   static Future<List<ExamQuestion>> fetchBankQuestions({String? bankId}) async {
-    var query = _c.from('questions').select('*, question_options(*)');
+    var query = _c
+        .from('questions')
+        .select('*, question_options(*)')
+        .eq('tenant_id', TenantContext.id);
     if (bankId != null) {
       query = query.eq('bank_id', bankId);
     }
@@ -87,6 +100,7 @@ class AdminExamsRepository {
         .from('questions')
         .insert({
           'bank_id': bankId,
+          'tenant_id': TenantContext.id,
           'type': type,
           'body': body,
           'points': points,

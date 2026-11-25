@@ -1,5 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../core/tenant.dart';
+
 /// Admin review of exam attempts: list attempts per exam, read answers,
 /// grade essay questions, and finalize the attempt score.
 /// RLS (0017) enforces tenant admin rights server-side.
@@ -16,6 +18,7 @@ class AdminAttemptsRepository {
         .select(
             'id, user_id, status, score, max_score, passed, started_at, submitted_at, profiles(full_name, email)')
         .eq('exam_id', examId)
+        .eq('tenant_id', TenantContext.id)
         .order('submitted_at', ascending: false, nullsFirst: false);
     return rows;
   }

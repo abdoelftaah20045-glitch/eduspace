@@ -1,5 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../core/tenant.dart';
+
 /// Admin-side data access. The server enforces admin rights with RLS
 /// (is_admin()); these calls only succeed for admin/super_admin users.
 class AdminRepository {
@@ -32,6 +34,7 @@ class AdminRepository {
     final rows = await _c
         .from('courses')
         .select()
+        .eq('tenant_id', TenantContext.id)
         .order('created_at', ascending: false)
         .limit(100);
     return rows;
@@ -40,7 +43,7 @@ class AdminRepository {
   static Future<String> createCourse(Map<String, dynamic> values) async {
     final row = await _c
         .from('courses')
-        .insert({...values, 'created_by': _uid})
+        .insert({...values, 'created_by': _uid, 'tenant_id': TenantContext.id})
         .select('id')
         .single();
     return row['id'] as String;
