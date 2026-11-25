@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/l10n.dart';
 import 'data/tenancy_repo.dart';
+import 'tenant_members_screen.dart';
 
 /// Platform super admin: create and manage every tenant (organization)
 /// on the platform. Gated by TenancyRepository.isSuperAdmin() at the
@@ -100,6 +101,14 @@ class _SuperAdminScreenState extends State<SuperAdminScreen> {
                         onSelected: (v) {
                           if (v == 'edit') _edit(t);
                           if (v == 'toggle') _toggleStatus(t);
+                          if (v == 'members') {
+                            Navigator.of(context).push(MaterialPageRoute(
+                              builder: (_) => TenantMembersScreen(
+                                tenantId: t['id'] as String,
+                                tenantName: t['name'] as String?,
+                              ),
+                            ));
+                          }
                         },
                         itemBuilder: (_) => [
                           PopupMenuItem(
@@ -109,6 +118,10 @@ class _SuperAdminScreenState extends State<SuperAdminScreen> {
                             child: Text(s.t(suspended
                                 ? 'activate_tenant'
                                 : 'suspend_tenant')),
+                          ),
+                          PopupMenuItem(
+                            value: 'members',
+                            child: Text(s.t('tenant_members')),
                           ),
                         ],
                       ),

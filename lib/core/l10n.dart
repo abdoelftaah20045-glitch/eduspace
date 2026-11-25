@@ -402,6 +402,7 @@ class S {
     'membership_approved': {'ar': 'اتقبل العضو', 'en': 'Member approved', 'fr': 'Membre approuvé', 'es': 'Miembro aprobado', 'de': 'Mitglied genehmigt'},
     'membership_rejected': {'ar': 'اترفض العضو', 'en': 'Member rejected', 'fr': 'Membre refusé', 'es': 'Miembro rechazado', 'de': 'Mitglied abgelehnt'},
     'slug_invalid': {'ar': 'حروف إنجليزية صغيرة وأرقام وشرطات بس', 'en': 'Lowercase letters, numbers and dashes only', 'fr': 'Lettres minuscules, chiffres et tirets uniquement', 'es': 'Solo letras minúsculas, números y guiones', 'de': 'Nur Kleinbuchstaben, Zahlen und Bindestriche'},
+    'manage_roles': {'ar': 'إدارة الأدوار', 'en': 'Manage roles', 'fr': 'Gérer les rôles', 'es': 'Gestionar roles', 'de': 'Rollen verwalten'},
   };
 
   String t(String key) {

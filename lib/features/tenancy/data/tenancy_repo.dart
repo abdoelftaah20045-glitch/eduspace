@@ -120,4 +120,45 @@ class TenancyRepository {
     }
     await _c.from('tenant_memberships').update(values).eq('id', id);
   }
+
+  // ---------- tenant roles ----------
+
+  /// Roles that belong to one tenant (0019), for assignment in the UI.
+  static Future<List<Map<String, dynamic>>> fetchTenantRoles(
+      String tenantId) async {
+    final rows = await _c
+        .from('roles')
+        .select('id, name, description')
+        .eq('tenant_id', tenantId)
+        .order('name');
+    return rows;
+  }
+
+  /// user_id -> role ids they hold inside this tenant.
+  static Future<Map<String, List<String>>> fetchTenantRoleAssignments(
+      String tenantId) async {
+    final rows = await _c
+        .from('user_roles')
+        .select('user_id, role_id, roles!inner(tenant_id)')
+        .eq('roles.tenant_id', tenantId);
+    final map = <String, List<String>>{};
+    for (final r in rows) {
+      (map[r['user_id'] as String] ??= []).add(r['role_id'] as String);
+    }
+    return map;
+  }
+
+  static Future<void> assignRole(String userId, String roleId) async {
+    await _c
+        .from('user_roles')
+        .insert({'user_id': userId, 'role_id': roleId});
+  }
+
+  static Future<void> removeRole(String userId, String roleId) async {
+    await _c
+        .from('user_roles')
+        .delete()
+        .eq('user_id', userId)
+        .eq('role_id', roleId);
+  }
 }
