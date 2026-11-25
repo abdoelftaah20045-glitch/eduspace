@@ -4,7 +4,8 @@ import '../../core/l10n.dart';
 import '../../core/widgets.dart';
 import 'data/exam_models.dart';
 import 'data/exams_repo.dart';
-import 'take_exam_screen.dart';
+import 'exam_instructions_screen.dart';
+import 'exam_review_screen.dart';
 
 /// Exams tab: published exams with attempt state.
 class ExamsScreen extends StatefulWidget {
@@ -165,6 +166,24 @@ class _ExamCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 12),
+            if (exam.attemptCount > 0)
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
+                  ),
+                  icon: const Icon(Icons.fact_check_outlined, size: 18),
+                  label: Text(s.t('review_answers')),
+                  onPressed: () {
+                    Navigator.of(context).push(MaterialPageRoute(
+                        builder: (_) => ExamReviewScreen(exam: exam)));
+                  },
+                ),
+              ),
+            const SizedBox(height: 8),
             SizedBox(
               width: double.infinity,
               child: FilledButton(
@@ -177,8 +196,8 @@ class _ExamCard extends StatelessWidget {
                     ? () {
                         Navigator.of(context)
                             .push(MaterialPageRoute(
-                                builder: (_) =>
-                                    TakeExamScreen(exam: exam)))
+                                builder: (_) => ExamInstructionsScreen(
+                                    exam: exam)))
                             .then((_) => onDone());
                       }
                     : null,

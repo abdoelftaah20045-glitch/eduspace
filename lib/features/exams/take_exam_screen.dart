@@ -32,6 +32,16 @@ class _TakeExamScreenState extends State<TakeExamScreen> {
   /// questionId -> free text (fill_blank/essay)
   final Map<String, String> _texts = {};
 
+  /// questionId -> card key, for the review sheet's jump-to-question.
+  final Map<String, GlobalKey> _keys = {};
+
+  bool _isAnswered(ExamQuestion q) {
+    if (q.type == 'essay' || q.type == 'fill_blank') {
+      return (_texts[q.id] ?? '').trim().isNotEmpty;
+    }
+    return (_selected[q.id] ?? const <String>{}).isNotEmpty;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -58,7 +68,7 @@ class _TakeExamScreenState extends State<TakeExamScreen> {
           setState(() => _secondsLeft--);
           if (_secondsLeft <= 0) {
             t.cancel();
-            _submit();
+            _submit(fromTimer: true);
           }
         });
       }
@@ -74,25 +84,42 @@ class _TakeExamScreenState extends State<TakeExamScreen> {
     super.dispose();
   }
 
-  Future<void> _submit() async {
+  Future<void> _submit({bool fromTimer = false}) async {
     if (_submitting) return;
     final s = S.of(context);
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(s.t('submit_exam')),
-        content: Text(s.t('submit_confirm')),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: Text(s.t('cancel'))),
-          FilledButton(
-              onPressed: () => Navigator.pop(ctx, true),
-              child: Text(s.t('submit'))),
-        ],
-      ),
-    );
-    if (confirm != true) return;
+    if (!fromTimer) {
+      // Review before submitting (spec S33): answered/unanswered per
+      // question, tap a number to jump back to that question.
+      final questions = _questions ?? const <ExamQuestion>[];
+      final go = await showModalBottomSheet<bool>(
+        context: context,
+        isScrollControlled: true,
+        showDragHandle: true,
+        builder: (ctx) => DraggableScrollableSheet(
+          expand: false,
+          initialChildSize: .6,
+          maxChildSize: .9,
+          builder: (ctx, controller) => _ReviewSheet(
+            questions: questions,
+            isAnswered: _isAnswered,
+            scrollController: controller,
+            onJumpTo: (q) {
+              Navigator.pop(ctx, false);
+              final key = _keys[q.id];
+              final ctx2 = key?.currentContext;
+              if (ctx2 != null) {
+                Scrollable.ensureVisible(
+                  ctx2,
+                  duration: const Duration(milliseconds: 350),
+                  curve: Curves.easeInOut,
+                );
+              }
+            },
+          ),
+        ),
+      );
+      if (go != true) return;
+    }
     setState(() => _submitting = true);
     _timer?.cancel();
     try {
@@ -243,9 +270,11 @@ class _TakeExamScreenState extends State<TakeExamScreen> {
                             ),
                           );
                         }
+                        final q = questions[i];
                         return _QuestionCard(
+                          key: _keys.putIfAbsent(q.id, GlobalKey.new),
                           index: i,
-                          question: questions[i],
+                          question: q,
                           selected: _selected,
                           texts: _texts,
                           onChanged: () => setState(() {}),
@@ -551,6 +580,117 @@ class _ResultCount extends StatelessWidget {
         const SizedBox(height: 2),
         Text(label, style: Theme.of(context).textTheme.bodySmall),
       ],
+    );
+  }
+}
+
+/// Review-before-submit sheet (spec S33).
+class _ReviewSheet extends StatelessWidget {
+  const _ReviewSheet({
+    required this.questions,
+    required this.isAnswered,
+    required this.scrollController,
+    required this.onJumpTo,
+  });
+
+  final List<ExamQuestion> questions;
+  final bool Function(ExamQuestion) isAnswered;
+  final ScrollController scrollController;
+  final void Function(ExamQuestion) onJumpTo;
+
+  @override
+  Widget build(BuildContext context) {
+    final s = S.of(context);
+    final answered = questions.where(isAnswered).length;
+    final unanswered = questions.length - answered;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            s.t('review_before_submit'),
+            style: Theme.of(context)
+                .textTheme
+                .titleLarge
+                ?.copyWith(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Chip(
+                avatar: const Icon(Icons.check_circle,
+                    size: 18, color: Color(0xFF2E9E5B)),
+                label: Text('$answered ${s.t('answered_label')}'),
+              ),
+              const SizedBox(width: 8),
+              Chip(
+                avatar: const Icon(Icons.radio_button_unchecked,
+                    size: 18, color: Color(0xFFF29900)),
+                label: Text('$unanswered ${s.t('unanswered_label')}'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Expanded(
+            child: GridView.builder(
+              controller: scrollController,
+              gridDelegate:
+                  const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 6,
+                mainAxisSpacing: 8,
+                crossAxisSpacing: 8,
+              ),
+              itemCount: questions.length,
+              itemBuilder: (context, i) {
+                final q = questions[i];
+                final done = isAnswered(q);
+                final color = done
+                    ? const Color(0xFF2E9E5B)
+                    : const Color(0xFFF29900);
+                return InkWell(
+                  onTap: () => onJumpTo(q),
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: color.withValues(alpha: .12),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: color),
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      '${i + 1}',
+                      style: TextStyle(
+                          color: color, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(s.t('submit_confirm'),
+              style: Theme.of(context).textTheme.bodySmall),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: Text(s.t('back_to_exam')),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: FilledButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  child: Text(s.t('submit')),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

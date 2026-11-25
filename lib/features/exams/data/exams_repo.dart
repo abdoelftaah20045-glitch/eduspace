@@ -91,6 +91,45 @@ class ExamsRepository {
     return row['id'] as String;
   }
 
+  /// Latest finished attempt with questions and the student's answers,
+  /// for the post-exam review screen (spec S35).
+  static Future<
+      ({
+        Map<String, dynamic> attempt,
+        List<ExamQuestion> questions,
+        Map<String, Map<String, dynamic>> answers,
+      })?> fetchReview(Exam exam) async {
+    final attempts = await _c
+        .from('exam_attempts')
+        .select('id, score, max_score, passed, submitted_at')
+        .eq('exam_id', exam.id)
+        .eq('user_id', _uid)
+        .neq('status', 'in_progress')
+        .order('submitted_at', ascending: false)
+        .limit(1);
+    if (attempts.isEmpty) return null;
+    final attempt = Map<String, dynamic>.from(attempts.first as Map);
+    final answerRows = await _c
+        .from('answers')
+        .select(
+            'question_id, selected_option_ids, text_answer, is_correct, points_awarded')
+        .eq('attempt_id', attempt['id'] as String);
+    final answers = <String, Map<String, dynamic>>{
+      for (final a in answerRows)
+        (a['question_id'] as String): Map<String, dynamic>.from(a as Map),
+    };
+    final links = await _c
+        .from('exam_questions')
+        .select('sort_order, questions(*, question_options(*))')
+        .eq('exam_id', exam.id)
+        .order('sort_order');
+    final questions = links
+        .map((l) => ExamQuestion.fromMap(
+            Map<String, dynamic>.from(l['questions'] as Map)))
+        .toList();
+    return (attempt: attempt, questions: questions, answers: answers);
+  }
+
   /// Grade objective questions locally against the options already fetched
   /// (RLS exposes them for published exams), store answers, close the attempt.
   /// Essay answers are stored ungraded for a later review stage.
