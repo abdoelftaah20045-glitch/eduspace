@@ -1,6 +1,6 @@
 -- EduSpace: كل المايجريشنز في ملف واحد، بالترتيب.
 -- الصق الملف ده كله في SQL Editor مرة واحدة. آمن لإعادة التشغيل (idempotent).
--- يشمل 0001 لحد 0022 (تعدد المؤسسات والأدوار والتخزين والإشعارات).
+-- يشمل 0001 لحد 0023 (تعدد المؤسسات والأدوار والتخزين والإشعارات).
 
 -- ============================================================
 -- FILE: supabase/migrations/0001_init.sql
@@ -2655,3 +2655,16 @@ drop trigger if exists on_enrollment_notify on public.enrollments;
 create trigger on_enrollment_notify
   after insert on public.enrollments
   for each row execute function public.notify_on_enrollment();
+
+-- ============================================================
+-- FILE: supabase/migrations/0023_drop_old_broadcast.sql
+-- ============================================================
+-- EduSpace: drop the pre-tenancy broadcast overload.
+-- Run AFTER 0022_notification_triggers.sql.
+--
+-- 0017 added a 4-parameter tenant-scoped admin_broadcast_notification, but
+-- CREATE OR REPLACE does not remove the old 3-parameter function: it kept
+-- existing as a separate overload that fans out to EVERY profile across
+-- all tenants. The app calls the 4-parameter version; drop the old one.
+
+drop function if exists public.admin_broadcast_notification(text, text, text);
