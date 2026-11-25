@@ -185,28 +185,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           ),
           const SizedBox(height: 16),
           TextField(
-            controller: _faculty,
-            decoration: InputDecoration(labelText: s.t('faculty')),
-          ),
-          const SizedBox(height: 16),
-          TextField(
             controller: _specialization,
             decoration: InputDecoration(labelText: s.t('specialization')),
-          ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: _stage,
-            decoration: InputDecoration(labelText: s.t('stage_label')),
-          ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: _level,
-            decoration: InputDecoration(labelText: s.t('level_label')),
-          ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: _group,
-            decoration: InputDecoration(labelText: s.t('group_label')),
           ),
           const SizedBox(height: 16),
           TextField(

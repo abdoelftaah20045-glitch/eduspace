@@ -1,8 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-// Lively sky blue accent (owner asked for light, spirited colors, no navy).
-const _seed = Color(0xFF2196F3);
+// Primary blue taken from the owner's mockups (#2563EB). Light, calm surfaces.
+const _seed = Color(0xFF2563EB);
+const _lightBg = Color(0xFFF5F7FB);
 
 ThemeData _base(ColorScheme scheme) {
   return ThemeData(
@@ -63,8 +64,22 @@ ThemeData buildLightTheme() {
   final scheme = ColorScheme.fromSeed(
     seedColor: _seed,
     brightness: Brightness.light,
+  ).copyWith(
+    primary: _seed,
+    onPrimary: Colors.white,
+    surface: Colors.white,
+    surfaceContainerHighest: const Color(0xFFE8EEF9),
   );
-  return _base(scheme).copyWith(scaffoldBackgroundColor: scheme.surface);
+  return _base(scheme).copyWith(
+    scaffoldBackgroundColor: _lightBg,
+    appBarTheme: const AppBarTheme(
+      centerTitle: true,
+      elevation: 0,
+      scrolledUnderElevation: 1,
+      backgroundColor: _lightBg,
+      foregroundColor: Color(0xFF0F172A),
+    ),
+  );
 }
 
 ThemeData buildDarkTheme() {

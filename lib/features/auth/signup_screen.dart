@@ -19,11 +19,21 @@ class _SignupScreenState extends State<SignupScreen> {
   final _email = TextEditingController();
   final _password = TextEditingController();
   final _confirm = TextEditingController();
+  final _phone = TextEditingController();
+  final _country = TextEditingController();
+  final _governorate = TextEditingController();
+  final _institution = TextEditingController();
+  DateTime? _birth;
+  bool _agree = false;
   bool _busy = false;
   String? _error;
 
   Future<void> _signup() async {
     if (!_formKey.currentState!.validate()) return;
+    if (!_agree) {
+      setState(() => _error = S.of(context).t('must_agree_terms'));
+      return;
+    }
     setState(() {
       _busy = true;
       _error = null;
@@ -36,6 +46,14 @@ class _SignupScreenState extends State<SignupScreen> {
         data: {
           'full_name': _name.text.trim(),
           'locale': AppState.instance.locale.value.languageCode,
+          if (_phone.text.trim().isNotEmpty) 'phone': _phone.text.trim(),
+          if (_country.text.trim().isNotEmpty) 'country': _country.text.trim(),
+          if (_governorate.text.trim().isNotEmpty)
+            'governorate': _governorate.text.trim(),
+          if (_institution.text.trim().isNotEmpty)
+            'institution': _institution.text.trim(),
+          if (_birth != null)
+            'birth_date': _birth!.toIso8601String().substring(0, 10),
         },
       );
       if (!mounted) return;
@@ -136,6 +154,77 @@ class _SignupScreenState extends State<SignupScreen> {
                 ),
                 validator: (v) =>
                     v != _password.text ? s.t('passwords_mismatch') : null,
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _phone,
+                keyboardType: TextInputType.phone,
+                decoration: InputDecoration(
+                  labelText: '${s.t('phone_label')} (${s.t('optional')})',
+                  prefixIcon: const Icon(Icons.phone_outlined),
+                ),
+              ),
+              const SizedBox(height: 16),
+              InkWell(
+                borderRadius: BorderRadius.circular(14),
+                onTap: () async {
+                  final d = await showDatePicker(
+                    context: context,
+                    initialDate: _birth ?? DateTime(2000),
+                    firstDate: DateTime(1940),
+                    lastDate: DateTime.now(),
+                  );
+                  if (d != null) setState(() => _birth = d);
+                },
+                child: InputDecorator(
+                  decoration: InputDecoration(
+                    labelText: '${s.t('birth_date')} (${s.t('optional')})',
+                    prefixIcon: const Icon(Icons.cake_outlined),
+                  ),
+                  child: Text(_birth == null
+                      ? ''
+                      : _birth!.toIso8601String().substring(0, 10)),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      controller: _country,
+                      decoration: InputDecoration(
+                        labelText: s.t('country'),
+                        prefixIcon: const Icon(Icons.public),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: TextFormField(
+                      controller: _governorate,
+                      decoration: InputDecoration(
+                        labelText: s.t('governorate'),
+                        prefixIcon: const Icon(Icons.location_city_outlined),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _institution,
+                decoration: InputDecoration(
+                  labelText: s.t('institution'),
+                  prefixIcon: const Icon(Icons.school_outlined),
+                ),
+              ),
+              const SizedBox(height: 8),
+              CheckboxListTile(
+                contentPadding: EdgeInsets.zero,
+                controlAffinity: ListTileControlAffinity.leading,
+                value: _agree,
+                onChanged: (v) => setState(() => _agree = v ?? false),
+                title: Text(s.t('agree_terms')),
               ),
               const SizedBox(height: 16),
               if (_error != null)
