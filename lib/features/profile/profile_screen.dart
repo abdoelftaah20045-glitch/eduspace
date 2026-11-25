@@ -6,6 +6,7 @@ import '../admin/admin_panel_screen.dart';
 import '../admin/data/admin_repo.dart';
 import '../certificates/my_certificates_screen.dart';
 import '../courses/favorites_screen.dart';
+import '../library/library_screen.dart';
 import '../support/support_screen.dart';
 import '../settings/settings_screen.dart';
 import 'edit_profile_screen.dart';
@@ -96,6 +97,13 @@ class ProfileScreen extends StatelessWidget {
                         builder: (_) => const AdminPanelScreen()),
                   ),
                 ),
+              ListTile(
+                leading: const Icon(Icons.folder_open),
+                title: Text(s.t('library_label')),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const LibraryScreen()),
+                ),
+              ),
               ListTile(
                 leading: const Icon(Icons.support_agent),
                 title: Text(s.t('support')),

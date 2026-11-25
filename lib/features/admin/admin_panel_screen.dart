@@ -7,6 +7,7 @@ import 'admin_certificates_screen.dart';
 import 'admin_courses_screen.dart';
 import 'admin_enrollments_screen.dart';
 import 'admin_exams_screen.dart';
+import 'admin_library_screen.dart';
 import 'admin_lives_screen.dart';
 import 'admin_support_screen.dart';
 import 'admin_users_screen.dart';
@@ -94,6 +95,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
       ('support', Icons.support_agent, const AdminSupportScreen()),
       ('lives_label', Icons.video_camera_front_outlined,
           const AdminLivesScreen()),
+      ('library_label', Icons.folder_open, const AdminLibraryScreen()),
     ];
     return Scaffold(
       appBar: AppBar(title: Text(s.t('admin_panel'))),
