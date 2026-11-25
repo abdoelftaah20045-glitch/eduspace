@@ -167,4 +167,38 @@ class AdminToolsRepository {
       'certificates_cancelled': cnt(certs, (c) => c['status'] == 'cancelled'),
     };
   }
+
+  // ---------- student detail (A03) ----------
+
+  static Future<Map<String, dynamic>> fetchStudentDetail(String userId) async {
+    final results = await Future.wait([
+      _c
+          .from('enrollments')
+          .select('status, created_at, courses(title)')
+          .eq('user_id', userId)
+          .eq('tenant_id', TenantContext.id)
+          .order('created_at', ascending: false)
+          .limit(50),
+      _c
+          .from('exam_attempts')
+          .select('status, score, max_score, passed, submitted_at, exams(title)')
+          .eq('user_id', userId)
+          .eq('tenant_id', TenantContext.id)
+          .neq('status', 'in_progress')
+          .order('submitted_at', ascending: false)
+          .limit(50),
+    ]);
+    return {'enrollments': results[0], 'attempts': results[1]};
+  }
+
+  // ---------- course status (A07) ----------
+
+  static Future<void> setCourseStatus(String id, String status) async {
+    await _c.from('courses').update({
+      'status': status,
+      'updated_at': DateTime.now().toIso8601String(),
+    }).eq('id', id);
+    await log('course.status',
+        entity: 'course', entityId: id, details: {'status': status});
+  }
 }

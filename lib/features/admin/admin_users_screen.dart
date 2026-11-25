@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/l10n.dart';
+import 'admin_student_detail_screen.dart';
 import 'data/admin_panel_repo.dart';
 
 /// Admin: review student accounts - search, filter by status, and
@@ -157,6 +158,11 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                                 style: theme.textTheme.bodySmall,
                               ),
                               isThreeLine: true,
+                              onTap: () => Navigator.of(context).push(
+                                MaterialPageRoute(
+                                    builder: (_) =>
+                                        AdminStudentDetailScreen(user: u)),
+                              ),
                               trailing: PopupMenuButton<String>(
                                 onSelected: (v) {
                                   if (v == 'active') {
