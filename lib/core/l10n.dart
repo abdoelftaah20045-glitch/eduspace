@@ -84,6 +84,52 @@ class S {
       'ar': 'إعدادات الاتصال ناقصة. شغّل التطبيق بمفاتيح Supabase زي ما في الملف التعريفي.',
       'en': 'Missing connection config. Run the app with the Supabase keys as described in the README.',
     },
+    // Stage 2: courses
+    'search_courses': {'ar': 'ابحث في الكورسات', 'en': 'Search courses'},
+    'no_courses': {
+      'ar': 'لا توجد كورسات متاحة حاليًا',
+      'en': 'No courses available yet',
+    },
+    'free': {'ar': 'مجاني', 'en': 'Free'},
+    'my_courses': {'ar': 'كورساتي', 'en': 'My courses'},
+    'no_my_courses': {
+      'ar': 'لسه ما اشتركتش في أي كورس. تصفح الكورسات وابدأ التعلم.',
+      'en': 'You have not enrolled in any course yet. Browse the catalog to start learning.',
+    },
+    'enroll': {'ar': 'اشترك في الكورس', 'en': 'Enroll'},
+    'enroll_success': {
+      'ar': 'تم الاشتراك في الكورس',
+      'en': 'Enrolled successfully',
+    },
+    'paid_contact_admin': {
+      'ar': 'هذا كورس مدفوع. الاشتراك المدفوع هيتاح في المرحلة الجاية؛ تواصل مع الإدارة لمنحك وصولًا.',
+      'en': 'This is a paid course. Paid enrollment arrives in the next stage; contact the admin for access.',
+    },
+    'lessons': {'ar': 'درس', 'en': 'lessons'},
+    'hours': {'ar': 'ساعة', 'en': 'hours'},
+    'minutes': {'ar': 'دقيقة', 'en': 'min'},
+    'prerequisites': {'ar': 'المتطلبات السابقة', 'en': 'Prerequisites'},
+    'no_lessons': {
+      'ar': 'لا توجد دروس في هذا الكورس بعد',
+      'en': 'No lessons in this course yet',
+    },
+    'no_content': {
+      'ar': 'لا يوجد محتوى لهذا الدرس بعد',
+      'en': 'No content for this lesson yet',
+    },
+    'continue_learning': {'ar': 'استكمل التعلم', 'en': 'Continue learning'},
+    'mark_complete': {'ar': 'تم إكمال الدرس', 'en': 'Mark lesson complete'},
+    'completed': {'ar': 'مكتمل', 'en': 'Completed'},
+    'open_file': {'ar': 'فتح الملف', 'en': 'Open file'},
+    'open_link': {'ar': 'فتح الرابط', 'en': 'Open link'},
+    'lesson_type_coming': {
+      'ar': 'هذا النوع من الدروس هيتاح في مرحلة لاحقة',
+      'en': 'This lesson type arrives in a later stage',
+    },
+    'level_beginner': {'ar': 'مبتدئ', 'en': 'Beginner'},
+    'level_intermediate': {'ar': 'متوسط', 'en': 'Intermediate'},
+    'level_advanced': {'ar': 'متقدم', 'en': 'Advanced'},
+    'level_all_levels': {'ar': 'كل المستويات', 'en': 'All levels'},
   };
 
   String t(String key) {

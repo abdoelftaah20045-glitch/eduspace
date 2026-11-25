@@ -1,7 +1,7 @@
 name: eduspace_app
-description: EduSpace student app - Stage 1 foundation.
+description: EduSpace student app - Stage 2: courses and progress.
 publish_to: "none"
-version: 0.1.0
+version: 0.2.0
 
 environment:
   sdk: ">=3.4.0 <4.0.0"
@@ -13,6 +13,8 @@ dependencies:
     sdk: flutter
   supabase_flutter: ^2.8.0
   shared_preferences: ^2.3.0
+  video_player: ^2.9.2
+  url_launcher: ^6.3.0
   intl: any
 
 dev_dependencies:
