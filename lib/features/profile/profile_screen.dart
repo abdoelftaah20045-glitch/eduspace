@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/l10n.dart';
@@ -53,7 +54,8 @@ class ProfileScreen extends StatelessWidget {
           return ListView(
             padding: const EdgeInsets.all(24),
             children: [
-              const CircleAvatar(radius: 40, child: Icon(Icons.person, size: 40)),
+              _ProfileAvatar(
+                  avatarUrl: profile?['avatar_url'] as String?),
               const SizedBox(height: 16),
               Text(
                 name,
@@ -127,6 +129,137 @@ class ProfileScreen extends StatelessWidget {
             ],
           );
         },
+      ),
+    );
+  }
+}
+
+/// Avatar with a camera badge. Tapping opens a gallery/camera sheet, uploads
+/// to the public `avatars` bucket under the user's own folder, and saves the
+/// public URL (with a cache buster) on profiles.avatar_url.
+class _ProfileAvatar extends StatefulWidget {
+  const _ProfileAvatar({this.avatarUrl});
+
+  final String? avatarUrl;
+
+  @override
+  State<_ProfileAvatar> createState() => _ProfileAvatarState();
+}
+
+class _ProfileAvatarState extends State<_ProfileAvatar> {
+  String? _url;
+  bool _busy = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _url = widget.avatarUrl;
+  }
+
+  Future<void> _pick(ImageSource source) async {
+    Navigator.of(context).pop(); // close the sheet
+    final picker = ImagePicker();
+    final file = await picker.pickImage(
+      source: source,
+      maxWidth: 512,
+      maxHeight: 512,
+      imageQuality: 85,
+    );
+    if (file == null || !mounted) return;
+    setState(() => _busy = true);
+    final s = S.of(context);
+    try {
+      final client = Supabase.instance.client;
+      final uid = client.auth.currentUser!.id;
+      final bytes = await file.readAsBytes();
+      final path = '$uid/avatar.jpg';
+      await client.storage.from('avatars').uploadBinary(
+            path,
+            bytes,
+            fileOptions:
+                const FileOptions(upsert: true, contentType: 'image/jpeg'),
+          );
+      final base = client.storage.from('avatars').getPublicUrl(path);
+      final url =
+          '$base?v=${DateTime.now().millisecondsSinceEpoch}';
+      await client
+          .from('profiles')
+          .update({'avatar_url': url}).eq('id', uid);
+      if (mounted) {
+        setState(() => _url = url);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(s.t('photo_updated'))),
+        );
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(s.t('photo_failed'))),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  void _chooseSource() {
+    final s = S.of(context);
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (sheetContext) => SafeArea(
+        child: Wrap(
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_library_outlined),
+              title: Text(s.t('photo_gallery')),
+              onTap: () => _pick(ImageSource.gallery),
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_camera_outlined),
+              title: Text(s.t('photo_camera')),
+              onTap: () => _pick(ImageSource.camera),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final s = S.of(context);
+    final url = _url;
+    return Center(
+      child: Stack(
+        children: [
+          CircleAvatar(
+            radius: 44,
+            backgroundImage: url != null ? NetworkImage(url) : null,
+            child: _busy
+                ? const CircularProgressIndicator()
+                : (url == null
+                    ? const Icon(Icons.person, size: 44)
+                    : null),
+          ),
+          Positioned(
+            bottom: 0,
+            right: 0,
+            child: Semantics(
+              button: true,
+              label: s.t('change_photo'),
+              child: InkWell(
+                onTap: _busy ? null : _chooseSource,
+                customBorder: const CircleBorder(),
+                child: CircleAvatar(
+                  radius: 15,
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  child: const Icon(Icons.photo_camera_outlined,
+                      size: 16, color: Colors.white),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

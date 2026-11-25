@@ -1,7 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-const _seed = Color(0xFF0F3D6E);
+// Lively sky blue accent (owner asked for light, spirited colors, no navy).
+const _seed = Color(0xFF2196F3);
 
 ThemeData _base(ColorScheme scheme) {
   return ThemeData(

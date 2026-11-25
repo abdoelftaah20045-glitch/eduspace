@@ -335,7 +335,7 @@ class _TimerPill extends StatelessWidget {
   }
 }
 
-/// Dark score box with band colors (excellent/good/average/weak) like the
+/// Accent score box with band colors (excellent/good/average/weak) like the
 /// result-screen reference.
 class _ScoreBox extends StatelessWidget {
   const _ScoreBox({required this.score, required this.maxScore});
@@ -343,11 +343,10 @@ class _ScoreBox extends StatelessWidget {
   final double score;
   final double maxScore;
 
-  static const _navy = Color(0xFF0F3D6E);
-
   @override
   Widget build(BuildContext context) {
     final s = S.of(context);
+    final accent = Theme.of(context).colorScheme.primary;
     final pct = maxScore > 0 ? score / maxScore * 100 : 0.0;
     final (band, bandColor) = pct >= 80
         ? (s.t('band_excellent'), const Color(0xFF2E9E5B))
@@ -361,7 +360,7 @@ class _ScoreBox extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
           decoration: BoxDecoration(
-            color: _navy,
+            color: accent,
             borderRadius: BorderRadius.circular(14),
           ),
           child: Text(

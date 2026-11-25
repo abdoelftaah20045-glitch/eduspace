@@ -15,9 +15,14 @@ import '../../core/config.dart';
 import '../../core/l10n.dart';
 import 'data/certificates_repo.dart';
 
-const _kPrimary = Color(0xFF0F3D6E);
-const _kPrimaryDark = Color(0xFF0A2A4D);
 const _kGold = Color(0xFFC9A227);
+
+/// Deepen the theme accent for headings and the frame, keeping contrast
+/// without going near-black.
+Color _deepen(Color c, [double factor = 0.62]) {
+  final hsl = HSLColor.fromColor(c);
+  return hsl.withLightness((hsl.lightness * factor).clamp(0.0, 1.0)).toColor();
+}
 
 /// Full certificate view. The share button captures the certificate as a PNG
 /// (so Arabic text renders correctly, no PDF font issues) and shares it.
@@ -198,8 +203,8 @@ class _CertificateViewScreenState extends State<CertificateViewScreen> {
   }
 }
 
-/// Landscape certificate in the reference style: navy + gold curves on the
-/// edges, gold seal ribbon, signature and date lines.
+/// Landscape certificate in the reference style: theme-accent + gold curves
+/// on the edges, gold seal ribbon, signature and date lines.
 /// Laid out on a fixed 960x680 canvas and scaled by FittedBox.
 class _CertCard extends StatelessWidget {
   const _CertCard({required this.cert, required this.date});
@@ -210,18 +215,20 @@ class _CertCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final s = S.of(context);
+    final primary = Theme.of(context).colorScheme.primary;
+    final primaryDark = _deepen(primary);
     return Container(
       color: Colors.white,
       child: Stack(
         children: [
           Positioned.fill(
-              child: CustomPaint(painter: _CertCurvesPainter())),
+              child: CustomPaint(painter: _CertCurvesPainter(primary: primary))),
           // Thin double frame like the reference.
           Positioned.fill(
             child: Container(
               margin: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                border: Border.all(color: _kPrimary, width: 2),
+                border: Border.all(color: primary, width: 2),
               ),
               child: Container(
                 margin: const EdgeInsets.all(3),
@@ -237,15 +244,15 @@ class _CertCard extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(150, 34, 40, 26),
               child: Column(
                 children: [
-                  const Row(
+                  Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.school, size: 30, color: _kPrimary),
-                      SizedBox(width: 8),
+                      Icon(Icons.school, size: 30, color: primary),
+                      const SizedBox(width: 8),
                       Text(
                         'EduSpace',
                         style: TextStyle(
-                          color: _kPrimary,
+                          color: primary,
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
                           letterSpacing: 1.5,
@@ -257,8 +264,8 @@ class _CertCard extends StatelessWidget {
                   Text(
                     s.t('certificate_of_completion'),
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: _kPrimaryDark,
+                    style: TextStyle(
+                      color: primaryDark,
                       fontSize: 40,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 1,
@@ -295,8 +302,8 @@ class _CertCard extends StatelessWidget {
                   Text(
                     cert.courseTitle,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: _kPrimaryDark,
+                    style: TextStyle(
+                      color: primaryDark,
                       fontSize: 24,
                       fontWeight: FontWeight.w600,
                     ),
@@ -327,7 +334,7 @@ class _CertCard extends StatelessWidget {
               ),
             ),
           ),
-          // Gold seal ribbon, bottom right over the navy corner.
+          // Gold seal ribbon, bottom right over the accent corner.
           const Positioned(
             right: 44,
             bottom: 132,
@@ -365,9 +372,13 @@ class _SignLine extends StatelessWidget {
   }
 }
 
-/// Navy filled curves with a gold offset edge, top-left sweep and
+/// Accent filled curves with a gold offset edge, top-left sweep and
 /// bottom-right corner, matching the reference certificate.
 class _CertCurvesPainter extends CustomPainter {
+  const _CertCurvesPainter({required this.primary});
+
+  final Color primary;
+
   @override
   void paint(Canvas canvas, Size size) {
     final w = size.width;
@@ -382,15 +393,15 @@ class _CertCurvesPainter extends CustomPainter {
         ..close();
     }
 
-    // Gold edge behind the navy sweep (top-left).
+    // Gold edge behind the accent sweep (top-left).
     canvas.drawPath(
       leftShape(w * 0.27, w * 0.16, h * 0.92),
       Paint()..color = _kGold,
     );
-    // Navy sweep.
+    // Accent sweep.
     canvas.drawPath(
       leftShape(w * 0.24, w * 0.13, h * 0.86),
-      Paint()..color = _kPrimary,
+      Paint()..color = primary,
     );
 
     Path cornerShape(double startY, double ctrlX, double endX) {
@@ -401,18 +412,19 @@ class _CertCurvesPainter extends CustomPainter {
         ..close();
     }
 
-    // Gold edge behind the navy corner (bottom-right).
+    // Gold edge behind the accent corner (bottom-right).
     canvas.drawPath(
       cornerShape(h * 0.55, w * 0.90, w * 0.76),
       Paint()..color = _kGold,
     );
-    // Navy corner.
+    // Accent corner.
     canvas.drawPath(
       cornerShape(h * 0.63, w * 0.93, w * 0.82),
-      Paint()..color = _kPrimary,
+      Paint()..color = primary,
     );
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _CertCurvesPainter oldDelegate) =>
+      oldDelegate.primary != primary;
 }
