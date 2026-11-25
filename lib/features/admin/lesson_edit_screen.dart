@@ -37,6 +37,12 @@ class _LessonEditScreenState extends State<LessonEditScreen> {
   late String _type = widget.lesson?['type'] as String? ?? 'text';
   late bool _freePreview =
       (widget.lesson?['is_free_preview'] as bool?) ?? false;
+  late bool _hidden = (widget.lesson?['is_hidden'] as bool?) ?? false;
+  late String _availability =
+      (widget.lesson?['availability'] as String?) == 'date' ? 'date' : 'open';
+  late DateTime? _openAt = widget.lesson?['available_at'] != null
+      ? DateTime.tryParse(widget.lesson!['available_at'].toString())?.toLocal()
+      : null;
   bool _saving = false;
   bool _uploading = false;
 
@@ -92,6 +98,22 @@ class _LessonEditScreenState extends State<LessonEditScreen> {
     super.dispose();
   }
 
+  Future<void> _pickOpenAt() async {
+    final now = DateTime.now();
+    final d = await showDatePicker(
+        context: context,
+        initialDate: _openAt ?? now,
+        firstDate: now.subtract(const Duration(days: 365)),
+        lastDate: now.add(const Duration(days: 365 * 5)));
+    if (d == null || !mounted) return;
+    final t = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.fromDateTime(_openAt ?? now));
+    if (!mounted) return;
+    setState(() => _openAt = DateTime(
+        d.year, d.month, d.day, t?.hour ?? 0, t?.minute ?? 0));
+  }
+
   Future<void> _save() async {
     final s = S.of(context);
     if (!_formKey.currentState!.validate()) return;
@@ -106,6 +128,11 @@ class _LessonEditScreenState extends State<LessonEditScreen> {
       'media_url': _mediaUrl.text.trim().isEmpty ? null : _mediaUrl.text.trim(),
       'duration_seconds': minutes != null ? minutes * 60 : null,
       'is_free_preview': _freePreview,
+      'is_hidden': _hidden,
+      'availability': _availability,
+      'available_at': _availability == 'date'
+          ? _openAt?.toUtc().toIso8601String()
+          : null,
     };
     try {
       if (widget.lesson == null) {
@@ -197,6 +224,32 @@ class _LessonEditScreenState extends State<LessonEditScreen> {
               title: Text(s.t('free_preview')),
               subtitle: Text(s.t('free_preview_hint')),
             ),
+            SwitchListTile(
+              value: _hidden,
+              onChanged: (v) => setState(() => _hidden = v),
+              title: Text(s.t('lesson_hidden')),
+              subtitle: Text(s.t('lesson_hidden_hint')),
+            ),
+            DropdownButtonFormField<String>(
+              initialValue: _availability,
+              decoration: InputDecoration(labelText: s.t('lesson_open_mode')),
+              items: [
+                DropdownMenuItem(
+                    value: 'open', child: Text(s.t('open_now'))),
+                DropdownMenuItem(
+                    value: 'date', child: Text(s.t('open_on_date'))),
+              ],
+              onChanged: (v) => setState(() => _availability = v ?? 'open'),
+            ),
+            if (_availability == 'date')
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.event_outlined),
+                title: Text(_openAt == null
+                    ? s.t('pick_date')
+                    : _openAt!.toString().substring(0, 16)),
+                onTap: _pickOpenAt,
+              ),
             const SizedBox(height: 24),
             FilledButton.icon(
               onPressed: _saving ? null : _save,

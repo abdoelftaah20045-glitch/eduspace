@@ -141,6 +141,7 @@ class Lesson {
     this.mediaUrl,
     this.durationSeconds,
     this.isFreePreview = false,
+    this.isHidden = false,
     this.availability = 'open',
     this.availableAt,
     this.sortOrder = 0,
@@ -158,6 +159,7 @@ class Lesson {
   final String? mediaUrl;
   final int? durationSeconds;
   final bool isFreePreview;
+  final bool isHidden;
   final String availability;
   final DateTime? availableAt;
   final int sortOrder;
@@ -178,6 +180,7 @@ class Lesson {
       mediaUrl: mediaUrl,
       durationSeconds: durationSeconds,
       isFreePreview: isFreePreview,
+      isHidden: isHidden,
       availability: availability,
       availableAt: availableAt,
       sortOrder: sortOrder,
@@ -198,6 +201,7 @@ class Lesson {
       mediaUrl: m['media_url'] as String?,
       durationSeconds: (m['duration_seconds'] as num?)?.toInt(),
       isFreePreview: (m['is_free_preview'] as bool?) ?? false,
+      isHidden: (m['is_hidden'] as bool?) ?? false,
       availability: (m['availability'] as String?) ?? 'open',
       availableAt: m['available_at'] != null
           ? DateTime.tryParse(m['available_at'] as String)

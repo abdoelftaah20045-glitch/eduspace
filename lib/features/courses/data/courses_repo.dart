@@ -158,7 +158,10 @@ class CoursesRepository {
       return l.copyWith(
         completed: p?.completed ?? false,
         positionSeconds: p?.positionSeconds ?? 0,
-        accessible: enrolled || l.isFreePreview,
+        accessible: (enrolled || l.isFreePreview) &&
+            !(l.availability == 'date' &&
+                l.availableAt != null &&
+                l.availableAt!.isAfter(DateTime.now())),
       );
     }
 
@@ -168,7 +171,7 @@ class CoursesRepository {
               courseId: s.courseId,
               title: s.title,
               sortOrder: s.sortOrder,
-              lessons: s.lessons.map(merge).toList(),
+              lessons: s.lessons.where((l) => !l.isHidden).map(merge).toList(),
             ))
         .toList();
 
