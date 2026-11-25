@@ -4,6 +4,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/app_state.dart';
 import '../../core/l10n.dart';
 import '../notifications/notification_prefs_screen.dart';
+import 'about_screen.dart';
+import 'security_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -71,20 +73,19 @@ class SettingsScreen extends StatelessWidget {
           // S49: change password.
           ListTile(
             leading: const Icon(Icons.lock_reset),
-            title: Text(s.t('change_password')),
+            title: Text(s.t('security')),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () => _changePassword(context),
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const SecurityScreen()),
+            ),
           ),
           // S50: about.
           ListTile(
             leading: const Icon(Icons.info_outline),
             title: Text(s.t('about_app')),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () => showAboutDialog(
-              context: context,
-              applicationName: s.t('app_name'),
-              applicationVersion: '0.2.0',
-              applicationLegalese: s.t('about_legalese'),
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const AboutScreen()),
             ),
           ),
         ],
