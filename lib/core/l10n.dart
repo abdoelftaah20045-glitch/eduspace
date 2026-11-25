@@ -397,6 +397,17 @@ class S {
       'ar': 'اتلغت الشهادة',
       'en': 'Certificate cancelled',
     },
+    'phone_label': {'ar': 'رقم الهاتف', 'en': 'Phone number'},
+    'birth_date': {'ar': 'تاريخ الميلاد', 'en': 'Birth date'},
+    'country': {'ar': 'الدولة', 'en': 'Country'},
+    'governorate': {'ar': 'المحافظة', 'en': 'Governorate'},
+    'institution': {'ar': 'المؤسسة التعليمية', 'en': 'Institution'},
+    'faculty': {'ar': 'الكلية', 'en': 'Faculty'},
+    'specialization': {'ar': 'التخصص', 'en': 'Specialization'},
+    'stage_label': {'ar': 'المرحلة', 'en': 'Stage'},
+    'level_label': {'ar': 'المستوى', 'en': 'Level'},
+    'group_label': {'ar': 'المجموعة', 'en': 'Group'},
+    'bio': {'ar': 'نبذة شخصية', 'en': 'Bio'},
   };
 
   String t(String key) {
