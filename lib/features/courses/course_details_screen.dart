@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/l10n.dart';
+import '../assignments/assignments_screen.dart';
 import '../certificates/data/certificates_repo.dart';
 import 'data/course_models.dart';
 import 'data/courses_repo.dart';
@@ -77,7 +78,22 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
     final s = S.of(context);
     final details = _details;
     return Scaffold(
-      appBar: AppBar(title: Text(details?.course.title ?? '')),
+      appBar: AppBar(
+        title: Text(details?.course.title ?? ''),
+        actions: [
+          if (details?.enrolled == true)
+            IconButton(
+              tooltip: s.t('assignments_label'),
+              icon: const Icon(Icons.assignment_outlined),
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) =>
+                      AssignmentsScreen(courseId: widget.courseId),
+                ),
+              ),
+            ),
+        ],
+      ),
       body: _error != null
           ? Center(child: Text(s.t('generic_error')))
           : details == null

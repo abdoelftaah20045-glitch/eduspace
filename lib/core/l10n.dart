@@ -408,6 +408,48 @@ class S {
     'level_label': {'ar': 'المستوى', 'en': 'Level'},
     'group_label': {'ar': 'المجموعة', 'en': 'Group'},
     'bio': {'ar': 'نبذة شخصية', 'en': 'Bio'},
+    'assignments_label': {'ar': 'التكليفات', 'en': 'Assignments'},
+    'new_assignment': {'ar': 'تكليف جديد', 'en': 'New assignment'},
+    'edit_assignment': {'ar': 'تعديل التكليف', 'en': 'Edit assignment'},
+    'assignment_title': {'ar': 'عنوان التكليف', 'en': 'Assignment title'},
+    'assignment_description': {
+      'ar': 'وصف التكليف',
+      'en': 'Assignment description',
+    },
+    'attachment': {'ar': 'مرفق', 'en': 'Attachment'},
+    'attachment_url': {
+      'ar': 'رابط مرفق (اختياري)',
+      'en': 'Attachment link (optional)',
+    },
+    'due_at': {'ar': 'الموعد النهائي', 'en': 'Due date'},
+    'max_points': {'ar': 'الدرجة العظمى', 'en': 'Max points'},
+    'allow_late': {'ar': 'قبول التسليم المتأخر', 'en': 'Allow late submission'},
+    'overdue': {'ar': 'فات الموعد', 'en': 'Overdue'},
+    'graded_label': {'ar': 'تم التقييم', 'en': 'Graded'},
+    'submitted_label': {'ar': 'تم التسليم', 'en': 'Submitted'},
+    'submission_empty': {
+      'ar': 'اكتب إجابة أو ضيف رابط الأول',
+      'en': 'Write an answer or add a link first',
+    },
+    'submission_closed': {
+      'ar': 'التسليم اتقفل (فات الموعد)',
+      'en': 'Submission closed (deadline passed)',
+    },
+    'text_answer_label': {'ar': 'إجابتك', 'en': 'Your answer'},
+    'link_url_label': {
+      'ar': 'رابط التسليم (اختياري)',
+      'en': 'Submission link (optional)',
+    },
+    'submit_assignment': {'ar': 'تسليم التكليف', 'en': 'Submit assignment'},
+    'resubmit': {'ar': 'إعادة التسليم', 'en': 'Resubmit'},
+    'no_assignments': {'ar': 'مفيش تكليفات لسه', 'en': 'No assignments yet'},
+    'no_submissions': {'ar': 'مفيش تسليمات لسه', 'en': 'No submissions yet'},
+    'grade_submission': {'ar': 'تقييم', 'en': 'Grade'},
+    'score_label': {'ar': 'الدرجة', 'en': 'Score'},
+    'feedback_label': {'ar': 'ملاحظات', 'en': 'Feedback'},
+    'status_submitted': {'ar': 'تم التسليم', 'en': 'Submitted'},
+    'status_late': {'ar': 'متأخر', 'en': 'Late'},
+    'status_graded': {'ar': 'تم التقييم', 'en': 'Graded'},
   };
 
   String t(String key) {

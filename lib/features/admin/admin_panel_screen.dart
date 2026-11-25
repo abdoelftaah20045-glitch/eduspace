@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/l10n.dart';
 import 'admin_announcements_screen.dart';
+import 'admin_assignments_screen.dart';
 import 'admin_certificates_screen.dart';
 import 'admin_courses_screen.dart';
 import 'admin_enrollments_screen.dart';
@@ -72,6 +73,11 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
         'enrollments_label',
         Icons.how_to_reg_outlined,
         const AdminEnrollmentsScreen()
+      ),
+      (
+        'assignments_label',
+        Icons.assignment_outlined,
+        const AdminAssignmentsScreen()
       ),
       (
         'pref_certificates',
