@@ -519,6 +519,13 @@ class S {
     'filter_all': {'ar': 'الكل', 'en': 'All'},
     'signature_label': {'ar': 'التوقيع', 'en': 'Signature'},
     'date_label': {'ar': 'التاريخ', 'en': 'Date'},
+    'today': {'ar': 'اليوم', 'en': 'Today'},
+    'yesterday': {'ar': 'أمس', 'en': 'Yesterday'},
+    'unread_label': {'ar': 'غير مقروءة', 'en': 'Unread'},
+    'band_excellent': {'ar': 'ممتاز', 'en': 'Excellent'},
+    'band_good': {'ar': 'جيد', 'en': 'Good'},
+    'band_average': {'ar': 'متوسط', 'en': 'Average'},
+    'band_weak': {'ar': 'ضعيف', 'en': 'Weak'},
   };
 
   String t(String key) {

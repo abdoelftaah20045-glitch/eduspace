@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'dart:ui' show FontFeature;
+
 import 'package:flutter/material.dart';
 
 import '../../core/l10n.dart';
@@ -114,9 +116,16 @@ class _TakeExamScreenState extends State<TakeExamScreen> {
                 : Theme.of(ctx).colorScheme.error,
           ),
           title: Text(result.passed ? s.t('exam_passed') : s.t('exam_failed')),
-          content: Text(
-            '${s.t('your_score')}: ${result.score.toStringAsFixed(1)} / ${result.maxScore.toStringAsFixed(1)}\n${s.t('pass_grade')}: ${widget.exam.passGrade.toStringAsFixed(1)}',
-            textAlign: TextAlign.center,
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _ScoreBox(score: result.score, maxScore: result.maxScore),
+              const SizedBox(height: 12),
+              Text(
+                '${s.t('pass_grade')}: ${widget.exam.passGrade.toStringAsFixed(1)}',
+                textAlign: TextAlign.center,
+              ),
+            ],
           ),
           actions: [
             FilledButton(
@@ -154,15 +163,8 @@ class _TakeExamScreenState extends State<TakeExamScreen> {
             Padding(
               padding: const EdgeInsetsDirectional.only(end: 16),
               child: Center(
-                child: Text(
-                  _clock,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: _secondsLeft < 60
-                        ? Theme.of(context).colorScheme.error
-                        : null,
-                  ),
-                ),
+                child: _TimerPill(
+                    clock: _clock, urgent: _secondsLeft < 60),
               ),
             ),
         ],
@@ -291,6 +293,100 @@ class _QuestionCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Countdown pill like the exam design reference.
+class _TimerPill extends StatelessWidget {
+  const _TimerPill({required this.clock, required this.urgent});
+
+  final String clock;
+  final bool urgent;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = urgent
+        ? Theme.of(context).colorScheme.error
+        : Theme.of(context).colorScheme.primary;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: .1),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: color.withValues(alpha: .35)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.timer_outlined, size: 16, color: color),
+          const SizedBox(width: 6),
+          Text(
+            clock,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: color,
+              fontFeatures: const [FontFeature.tabularFigures()],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Dark score box with band colors (excellent/good/average/weak) like the
+/// result-screen reference.
+class _ScoreBox extends StatelessWidget {
+  const _ScoreBox({required this.score, required this.maxScore});
+
+  final double score;
+  final double maxScore;
+
+  static const _navy = Color(0xFF0F3D6E);
+
+  @override
+  Widget build(BuildContext context) {
+    final s = S.of(context);
+    final pct = maxScore > 0 ? score / maxScore * 100 : 0.0;
+    final (band, bandColor) = pct >= 80
+        ? (s.t('band_excellent'), const Color(0xFF2E9E5B))
+        : pct >= 60
+            ? (s.t('band_good'), const Color(0xFF1E88E5))
+            : pct >= 40
+                ? (s.t('band_average'), const Color(0xFFF29900))
+                : (s.t('band_weak'), const Color(0xFFE53935));
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+          decoration: BoxDecoration(
+            color: _navy,
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Text(
+            '${score.toStringAsFixed(1)} / ${maxScore.toStringAsFixed(1)}',
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          decoration: BoxDecoration(
+            color: bandColor.withValues(alpha: .12),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Text(
+            '${pct.toStringAsFixed(0)}% · $band',
+            style: TextStyle(
+                color: bandColor, fontWeight: FontWeight.w600, fontSize: 13),
+          ),
+        ),
+      ],
     );
   }
 }
