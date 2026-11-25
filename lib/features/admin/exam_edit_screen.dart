@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../core/l10n.dart';
 import 'data/admin_exams_repo.dart';
 import 'data/admin_repo.dart';
+import 'exam_questions_screen.dart';
 
 /// Admin: create or edit an exam's settings.
 class ExamEditScreen extends StatefulWidget {
@@ -247,6 +248,21 @@ class _ExamEditScreenState extends State<ExamEditScreen> {
               onClear: () => setState(() => _availableUntil = null),
             ),
             const SizedBox(height: 24),
+            if (widget.exam != null)
+              OutlinedButton.icon(
+                onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+                  builder: (_) => ExamQuestionsScreen(
+                    examId: widget.exam!['id'] as String,
+                    examTitle: (widget.exam!['title'] as String?) ?? '',
+                  ),
+                )),
+                icon: const Icon(Icons.quiz_outlined),
+                label: Text(s.t('exam_questions_manage')),
+              )
+            else
+              Text(s.t('exam_save_first_hint'),
+                  style: Theme.of(context).textTheme.bodySmall),
+            const SizedBox(height: 12),
             FilledButton.icon(
               onPressed: _saving ? null : _save,
               icon: _saving

@@ -160,6 +160,8 @@ class S {
     'import_problem_empty': {'ar': 'نص السؤال فاضي', 'en': 'Question text is empty', 'fr': 'Question vide', 'es': 'Pregunta vacía', 'de': 'Frage leer'},
     'import_problem_options': {'ar': 'محتاج اختيارين على الأقل', 'en': 'Needs at least two options', 'fr': 'Au moins deux options', 'es': 'Mínimo dos opciones', 'de': 'Mindestens zwei Optionen'},
     'import_problem_answer': {'ar': 'الإجابة الصحيحة مش محددة', 'en': 'Correct answer not marked', 'fr': 'Bonne réponse non indiquée', 'es': 'Respuesta correcta sin marcar', 'de': 'Richtige Antwort fehlt'},
+    'exam_questions_manage': {'ar': 'الأسئلة: إضافة / استيراد / تعديل', 'en': 'Questions: add / import / edit', 'fr': 'Questions : ajouter / importer / modifier', 'es': 'Preguntas: añadir / importar / editar', 'de': 'Fragen: hinzufügen / importieren / bearbeiten'},
+    'exam_save_first_hint': {'ar': 'احفظ الامتحان الأول وبعدين افتحه تاني عشان تضيف الأسئلة أو تستوردها', 'en': 'Save the exam first, then reopen it to add or import questions', 'fr': 'Enregistrez dabord lexamen puis rouvrez-le pour ajouter des questions', 'es': 'Guarda primero el examen y vuelve a abrirlo para añadir o importar preguntas', 'de': 'Speichere zuerst die Prüfung und öffne sie erneut, um Fragen hinzuzufügen'},
     'audit_label': {'ar': 'سجل العمليات', 'en': 'Audit log', 'fr': 'Audit log', 'es': 'Audit log', 'de': 'Audit log'},
     'no_audit': {'ar': 'لا توجد عمليات مسجلة', 'en': 'No recorded actions', 'fr': 'No recorded actions', 'es': 'No recorded actions', 'de': 'No recorded actions'},
     'org_settings': {'ar': 'إعدادات المؤسسة', 'en': 'Organization settings', 'fr': 'Organization settings', 'es': 'Organization settings', 'de': 'Organization settings'},
