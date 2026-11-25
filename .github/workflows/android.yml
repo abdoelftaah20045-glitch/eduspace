@@ -1,0 +1,53 @@
+name: Android APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Generate Android platform files
+        run: flutter create --platforms=android --project-name eduspace_app .
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Static analysis (informational)
+        run: flutter analyze
+        continue-on-error: true
+
+      - name: Build debug APK
+        run: >
+          flutter build apk --debug
+          --dart-define=SUPABASE_URL=${{ secrets.SUPABASE_URL }}
+          --dart-define=SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: eduspace-debug-apk
+          path: build/app/outputs/flutter-apk/app-debug.apk
+
+      - name: Update latest release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release delete latest --yes 2>/dev/null || true
+          gh release create latest build/app/outputs/flutter-apk/app-debug.apk \
+            --title "Latest debug APK" \
+            --prerelease \
+            --notes "Latest successful debug build from main."
