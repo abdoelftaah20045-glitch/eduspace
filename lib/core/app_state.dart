@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'l10n.dart';
+
 /// Holds the user's locale and theme choices.
 /// Saved locally on the device, and mirrored to the profile row after login.
 class AppState {
@@ -13,7 +15,10 @@ class AppState {
   Future<void> load() async {
     final prefs = await SharedPreferences.getInstance();
     final code = prefs.getString('locale');
-    if (code == 'ar' || code == 'en') locale.value = Locale(code!);
+    if (code != null &&
+        S.supportedLocales.any((l) => l.languageCode == code)) {
+      locale.value = Locale(code);
+    }
     final theme = prefs.getString('theme');
     themeMode.value = switch (theme) {
       'light' => ThemeMode.light,

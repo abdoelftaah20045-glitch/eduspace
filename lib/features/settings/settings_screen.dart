@@ -25,6 +25,9 @@ class SettingsScreen extends StatelessWidget {
               items: const [
                 DropdownMenuItem(value: 'ar', child: Text('العربية')),
                 DropdownMenuItem(value: 'en', child: Text('English')),
+                DropdownMenuItem(value: 'fr', child: Text('Français')),
+                DropdownMenuItem(value: 'es', child: Text('Español')),
+                DropdownMenuItem(value: 'de', child: Text('Deutsch')),
               ],
               onChanged: (v) {
                 if (v != null) state.setLocale(Locale(v));
