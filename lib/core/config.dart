@@ -8,3 +8,8 @@ class AppConfig {
   static bool get isConfigured =>
       supabaseUrl.isNotEmpty && supabaseAnonKey.isNotEmpty;
 }
+
+/// Deep link that Supabase auth emails (confirm signup, reset password)
+/// point back to. Must be listed in Supabase > Authentication > URL
+/// Configuration, both as Site URL and in Redirect URLs.
+const String kAuthRedirectUrl = 'eduspace://login-callback';

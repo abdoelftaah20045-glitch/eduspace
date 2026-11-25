@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/l10n.dart';
+import '../../core/widgets.dart';
 import 'course_details_screen.dart';
 import 'data/course_models.dart';
 import 'data/courses_repo.dart';
@@ -94,7 +95,10 @@ class _CoursesScreenState extends State<CoursesScreen> {
       child: ListView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: courses.length,
-        itemBuilder: (context, i) => CourseCard(course: courses[i]),
+        itemBuilder: (context, i) => FadeSlideIn(
+          delay: Duration(milliseconds: 60 * (i < 8 ? i : 8)),
+          child: CourseCard(course: courses[i]),
+        ),
       ),
     );
   }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/app_state.dart';
+import '../../core/config.dart';
 import '../../core/l10n.dart';
 import 'verify_email_screen.dart';
 
@@ -28,18 +29,25 @@ class _SignupScreenState extends State<SignupScreen> {
       _error = null;
     });
     try {
-      await Supabase.instance.client.auth.signUp(
+      final res = await Supabase.instance.client.auth.signUp(
         email: _email.text.trim(),
         password: _password.text,
+        emailRedirectTo: kAuthRedirectUrl,
         data: {
           'full_name': _name.text.trim(),
           'locale': AppState.instance.locale.value.languageCode,
         },
       );
       if (!mounted) return;
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const VerifyEmailScreen()),
-      );
+      if (res.session != null) {
+        // Email confirmation is off: the AuthGate stream already switches
+        // to the home screen underneath, so just close this pushed route.
+        Navigator.of(context).popUntil((route) => route.isFirst);
+      } else {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const VerifyEmailScreen()),
+        );
+      }
     } on AuthException catch (e) {
       setState(() => _error = e.message);
     } catch (_) {

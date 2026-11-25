@@ -12,6 +12,11 @@ Future<void> main() async {
     await Supabase.initialize(
       url: AppConfig.supabaseUrl,
       anonKey: AppConfig.supabaseAnonKey,
+      // PKCE flow so email confirmation / recovery links that open the app
+      // via the eduspace:// deep link can be exchanged for a session.
+      authOptions: const FlutterAuthClientOptions(
+        authFlowType: AuthFlowType.pkce,
+      ),
     );
   }
   runApp(const EduSpaceApp());

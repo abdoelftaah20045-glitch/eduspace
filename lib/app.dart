@@ -6,6 +6,7 @@ import 'core/config.dart';
 import 'core/l10n.dart';
 import 'core/theme.dart';
 import 'features/auth/auth_gate.dart';
+import 'features/splash/splash_screen.dart';
 
 class EduSpaceApp extends StatelessWidget {
   const EduSpaceApp({super.key});
@@ -33,7 +34,7 @@ class EduSpaceApp extends StatelessWidget {
           darkTheme: buildDarkTheme(),
           themeMode: AppState.instance.themeMode.value,
           home: AppConfig.isConfigured
-              ? const AuthGate()
+              ? const SplashScreen()
               : const MissingConfigScreen(),
         );
       },

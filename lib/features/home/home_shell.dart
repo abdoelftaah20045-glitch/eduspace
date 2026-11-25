@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/l10n.dart';
+import '../../core/widgets.dart';
 import '../courses/course_details_screen.dart';
 import '../courses/courses_screen.dart';
 import '../courses/data/course_models.dart';
@@ -114,7 +115,8 @@ class _HomeTabState extends State<_HomeTab> {
               Text(s.t('continue_learning'),
                   style: theme.textTheme.titleMedium),
               const SizedBox(height: 8),
-              Card(
+              FadeSlideIn(
+                child: Card(
                 clipBehavior: Clip.antiAlias,
                 child: ListTile(
                   leading: const Icon(Icons.play_circle, size: 36),
@@ -127,6 +129,7 @@ class _HomeTabState extends State<_HomeTab> {
                       ),
                     ).then((_) => _load());
                   },
+                  ),
                 ),
               ),
               const SizedBox(height: 24),

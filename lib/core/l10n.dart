@@ -130,6 +130,11 @@ class S {
     'level_intermediate': {'ar': 'متوسط', 'en': 'Intermediate'},
     'level_advanced': {'ar': 'متقدم', 'en': 'Advanced'},
     'level_all_levels': {'ar': 'كل المستويات', 'en': 'All levels'},
+    'splash_tagline': {'ar': 'تعلّمك.. مساحتك', 'en': 'Your Learning. Your Space.'},
+    'resend_sent': {
+      'ar': 'اتبعت رابط التحقق من تاني',
+      'en': 'Verification email sent again',
+    },
   };
 
   String t(String key) {
