@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/l10n.dart';
+import '../admin/admin_courses_screen.dart';
+import '../admin/data/admin_repo.dart';
 import '../settings/settings_screen.dart';
 import 'edit_profile_screen.dart';
 
@@ -10,11 +12,13 @@ class ProfileScreen extends StatelessWidget {
 
   Future<Map<String, dynamic>?> _load() async {
     final uid = Supabase.instance.client.auth.currentUser!.id;
-    return Supabase.instance.client
+    final profile = await Supabase.instance.client
         .from('profiles')
         .select('full_name, email, avatar_url')
         .eq('id', uid)
         .maybeSingle();
+    final admin = await AdminRepository.isAdmin();
+    return {...?profile, '_is_admin': admin};
   }
 
   @override
@@ -41,6 +45,7 @@ class ProfileScreen extends StatelessWidget {
           final profile = snapshot.data;
           final name = profile?['full_name'] as String? ?? '';
           final email = profile?['email'] as String? ?? '';
+          final isAdmin = profile?['_is_admin'] == true;
           return ListView(
             padding: const EdgeInsets.all(24),
             children: [
@@ -64,6 +69,15 @@ class ProfileScreen extends StatelessWidget {
                   MaterialPageRoute(builder: (_) => const EditProfileScreen()),
                 ),
               ),
+              if (isAdmin)
+                ListTile(
+                  leading: const Icon(Icons.admin_panel_settings_outlined),
+                  title: Text(s.t('admin_courses')),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                        builder: (_) => const AdminCoursesScreen()),
+                  ),
+                ),
               ListTile(
                 leading: const Icon(Icons.settings_outlined),
                 title: Text(s.t('settings')),

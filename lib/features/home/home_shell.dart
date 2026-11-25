@@ -7,6 +7,7 @@ import '../courses/courses_screen.dart';
 import '../courses/data/course_models.dart';
 import '../courses/data/courses_repo.dart';
 import '../courses/lesson_screen.dart';
+import '../exams/exams_screen.dart';
 import '../profile/profile_screen.dart';
 
 /// Bottom navigation shell: Home / Courses / Exams / Account.
@@ -26,7 +27,7 @@ class _HomeShellState extends State<HomeShell> {
     final pages = [
       const _HomeTab(),
       const CoursesScreen(),
-      _PlaceholderTab(label: s.t('tab_exams')),
+      const ExamsScreen(),
       const ProfileScreen(),
     ];
     return Scaffold(
@@ -166,21 +167,6 @@ class _HomeTabState extends State<_HomeTab> {
           ],
         ),
       ),
-    );
-  }
-}
-
-class _PlaceholderTab extends StatelessWidget {
-  const _PlaceholderTab({required this.label});
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final s = S.of(context);
-    return Scaffold(
-      appBar: AppBar(title: Text(label)),
-      body: Center(child: Text(s.t('coming_soon'))),
     );
   }
 }
