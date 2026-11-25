@@ -23,6 +23,13 @@ jobs:
       - name: Generate Android platform files
         run: flutter create --platforms=android --project-name eduspace_app .
 
+      - name: Ensure release APK is installable (debug signing)
+        run: |
+          if ! grep -q "signingConfig = signingConfigs.debug" android/app/build.gradle; then
+            sed -i 's/    buildTypes {/    buildTypes {\n        release {\n            signingConfig = signingConfigs.debug\n        }/' android/app/build.gradle
+          fi
+          sed -n '/buildTypes/,/^    }/p' android/app/build.gradle
+
       - name: Install dependencies
         run: flutter pub get
 
@@ -30,24 +37,30 @@ jobs:
         run: flutter analyze
         continue-on-error: true
 
-      - name: Build debug APK
+      - name: Build release APKs (split per ABI)
         run: >
-          flutter build apk --debug
+          flutter build apk --release --split-per-abi
           --dart-define=SUPABASE_URL=${{ secrets.SUPABASE_URL }}
           --dart-define=SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}
 
-      - name: Upload APK artifact
+      - name: Show APK sizes
+        run: ls -lh build/app/outputs/flutter-apk/
+
+      - name: Upload APK artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: eduspace-debug-apk
-          path: build/app/outputs/flutter-apk/app-debug.apk
+          name: eduspace-release-apks
+          path: build/app/outputs/flutter-apk/app-*-release.apk
 
       - name: Update latest release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release delete latest --yes 2>/dev/null || true
-          gh release create latest build/app/outputs/flutter-apk/app-debug.apk \
-            --title "Latest debug APK" \
+          gh release create latest \
+            build/app/outputs/flutter-apk/app-arm64-v8a-release.apk \
+            build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk \
+            build/app/outputs/flutter-apk/app-x86_64-release.apk \
+            --title "Latest APK" \
             --prerelease \
-            --notes "Latest successful debug build from main."
+            --notes "Latest successful build from main. Most phones: arm64-v8a. Signed with the debug key so it installs directly; rebuild with your own key before Play Store."
