@@ -14,6 +14,7 @@ import 'admin_users_screen.dart';
 import 'admin_reports_screen.dart';
 import 'admin_categories_screen.dart';
 import 'admin_audit_screen.dart';
+import 'admin_notify_screen.dart';
 import 'admin_org_settings_screen.dart';
 import '../tenancy/data/tenancy_repo.dart';
 import '../tenancy/super_admin_screen.dart';
@@ -60,6 +61,8 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
     final sections = <(String, String, IconData, Color, Widget)>[
       ('reports_label', 'admin_sub_reports', Icons.insights_outlined,
           const Color(0xFFF29900), const AdminReportsScreen()),
+      ('targeted_notify', 'admin_sub_notify', Icons.notifications_active_outlined,
+          const Color(0xFFE53935), const AdminNotifyScreen()),
       ('categories_label', 'admin_sub_categories', Icons.category_outlined,
           const Color(0xFF00897B), const AdminCategoriesScreen()),
       ('org_settings', 'admin_sub_settings', Icons.settings_outlined,

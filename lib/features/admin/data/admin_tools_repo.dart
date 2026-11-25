@@ -201,4 +201,23 @@ class AdminToolsRepository {
     await log('course.status',
         entity: 'course', entityId: id, details: {'status': status});
   }
+
+  // ---------- targeted notifications (A26) ----------
+
+  static Future<int> notifyAudience({
+    required String title,
+    required String body,
+    String? courseId,
+    String? userId,
+  }) async {
+    final n = await _c.rpc('admin_notify_audience', params: {
+      'p_title': title,
+      'p_body': body,
+      'p_type': 'general',
+      'p_tenant_id': TenantContext.id,
+      'p_course_id': courseId,
+      'p_user_id': userId,
+    });
+    return (n as num?)?.toInt() ?? 0;
+  }
 }
