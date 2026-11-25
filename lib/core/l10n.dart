@@ -417,6 +417,7 @@ class S {
     'verify_action': {'ar': 'تحقق', 'en': 'Verify', 'fr': 'Vérifier', 'es': 'Verificar', 'de': 'Prüfen'},
     'cert_not_found': {'ar': 'الرقم ده مش موجود', 'en': 'No certificate with this number', 'fr': 'Aucun certificat avec ce numéro', 'es': 'No hay ningún certificado con este número', 'de': 'Kein Zertifikat mit dieser Nummer'},
     'cert_valid': {'ar': 'شهادة صحيحة', 'en': 'Valid certificate', 'fr': 'Certificat valide', 'es': 'Certificado válido', 'de': 'Gültiges Zertifikat'},
+    'timezone_label': {'ar': 'المنطقة الزمنية', 'en': 'Timezone', 'fr': 'Fuseau horaire', 'es': 'Zona horaria', 'de': 'Zeitzone'},
   };
 
   String t(String key) {

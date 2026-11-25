@@ -21,6 +21,7 @@ class TenantMembersScreen extends StatefulWidget {
 class _TenantMembersScreenState extends State<TenantMembersScreen> {
   List<Map<String, dynamic>>? _members;
   String? _inviteCode;
+  Map<String, dynamic>? _tenant;
 
   String get _tenantId => widget.tenantId ?? TenantContext.id;
 
@@ -38,6 +39,7 @@ class _TenantMembersScreenState extends State<TenantMembersScreen> {
         setState(() {
           _members = rows;
           _inviteCode = tenant?['invite_code'] as String?;
+          _tenant = tenant;
         });
       }
     } catch (_) {
@@ -76,6 +78,14 @@ class _TenantMembersScreenState extends State<TenantMembersScreen> {
     if (changed == true) await _load();
   }
 
+  Future<void> _editTenant() async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (_) => _TenantProfileDialog(tenant: _tenant!),
+    );
+    if (result == true) await _load();
+  }
+
   String _statusLabel(S s, String status) => switch (status) {
         'active' => s.t('status_active'),
         'rejected' => s.t('status_rejected'),
@@ -91,7 +101,16 @@ class _TenantMembersScreenState extends State<TenantMembersScreen> {
         ? s.t('tenant_members')
         : '${s.t('tenant_members')} · ${widget.tenantName}';
     return Scaffold(
-      appBar: AppBar(title: Text(title)),
+      appBar: AppBar(
+        title: Text(title),
+        actions: [
+          IconButton(
+            tooltip: s.t('edit_tenant'),
+            icon: const Icon(Icons.settings_outlined),
+            onPressed: _tenant == null ? null : _editTenant,
+          ),
+        ],
+      ),
       body: RefreshIndicator(
         onRefresh: _load,
         child: members == null
@@ -269,6 +288,100 @@ class _RolesSheetState extends State<_RolesSheet> {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Tenant admin: edit the organization's own profile fields (name,
+/// default language, timezone). Status and invite code are super-admin
+/// only (enforced by the 0020 guard trigger).
+class _TenantProfileDialog extends StatefulWidget {
+  const _TenantProfileDialog({required this.tenant});
+
+  final Map<String, dynamic> tenant;
+
+  @override
+  State<_TenantProfileDialog> createState() => _TenantProfileDialogState();
+}
+
+class _TenantProfileDialogState extends State<_TenantProfileDialog> {
+  late final _name =
+      TextEditingController(text: widget.tenant['name'] as String? ?? '');
+  late final _timezone = TextEditingController(
+      text: widget.tenant['timezone'] as String? ?? 'Africa/Cairo');
+  late String _locale =
+      (widget.tenant['default_locale'] as String?) ?? 'ar';
+  bool _saving = false;
+
+  @override
+  void dispose() {
+    _name.dispose();
+    _timezone.dispose();
+    super.dispose();
+  }
+
+  Future<void> _save() async {
+    final s = S.of(context);
+    if (_name.text.trim().isEmpty) return;
+    setState(() => _saving = true);
+    try {
+      await TenancyRepository.updateTenant(widget.tenant['id'] as String, {
+        'name': _name.text.trim(),
+        'default_locale': _locale,
+        'timezone': _timezone.text.trim(),
+      });
+      if (mounted) Navigator.of(context).pop(true);
+    } catch (_) {
+      if (mounted) {
+        setState(() => _saving = false);
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(s.t('generic_error'))));
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final s = S.of(context);
+    return AlertDialog(
+      title: Text(s.t('edit_tenant')),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextField(
+            controller: _name,
+            decoration: InputDecoration(labelText: s.t('tenant_name')),
+          ),
+          const SizedBox(height: 12),
+          DropdownButtonFormField<String>(
+            initialValue: _locale,
+            decoration: InputDecoration(labelText: s.t('language')),
+            items: const [
+              DropdownMenuItem(value: 'ar', child: Text('العربية')),
+              DropdownMenuItem(value: 'en', child: Text('English')),
+              DropdownMenuItem(value: 'fr', child: Text('Français')),
+              DropdownMenuItem(value: 'es', child: Text('Español')),
+              DropdownMenuItem(value: 'de', child: Text('Deutsch')),
+            ],
+            onChanged: (v) => setState(() => _locale = v ?? 'ar'),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _timezone,
+            decoration: InputDecoration(labelText: s.t('timezone_label')),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: _saving ? null : () => Navigator.of(context).pop(false),
+          child: Text(s.t('cancel')),
+        ),
+        FilledButton(
+          onPressed: _saving ? null : _save,
+          child: Text(s.t('save')),
+        ),
+      ],
     );
   }
 }
