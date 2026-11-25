@@ -7,6 +7,7 @@ import '../admin/data/admin_repo.dart';
 import '../courses/favorites_screen.dart';
 import '../library/library_screen.dart';
 import '../lives/lives_screen.dart';
+import '../notifications/announcements_screen.dart';
 import '../notifications/notifications_screen.dart';
 import '../schedule/schedule_screen.dart';
 import '../settings/about_screen.dart';
@@ -76,6 +77,7 @@ class AppDrawer extends StatelessWidget {
             ),
             item(Icons.event_outlined, 'sch_title', const ScheduleScreen()),
             item(Icons.videocam_outlined, 'lv_title', const LivesScreen()),
+            item(Icons.campaign_outlined, 'ann_title', const AnnouncementsScreen()),
             item(Icons.notifications_outlined, 'notifications',
                 const NotificationsScreen()),
             item(Icons.folder_outlined, 'dr_library', const LibraryScreen()),
