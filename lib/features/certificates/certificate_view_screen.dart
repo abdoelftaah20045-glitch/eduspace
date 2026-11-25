@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -59,7 +60,7 @@ class _CertificateViewScreenState extends State<CertificateViewScreen> {
       final file = File(
           '${dir.path}/certificate-${widget.cert.certificateNumber}.png');
       await file.writeAsBytes(bytes);
-      await SharePlus.instance.share(ShareParams(files: [XFile(file.path)]));
+      await Share.shareXFiles([XFile(file.path)]);
     } catch (_) {
       // If sharing fails the student can still screenshot.
     } finally {
