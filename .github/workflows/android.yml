@@ -23,19 +23,62 @@ jobs:
       - name: Generate Android platform files
         run: flutter create --platforms=android --project-name eduspace_app .
 
-      - name: Ensure release APK is installable (debug signing)
+      - name: Patch Android config (permissions + signing)
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
         run: |
-          FILE=android/app/build.gradle
-          [ -f android/app/build.gradle.kts ] && FILE=android/app/build.gradle.kts
-          echo "Gradle file: $FILE"
-          if grep -qE 'signingConfig *= *signingConfigs\.(debug|getByName\("debug"\))' "$FILE"; then
-            echo 'Release build already uses debug signing'
-          elif [ "$FILE" = "android/app/build.gradle.kts" ]; then
-            sed -i 's/    buildTypes {/    buildTypes {\n        release {\n            signingConfig = signingConfigs.getByName("debug")\n        }/' "$FILE"
-          else
-            sed -i 's/    buildTypes {/    buildTypes {\n        release {\n            signingConfig = signingConfigs.debug\n        }/' "$FILE"
+          # Release builds need INTERNET permission (flutter create adds it to debug/profile only)
+          MANIFEST=android/app/src/main/AndroidManifest.xml
+          if ! grep -q "android.permission.INTERNET" "$MANIFEST"; then
+            sed -i '0,/<manifest /a\    <uses-permission android:name="android.permission.INTERNET"/>\n    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>' "$MANIFEST"
           fi
-          sed -n '/buildTypes/,/^    }/p' "$FILE"
+          head -4 "$MANIFEST"
+          # Stable release keystore when secrets exist, debug signing otherwise
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "$KEYSTORE_BASE64" | base64 -d > android/app/keystore.jks
+          fi
+          GRADLE=android/app/build.gradle
+          [ -f android/app/build.gradle.kts ] && GRADLE=android/app/build.gradle.kts
+          echo "Gradle file: $GRADLE"
+          if [ "$GRADLE" = "android/app/build.gradle.kts" ]; then
+            cat >> "$GRADLE" <<'KTS'
+
+android {
+    signingConfigs {
+        create("release") {
+            storeFile = file("keystore.jks")
+            storePassword = System.getenv("KEYSTORE_PASSWORD")
+            keyAlias = System.getenv("KEY_ALIAS") ?: "eduspace"
+            keyPassword = System.getenv("KEY_PASSWORD")
+        }
+    }
+    buildTypes {
+        release {
+            signingConfig = if (System.getenv("KEYSTORE_PASSWORD").isNullOrEmpty()) signingConfigs.getByName("debug") else signingConfigs.getByName("release")
+        }
+    }
+}
+KTS
+          else
+            cat >> "$GRADLE" <<'GROOVY'
+
+android {
+    signingConfigs {
+        release {
+            storeFile file('keystore.jks')
+            storePassword System.getenv('KEYSTORE_PASSWORD')
+            keyAlias System.getenv('KEY_ALIAS') ?: 'eduspace'
+            keyPassword System.getenv('KEY_PASSWORD')
+        }
+    }
+    buildTypes {
+        release {
+            signingConfig System.getenv('KEYSTORE_PASSWORD') ? signingConfigs.release : signingConfigs.debug
+        }
+    }
+}
+GROOVY
+          fi
 
       - name: Install dependencies
         run: flutter pub get
@@ -45,6 +88,10 @@ jobs:
         continue-on-error: true
 
       - name: Build release APKs (split per ABI)
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
         run: >
           flutter build apk --release --split-per-abi
           --dart-define=SUPABASE_URL=${{ secrets.SUPABASE_URL }}
@@ -70,4 +117,4 @@ jobs:
             build/app/outputs/flutter-apk/app-x86_64-release.apk \
             --title "Latest APK" \
             --prerelease \
-            --notes "Latest successful build from main. Most phones: arm64-v8a. Signed with the debug key so it installs directly; rebuild with your own key before Play Store."
+            --notes "Latest successful build from main. Most phones: arm64-v8a. Signed with the stable EduSpace release key when signing secrets are set, otherwise the debug key."
