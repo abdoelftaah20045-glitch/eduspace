@@ -177,12 +177,14 @@ class _LibrarySheetState extends State<_LibrarySheet> {
   };
 
   Future<void> _pickFile() async {
-    final result = await FilePicker.platform.pickFiles(withData: true);
-    final f = result?.files.first;
-    if (f == null || f.bytes == null || !mounted) return;
+    final picked = await FilePicker.pickFiles();
+    if (picked.isEmpty || !mounted) return;
+    final f = picked.first;
+    final fBytes = await f.readAsBytes();
+    if (!mounted) return;
     setState(() {
       _fileName = f.name;
-      _fileBytes = f.bytes;
+      _fileBytes = fBytes;
       final ext = (f.extension ?? '').toLowerCase();
       _fileType = _extTypes[ext] ?? 'other';
     });

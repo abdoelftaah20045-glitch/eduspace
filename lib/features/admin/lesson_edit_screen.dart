@@ -50,13 +50,15 @@ class _LessonEditScreenState extends State<LessonEditScreen> {
 
   Future<void> _pickMedia() async {
     final s = S.of(context);
-    final result = await FilePicker.platform.pickFiles(withData: true);
-    final f = result?.files.first;
-    if (f == null || f.bytes == null || !mounted) return;
+    final picked = await FilePicker.pickFiles();
+    if (picked.isEmpty || !mounted) return;
+    final f = picked.first;
+    final fBytes = await f.readAsBytes();
+    if (!mounted) return;
     setState(() => _uploading = true);
     try {
       final ref = await AdminRepository.uploadLessonMedia(
-          fileName: f.name, bytes: f.bytes!);
+          fileName: f.name, bytes: fBytes);
       if (mounted) setState(() => _mediaUrl.text = ref);
     } catch (_) {
       if (mounted) {
