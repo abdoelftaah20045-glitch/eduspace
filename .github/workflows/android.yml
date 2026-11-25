@@ -63,6 +63,8 @@ jobs:
           flutter build apk --release --split-per-abi
           --dart-define=SUPABASE_URL=${{ secrets.SUPABASE_URL }}
           --dart-define=SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}
+          --dart-define=SENTRY_DSN=${{ secrets.SENTRY_DSN }}
+          --dart-define=FCM_ENABLED=${{ secrets.FCM_ENABLED }}
 
       - name: Show APK sizes
         run: ls -lh build/app/outputs/flutter-apk/

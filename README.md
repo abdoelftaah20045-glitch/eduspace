@@ -94,6 +94,17 @@ flutter run --dart-define=SUPABASE_URL=الرابط_بتاعك --dart-define=SUP
 | 23. Multi-Tenant | مؤجل بقرارك — التصميم متجهز لإضافته |
 | 26. قاعدة البيانات | اتنفذ منها لحد دلوقتي: profiles, roles, permissions, user_roles, role_permissions, admin_activity_logs, languages, translation_keys, translations (مرحلة 1) + courses, course_translations, course_sections, lessons, lesson_translations, enrollments, lesson_progress, course_progress_summary (مرحلة 2) + question_banks, questions, question_options, exams, exam_questions, exam_attempts, answers (مرحلة 3) + notifications, announcements, certificates (مرحلة 4) + دالة التحقق العامة من الشهادات verify_certificate (مرحلة 5) + notification_preferences ودالة البث admin_broadcast_notification (مرحلة 6). الباقي يتضاف مع مراحل المميزات |
 
+## الدليل التنفيذي — القسم 17 (التكاملات الخارجية)
+
+| التكامل | الحالة |
+|---|---|
+| التخزين (Storage) | اتعمل: bucket عام للصور الشخصية `avatars` (كل مستخدم يرفع في فولدره بس) + buckets خاصة `resources` و`course-media` و`certificates` و`submissions` بسياسات RLS، ورفع الصورة الشخصية من التطبيق (معرض/كاميرا). فاضل: رفع ملفات المكتبة والتكليفات من التطبيق نفسه |
+| البريد | شغال من Supabase Auth (تحقق واستعادة كلمة مرور). فاضل من حسابك: قوالب مخصصة ومرسل باسم المنصة (SMTP) |
+| الإشعارات Push | اتجهز الكود: تفعيله بسر `FCM_ENABLED` في المستودع + جدول `push_tokens` (0014). فاضل من حسابك: مشروع Firebase وملف google-services.json |
+| المراقبة (Monitoring) | اتجهز الكود: يشتغل لما تحط سر `SENTRY_DSN` في المستودع. فاضل من حسابك: مشروع Sentry |
+| الفيديو واللايف | محتاج قرارك: مزود الاستضافة والبث (يوتيوب غير مدرج / Vimeo / Bunny / Zoom...) |
+| الدفع | آخر مرحلة زي ما اتفقنا — محتاج قرارك في بوابة الدفع |
+
 ## هيكل المشروع
 ```
 eduspace_app/
