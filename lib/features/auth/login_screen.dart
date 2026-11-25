@@ -31,6 +31,9 @@ class _LoginScreenState extends State<LoginScreen> {
         email: _email.text.trim(),
         password: _password.text,
       );
+      // Safety: if the login page sits on top of the auth gate, drop back
+      // to the gate so the signed-in home shows.
+      if (mounted) Navigator.of(context).popUntil((r) => r.isFirst);
     } on AuthException catch (e) {
       setState(() => _error = e.message);
     } catch (_) {

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/l10n.dart';
-import 'login_screen.dart';
+import 'auth_gate.dart';
 
 /// First-run onboarding (reference: Arabic welcome screens): 3 illustrated
 /// pages with dots, Next/Skip, and a final Start button.
@@ -30,7 +30,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   void _finish() {
     OnboardingScreen.markSeen();
     Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      MaterialPageRoute(builder: (_) => const AuthGate()),
     );
   }
 
