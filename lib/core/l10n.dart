@@ -323,6 +323,7 @@ class S {
     'type_multi': {'ar': 'متعدد الإجابات', 'en': 'Multiple answers'},
     'type_fill_blank': {'ar': 'أكمل الفراغ', 'en': 'Fill in the blank'},
     'type_essay': {'ar': 'مقالي', 'en': 'Essay'},
+    'download_pdf': {'ar': 'تحميل PDF', 'en': 'Download PDF'},
   };
 
   String t(String key) {

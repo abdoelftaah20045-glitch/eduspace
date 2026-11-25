@@ -5,8 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../../core/config.dart';
 import '../../core/l10n.dart';
 import 'data/certificates_repo.dart';
 
@@ -28,16 +32,29 @@ class CertificateViewScreen extends StatefulWidget {
 class _CertificateViewScreenState extends State<CertificateViewScreen> {
   final _captureKey = GlobalKey();
   bool _sharing = false;
+  bool _exporting = false;
+
+  /// Public verification link encoded in the PDF's QR code.
+  String get _verifyUrl =>
+      '${AppConfig.supabaseUrl}/rest/v1/rpc/verify_certificate'
+      '?apikey=${AppConfig.supabaseAnonKey}'
+      '&p_number=${widget.cert.certificateNumber}';
+
+  Future<Uint8List?> _capturePng() async {
+    final boundary = _captureKey.currentContext?.findRenderObject()
+        as RenderRepaintBoundary?;
+    if (boundary == null) return null;
+    final image = await boundary.toImage(pixelRatio: 3);
+    final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+    return byteData?.buffer.asUint8List();
+  }
 
   Future<void> _share() async {
     if (_sharing) return;
     setState(() => _sharing = true);
     try {
-      final boundary = _captureKey.currentContext!.findRenderObject()!
-          as RenderRepaintBoundary;
-      final image = await boundary.toImage(pixelRatio: 3);
-      final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-      final bytes = byteData!.buffer.asUint8List();
+      final bytes = await _capturePng();
+      if (bytes == null) return;
       final dir = await getTemporaryDirectory();
       final file = File(
           '${dir.path}/certificate-${widget.cert.certificateNumber}.png');
@@ -47,6 +64,69 @@ class _CertificateViewScreenState extends State<CertificateViewScreen> {
       // If sharing fails the student can still screenshot.
     } finally {
       if (mounted) setState(() => _sharing = false);
+    }
+  }
+
+  /// Exports a printable PDF: the captured certificate image (perfect Arabic
+  /// rendering, no font-shaping issues) plus a QR code and the verification
+  /// link under it.
+  Future<void> _downloadPdf() async {
+    if (_exporting) return;
+    setState(() => _exporting = true);
+    try {
+      final bytes = await _capturePng();
+      if (bytes == null) return;
+      final doc = pw.Document();
+      doc.addPage(
+        pw.Page(
+          pageFormat: PdfPageFormat.a4.landscape,
+          margin: const pw.EdgeInsets.all(24),
+          build: (ctx) => pw.Column(
+            children: [
+              pw.Expanded(
+                child: pw.Center(child: pw.Image(pw.MemoryImage(bytes))),
+              ),
+              pw.SizedBox(height: 12),
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: pw.CrossAxisAlignment.end,
+                children: [
+                  pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      pw.Text(
+                        'Certificate: ${widget.cert.certificateNumber}',
+                        style: const pw.TextStyle(
+                            fontSize: 10, color: PdfColors.grey700),
+                      ),
+                      pw.SizedBox(height: 2),
+                      pw.Text(
+                        'Verify this certificate by scanning the QR code.',
+                        style: const pw.TextStyle(
+                            fontSize: 9, color: PdfColors.grey600),
+                      ),
+                    ],
+                  ),
+                  pw.BarcodeWidget(
+                    barcode: pw.Barcode.qrCode(),
+                    data: _verifyUrl,
+                    width: 56,
+                    height: 56,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      );
+      await Printing.sharePdf(
+        bytes: await doc.save(),
+        filename: 'certificate-${widget.cert.certificateNumber}.pdf',
+      );
+    } catch (_) {
+      // PDF export failed; PNG share is still available.
+    } finally {
+      if (mounted) setState(() => _exporting = false);
     }
   }
 
@@ -60,6 +140,16 @@ class _CertificateViewScreenState extends State<CertificateViewScreen> {
       appBar: AppBar(
         title: Text(s.t('certificate_of_completion')),
         actions: [
+          IconButton(
+            tooltip: s.t('download_pdf'),
+            onPressed: _exporting ? null : _downloadPdf,
+            icon: _exporting
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2))
+                : const Icon(Icons.picture_as_pdf_outlined),
+          ),
           IconButton(
             tooltip: s.t('share'),
             onPressed: _sharing ? null : _share,
