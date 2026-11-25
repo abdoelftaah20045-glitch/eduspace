@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/l10n.dart';
+import '../../core/tenant.dart';
 
 /// Admin: announcements list + compose, plus broadcast notifications
 /// (fan-out happens server-side via admin_broadcast_notification).
@@ -59,6 +60,7 @@ class _AdminAnnouncementsScreenState extends State<AdminAnnouncementsScreen> {
         'p_title': result.title,
         'p_body': result.body,
         'p_type': 'general',
+        'p_tenant_id': TenantContext.id,
       });
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
