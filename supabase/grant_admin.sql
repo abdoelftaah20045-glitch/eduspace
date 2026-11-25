@@ -5,6 +5,6 @@
 insert into public.user_roles (user_id, role_id)
 select p.id, r.id
 from public.profiles p, public.roles r
-where p.email = 'PUT-YOUR-EMAIL-HERE@example.com'
+where p.email = 'abdoelftah2004.2@gmail.com'
   and r.name = 'admin'
 on conflict do nothing;
