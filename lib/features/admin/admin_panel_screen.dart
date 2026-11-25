@@ -49,118 +49,212 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
     }
   }
 
-  Widget _stat(String label, int? value, IconData icon) {
-    final theme = Theme.of(context);
-    return Expanded(
-      child: Card(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
-          child: Column(
-            children: [
-              Icon(icon, color: theme.colorScheme.primary),
-              const SizedBox(height: 6),
-              Text(
-                value == null ? '…' : '$value',
-                style: theme.textTheme.titleLarge
-                    ?.copyWith(fontWeight: FontWeight.bold),
-              ),
-              Text(label,
-                  textAlign: TextAlign.center,
-                  style: theme.textTheme.bodySmall),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final s = S.of(context);
     final c = _counts;
-    final sections = <(String, IconData, Widget)>[
-      ('users_label', Icons.people_outline, const AdminUsersScreen()),
-      ('tab_courses', Icons.menu_book_outlined, const AdminCoursesScreen()),
-      ('tab_exams', Icons.quiz_outlined, const AdminExamsScreen()),
+    final sections = <(String, String, IconData, Color, Widget)>[
+      ('users_label', 'admin_sub_users', Icons.people_outline,
+          const Color(0xFF5C6BC0), const AdminUsersScreen()),
+      ('tab_courses', 'admin_sub_courses', Icons.menu_book_outlined,
+          const Color(0xFF2196F3), const AdminCoursesScreen()),
+      ('tab_exams', 'admin_sub_exams', Icons.quiz_outlined,
+          const Color(0xFF00ACC1), const AdminExamsScreen()),
       (
         'enrollments_label',
+        'admin_sub_enrollments',
         Icons.how_to_reg_outlined,
+        const Color(0xFF2E9E5B),
         const AdminEnrollmentsScreen()
       ),
       (
         'assignments_label',
+        'admin_sub_assignments',
         Icons.assignment_outlined,
+        const Color(0xFFF29900),
         const AdminAssignmentsScreen()
       ),
       (
         'pref_certificates',
+        'admin_sub_certificates',
         Icons.workspace_premium_outlined,
+        const Color(0xFF7C4DFF),
         const AdminCertificatesScreen()
       ),
       (
         'admin_announcements',
+        'admin_sub_announcements',
         Icons.campaign_outlined,
+        const Color(0xFFFF7043),
         const AdminAnnouncementsScreen()
       ),
-      ('support', Icons.support_agent, const AdminSupportScreen()),
-      ('lives_label', Icons.video_camera_front_outlined,
-          const AdminLivesScreen()),
-      ('library_label', Icons.folder_open, const AdminLibraryScreen()),
+      ('support', 'admin_sub_support', Icons.support_agent,
+          const Color(0xFFAB47BC), const AdminSupportScreen()),
+      (
+        'lives_label',
+        'admin_sub_lives',
+        Icons.video_camera_front_outlined,
+        const Color(0xFFE53935),
+        const AdminLivesScreen()
+      ),
+      ('library_label', 'admin_sub_library', Icons.folder_open,
+          const Color(0xFF00ACC1), const AdminLibraryScreen()),
       (
         'tenant_members',
+        'admin_sub_members',
         Icons.badge_outlined,
+        const Color(0xFF5C6BC0),
         const TenantMembersScreen()
       ),
     ];
     if (_isSuper) {
       sections.add((
         'super_admin_panel',
+        'admin_sub_super',
         Icons.domain_outlined,
+        const Color(0xFF00897B),
         const SuperAdminScreen()
       ));
     }
     return Scaffold(
-      appBar: AppBar(title: Text(s.t('admin_panel'))),
       body: RefreshIndicator(
         onRefresh: _load,
         child: ListView(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.zero,
           children: [
-            Row(
-              children: [
-                _stat(s.t('total_students'), c?['students'],
-                    Icons.people_outline),
-                _stat(s.t('active_students'), c?['active'],
-                    Icons.verified_user_outlined),
-                _stat(s.t('pending_students'), c?['pending'],
-                    Icons.hourglass_top),
-              ],
-            ),
-            Row(
-              children: [
-                _stat(s.t('tab_courses'), c?['courses'],
-                    Icons.menu_book_outlined),
-                _stat(s.t('enrollments_label'), c?['enrollments'],
-                    Icons.how_to_reg_outlined),
-                _stat(s.t('pref_certificates'), c?['certificates'],
-                    Icons.workspace_premium_outlined),
-              ],
-            ),
-            const SizedBox(height: 16),
-            ...sections.map((sec) => Card(
-                  clipBehavior: Clip.antiAlias,
-                  child: ListTile(
-                    leading: Icon(sec.$2),
-                    title: Text(s.t(sec.$1)),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => sec.$3),
+            // Orange stat header (reference: Admin Panel Overview).
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Color(0xFFF29900), Color(0xFFF57C00)],
+                ),
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(32),
+                  bottomRight: Radius.circular(32),
+                ),
+              ),
+              child: SafeArea(
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.arrow_back,
+                              color: Colors.white),
+                          onPressed: () =>
+                              Navigator.of(context).maybePop(),
+                        ),
+                        Expanded(
+                          child: Text(
+                            s.t('admin_panel'),
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 48),
+                      ],
                     ),
-                  ),
-                )),
+                    const SizedBox(height: 12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        _headerStat(s.t('total_students'), c?['students'],
+                            Icons.help_outline),
+                        _headerStat(s.t('active_students'), c?['active'],
+                            Icons.people_outline),
+                        _headerStat(s.t('pref_certificates'),
+                            c?['certificates'],
+                            Icons.workspace_premium_outlined),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: sections
+                    .map((sec) => Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: Card(
+                            elevation: 1.5,
+                            margin: EdgeInsets.zero,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20)),
+                            child: ListTile(
+                              contentPadding:
+                                  const EdgeInsets.symmetric(
+                                      horizontal: 16, vertical: 8),
+                              leading: Container(
+                                width: 46,
+                                height: 46,
+                                decoration: BoxDecoration(
+                                  color: sec.$4.withValues(alpha: .15),
+                                  borderRadius:
+                                      BorderRadius.circular(14),
+                                ),
+                                child: Icon(sec.$3, color: sec.$4),
+                              ),
+                              title: Text(
+                                s.t(sec.$1),
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold),
+                              ),
+                              subtitle: Text(s.t(sec.$2)),
+                              trailing:
+                                  const Icon(Icons.chevron_right),
+                              onTap: () => Navigator.of(context).push(
+                                MaterialPageRoute(
+                                    builder: (_) => sec.$5),
+                              ),
+                            ),
+                          ),
+                        ))
+                    .toList(),
+              ),
+            ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _headerStat(String label, int? value, IconData icon) {
+    return Column(
+      children: [
+        Container(
+          width: 52,
+          height: 52,
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: .25),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Icon(icon, color: Colors.white),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          value == null ? '...' : '$value',
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        Text(
+          label,
+          textAlign: TextAlign.center,
+          style: const TextStyle(color: Colors.white, fontSize: 11),
+        ),
+      ],
     );
   }
 }

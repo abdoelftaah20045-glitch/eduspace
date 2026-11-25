@@ -71,50 +71,114 @@ class _ExamCard extends StatelessWidget {
   final Exam exam;
   final Future<void> Function() onDone;
 
+  Widget _chip({required IconData icon, required String label}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: const Color(0xFFE3F2FD),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: const Color(0xFF1E88E5)),
+          const SizedBox(width: 4),
+          Text(label,
+              style: const TextStyle(
+                  fontSize: 12, color: Color(0xFF1E88E5))),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final s = S.of(context);
     final theme = Theme.of(context);
     final canStart = exam.isOpen && !exam.attemptsExhausted;
     return Card(
+      elevation: 2,
+      margin: const EdgeInsets.only(bottom: 14),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(exam.title, style: theme.textTheme.titleMedium),
-            if (exam.description.isNotEmpty) ...[
-              const SizedBox(height: 4),
-              Text(exam.description, style: theme.textTheme.bodySmall),
-            ],
-            const SizedBox(height: 8),
+            Row(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: canStart
+                          ? const [Color(0xFF00ACC1), Color(0xFF2196F3)]
+                          : [Colors.grey, Colors.grey.shade600],
+                    ),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: const Icon(Icons.quiz_outlined,
+                      color: Colors.white, size: 26),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        exam.title,
+                        style: theme.textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.bold),
+                      ),
+                      if (exam.description.isNotEmpty)
+                        Text(
+                          exam.description,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.bodySmall,
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
             Wrap(
-              spacing: 12,
+              spacing: 8,
+              runSpacing: 6,
               children: [
                 if (exam.durationMinutes != null)
-                  _Meta(
+                  _chip(
                       icon: Icons.timer_outlined,
-                      label: '${exam.durationMinutes} ${s.t('minutes')}'),
-                _Meta(
+                      label:
+                          '${exam.durationMinutes} ${s.t('minutes')}'),
+                _chip(
                     icon: Icons.replay,
                     label:
                         '${exam.attemptCount}/${exam.maxAttempts} ${s.t('attempts')}'),
                 if (exam.bestScore != null)
-                  _Meta(
+                  _chip(
                       icon: Icons.star_outline,
                       label:
                           '${exam.bestScore!.toStringAsFixed(1)}/${(exam.bestMaxScore ?? 0).toStringAsFixed(1)}'),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
             SizedBox(
               width: double.infinity,
               child: FilledButton(
+                style: FilledButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14)),
+                ),
                 onPressed: canStart
                     ? () {
                         Navigator.of(context)
                             .push(MaterialPageRoute(
-                                builder: (_) => TakeExamScreen(exam: exam)))
+                                builder: (_) =>
+                                    TakeExamScreen(exam: exam)))
                             .then((_) => onDone());
                       }
                     : null,
@@ -134,21 +198,3 @@ class _ExamCard extends StatelessWidget {
   }
 }
 
-class _Meta extends StatelessWidget {
-  const _Meta({required this.icon, required this.label});
-
-  final IconData icon;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 16),
-        const SizedBox(width: 4),
-        Text(label, style: Theme.of(context).textTheme.bodySmall),
-      ],
-    );
-  }
-}
