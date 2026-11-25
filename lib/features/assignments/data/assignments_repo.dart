@@ -2,6 +2,8 @@ import 'dart:typed_data';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../core/tenant.dart';
+
 class Assignment {
   Assignment({
     required this.id,
@@ -156,6 +158,7 @@ class AssignmentsRepository {
     await _c.from('assignment_submissions').upsert({
       'assignment_id': assignment.id,
       'user_id': uid,
+      'tenant_id': TenantContext.id,
       'text_answer': textAnswer,
       'link_url':
           (linkUrl == null || linkUrl.trim().isEmpty) ? null : linkUrl.trim(),
@@ -236,6 +239,7 @@ class AssignmentsRepository {
     try {
       await _c.from('notifications').insert({
         'user_id': submission.userId,
+        'tenant_id': TenantContext.id,
         'title': 'تم تقييم تكليفك',
         'body':
             '${assignmentTitle ?? ''} — الدرجة: $score',

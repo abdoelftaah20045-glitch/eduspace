@@ -2,6 +2,8 @@ import 'dart:math';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../core/tenant.dart';
+
 import '../../courses/data/courses_repo.dart';
 
 class Certificate {
@@ -55,6 +57,7 @@ class CertificatesRepository {
         .from('certificates')
         .select()
         .eq('user_id', uid)
+        .eq('tenant_id', TenantContext.id)
         .order('issued_at', ascending: false);
     return rows.map(Certificate.fromMap).toList();
   }
@@ -69,6 +72,7 @@ class CertificatesRepository {
         .select()
         .eq('user_id', user.id)
         .eq('course_id', details.course.id)
+        .eq('tenant_id', TenantContext.id)
         .maybeSingle();
     if (existing != null) return Certificate.fromMap(existing);
     if (details.percent < 100) return null;
@@ -83,6 +87,7 @@ class CertificatesRepository {
           'course_id': details.course.id,
           'certificate_number': _newNumber(),
           'student_name': studentName,
+          'tenant_id': TenantContext.id,
           'course_title': details.course.title,
           'hours': details.course.hours,
         })

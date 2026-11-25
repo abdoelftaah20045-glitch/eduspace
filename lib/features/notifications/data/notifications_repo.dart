@@ -1,5 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../core/tenant.dart';
+
 class AppNotification {
   AppNotification({
     required this.id,
@@ -56,6 +58,7 @@ class NotificationsRepository {
         .from('notifications')
         .select()
         .eq('user_id', uid)
+        .eq('tenant_id', TenantContext.id)
         .order('created_at', ascending: false)
         .limit(limit);
     return rows.map(AppNotification.fromMap).toList();
@@ -68,6 +71,7 @@ class NotificationsRepository {
         .from('notifications')
         .select('id')
         .eq('user_id', uid)
+        .eq('tenant_id', TenantContext.id)
         .eq('is_read', false);
     return rows.length;
   }
@@ -129,6 +133,7 @@ class NotificationsRepository {
     final rows = await _c
         .from('announcements')
         .select()
+        .eq('tenant_id', TenantContext.id)
         .lte('starts_at', now)
         .order('created_at', ascending: false)
         .limit(5);

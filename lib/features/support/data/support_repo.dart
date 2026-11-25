@@ -1,5 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../core/tenant.dart';
+
 class SupportTicket {
   SupportTicket({
     required this.id,
@@ -74,6 +76,7 @@ class SupportRepository {
       final rows = await _c
           .from('support_tickets')
           .select('*, profiles(full_name)')
+          .eq('tenant_id', TenantContext.id)
           .order('updated_at', ascending: false)
           .limit(200);
       return rows.map(SupportTicket.fromMap).toList();
@@ -81,6 +84,7 @@ class SupportRepository {
     final rows = await _c
         .from('support_tickets')
         .select()
+        .eq('tenant_id', TenantContext.id)
         .order('updated_at', ascending: false)
         .limit(100);
     return rows.map(SupportTicket.fromMap).toList();
@@ -91,7 +95,12 @@ class SupportRepository {
     final uid = _c.auth.currentUser!.id;
     final row = await _c
         .from('support_tickets')
-        .insert({'user_id': uid, 'subject': subject, 'category': category})
+        .insert({
+          'user_id': uid,
+          'subject': subject,
+          'category': category,
+          'tenant_id': TenantContext.id,
+        })
         .select('id')
         .single();
     final id = row['id'] as String;
@@ -138,6 +147,7 @@ class SupportRepository {
           'title': 'رد جديد من الدعم',
           'body': ticket.subject,
           'type': 'general',
+          'tenant_id': TenantContext.id,
         });
       } catch (_) {}
     }

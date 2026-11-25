@@ -63,6 +63,25 @@ class S {
       'ar': 'تعذر رفع الصورة، جرب تاني',
       'en': 'Could not upload the photo, try again',
     },
+    'tenant_label': {'ar': 'المؤسسة', 'en': 'Organization'},
+    'join_with_code': {
+      'ar': 'انضم لمؤسسة برمز الدعوة',
+      'en': 'Join an organization with an invite code',
+    },
+    'invite_code_label': {'ar': 'رمز الدعوة', 'en': 'Invite code'},
+    'join_label': {'ar': 'انضمام', 'en': 'Join'},
+    'invalid_invite_code': {
+      'ar': 'رمز الدعوة غير صحيح',
+      'en': 'Invalid invite code',
+    },
+    'join_request_sent': {
+      'ar': 'تم إرسال طلب الانضمام، في انتظار موافقة المؤسسة',
+      'en': 'Join request sent, waiting for the organization to approve',
+    },
+    'membership_pending': {
+      'ar': 'طلبك قيد المراجعة',
+      'en': 'Your request is pending review',
+    },
     'change_password': {'ar': 'تغيير كلمة المرور', 'en': 'Change password'},
     'new_password': {'ar': 'كلمة المرور الجديدة', 'en': 'New password'},
     'password_changed': {

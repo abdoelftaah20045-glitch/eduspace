@@ -1,5 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../core/tenant.dart';
+
 class LiveSession {
   LiveSession({
     required this.id,
@@ -64,6 +66,7 @@ class LivesRepository {
     final rows = await _c
         .from('live_sessions')
         .select()
+        .eq('tenant_id', TenantContext.id)
         .gte('starts_at',
             DateTime.now().subtract(const Duration(days: 1)).toUtc().toIso8601String())
         .order('starts_at')
@@ -79,6 +82,7 @@ class LivesRepository {
     final rows = await _c
         .from('live_sessions')
         .select()
+        .eq('tenant_id', TenantContext.id)
         .order('starts_at', ascending: false)
         .limit(limit);
     return rows.map(LiveSession.fromMap).toList();
@@ -87,7 +91,11 @@ class LivesRepository {
   static Future<String> create(Map<String, dynamic> values) async {
     final row = await _c
         .from('live_sessions')
-        .insert({...values, 'created_by': _c.auth.currentUser?.id})
+        .insert({
+          ...values,
+          'created_by': _c.auth.currentUser?.id,
+          'tenant_id': TenantContext.id,
+        })
         .select('id')
         .single();
     return row['id'] as String;

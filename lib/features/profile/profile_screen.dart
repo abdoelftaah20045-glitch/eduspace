@@ -3,6 +3,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/l10n.dart';
+import '../../core/tenant.dart';
 import '../admin/admin_panel_screen.dart';
 import '../admin/data/admin_repo.dart';
 import '../certificates/my_certificates_screen.dart';
@@ -10,6 +11,7 @@ import '../courses/favorites_screen.dart';
 import '../library/library_screen.dart';
 import '../support/support_screen.dart';
 import '../settings/settings_screen.dart';
+import '../tenancy/select_tenant_screen.dart';
 import 'edit_profile_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -73,6 +75,18 @@ class ProfileScreen extends StatelessWidget {
                 title: Text(s.t('edit_profile')),
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute(builder: (_) => const EditProfileScreen()),
+                ),
+              ),
+              ValueListenableBuilder<String>(
+                valueListenable: TenantContext.instance.currentName,
+                builder: (context, tenantName, _) => ListTile(
+                  leading: const Icon(Icons.business_outlined),
+                  title: Text(s.t('tenant_label')),
+                  subtitle: Text(tenantName),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                        builder: (_) => const SelectTenantScreen()),
+                  ),
                 ),
               ),
               ListTile(

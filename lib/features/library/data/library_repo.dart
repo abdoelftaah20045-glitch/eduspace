@@ -2,6 +2,8 @@ import 'dart:typed_data';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../core/tenant.dart';
+
 class LibraryItem {
   LibraryItem({
     required this.id,
@@ -61,7 +63,10 @@ class LibraryRepository {
     String? category,
     int limit = 200,
   }) async {
-    var q = _c.from('library_items').select('*, courses(title)');
+    var q = _c
+        .from('library_items')
+        .select('*, courses(title)')
+        .eq('tenant_id', TenantContext.id);
     final safe = query.replaceAll(',', ' ').replaceAll('(', ' ')
         .replaceAll(')', ' ').trim();
     if (safe.isNotEmpty) {
@@ -75,8 +80,11 @@ class LibraryRepository {
   }
 
   static Future<Set<String>> fetchCategories() async {
-    final rows =
-        await _c.from('library_items').select('category').limit(500);
+    final rows = await _c
+        .from('library_items')
+        .select('category')
+        .eq('tenant_id', TenantContext.id)
+        .limit(500);
     return rows
         .map((m) => (m['category'] as String?) ?? 'general')
         .where((c) => c.isNotEmpty)
@@ -124,7 +132,11 @@ class LibraryRepository {
   static Future<String> create(Map<String, dynamic> values) async {
     final row = await _c
         .from('library_items')
-        .insert({...values, 'created_by': _c.auth.currentUser?.id})
+        .insert({
+          ...values,
+          'created_by': _c.auth.currentUser?.id,
+          'tenant_id': TenantContext.id,
+        })
         .select('id')
         .single();
     return row['id'] as String;

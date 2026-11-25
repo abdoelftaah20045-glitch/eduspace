@@ -7,10 +7,12 @@ import 'core/app_state.dart';
 import 'core/config.dart';
 import 'core/integrations.dart';
 import 'core/push_service.dart';
+import 'core/tenant.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await AppState.instance.load();
+  await TenantContext.instance.load();
   if (AppConfig.isConfigured) {
     await Supabase.initialize(
       url: AppConfig.supabaseUrl,

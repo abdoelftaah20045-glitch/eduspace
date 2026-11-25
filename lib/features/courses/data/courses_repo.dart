@@ -1,5 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../core/tenant.dart';
+
 import 'course_models.dart';
 
 /// All Supabase access for the courses feature lives here.
@@ -13,7 +15,11 @@ class CoursesRepository {
 
   /// Published courses, newest first, optional free-text filter.
   static Future<List<Course>> fetchCourses({String? query}) async {
-    var q = _c.from('courses').select().eq('status', 'published');
+    var q = _c
+        .from('courses')
+        .select()
+        .eq('status', 'published')
+        .eq('tenant_id', TenantContext.id);
     if (query != null && query.trim().isNotEmpty) {
       final pattern = '%${query.trim()}%';
       q = q.or('title.ilike.$pattern,description.ilike.$pattern,field.ilike.$pattern');
@@ -32,6 +38,7 @@ class CoursesRepository {
           .from('favorites')
           .select('course_id')
           .eq('user_id', _uid)
+          .eq('tenant_id', TenantContext.id)
           .inFilter('course_id', ids);
       favorites = favRows.map((m) => m['course_id'] as String).toSet();
     } catch (_) {}
@@ -68,6 +75,7 @@ class CoursesRepository {
         .select('*, courses(*)')
         .eq('user_id', _uid)
         .eq('status', 'active')
+        .eq('tenant_id', TenantContext.id)
         .order('created_at', ascending: false);
     final progressRows = await _c
         .from('course_progress_summary')
@@ -180,6 +188,7 @@ class CoursesRepository {
       await _c.from('favorites').upsert({
         'user_id': _uid,
         'course_id': courseId,
+        'tenant_id': TenantContext.id,
       });
     } else {
       await _c
@@ -196,6 +205,7 @@ class CoursesRepository {
         .from('favorites')
         .select('*, courses(*)')
         .eq('user_id', _uid)
+        .eq('tenant_id', TenantContext.id)
         .order('created_at', ascending: false);
     final courses = <Course>[];
     for (final m in rows) {
@@ -224,6 +234,7 @@ class CoursesRepository {
     await _c.from('course_reviews').upsert({
       'user_id': _uid,
       'course_id': courseId,
+      'tenant_id': TenantContext.id,
       'rating': rating,
       'body': body.trim(),
       'updated_at': DateTime.now().toIso8601String(),
@@ -236,6 +247,7 @@ class CoursesRepository {
       'user_id': _uid,
       'course_id': courseId,
       'source': 'self',
+      'tenant_id': TenantContext.id,
     });
   }
 

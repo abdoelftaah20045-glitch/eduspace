@@ -1,5 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../core/tenant.dart';
+
 import 'exam_models.dart';
 
 /// Supabase access for exams. RLS is the real gate.
@@ -16,12 +18,14 @@ class ExamsRepository {
         .from('exams')
         .select()
         .eq('status', 'published')
+        .eq('tenant_id', TenantContext.id)
         .order('created_at', ascending: false)
         .limit(50);
     final attempts = await _c
         .from('exam_attempts')
         .select()
         .eq('user_id', _uid)
+        .eq('tenant_id', TenantContext.id)
         .neq('status', 'in_progress');
     final byExam = <String, List<Map<String, dynamic>>>{};
     for (final a in attempts) {
@@ -77,7 +81,11 @@ class ExamsRepository {
   static Future<String> startAttempt(String examId) async {
     final row = await _c
         .from('exam_attempts')
-        .insert({'exam_id': examId, 'user_id': _uid})
+        .insert({
+          'exam_id': examId,
+          'user_id': _uid,
+          'tenant_id': TenantContext.id,
+        })
         .select('id')
         .single();
     return row['id'] as String;
