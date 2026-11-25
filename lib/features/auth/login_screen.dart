@@ -1,3 +1,4 @@
+import '../../core/app_state.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -44,6 +45,23 @@ class _LoginScreenState extends State<LoginScreen> {
     final s = S.of(context);
     final scheme = Theme.of(context).colorScheme;
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        actions: [
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.language),
+            tooltip: s.t('language'),
+            onSelected: (v) => AppState.instance.setLocale(Locale(v)),
+            itemBuilder: (_) => const [
+              PopupMenuItem(value: 'ar', child: Text('العربية')),
+              PopupMenuItem(value: 'en', child: Text('English')),
+              PopupMenuItem(value: 'fr', child: Text('Français')),
+              PopupMenuItem(value: 'es', child: Text('Español')),
+              PopupMenuItem(value: 'de', child: Text('Deutsch')),
+            ],
+          ),
+        ],
+      ),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
