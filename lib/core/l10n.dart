@@ -490,11 +490,6 @@ class S {
     'join_url': {'ar': 'رابط الانضمام', 'en': 'Join URL'},
     'host_name': {'ar': 'اسم المقدم', 'en': 'Host name'},
     'platform_label': {'ar': 'المنصة', 'en': 'Platform'},
-    'linked_course_optional': {
-      'ar': 'الكورس المرتبط (اختياري)',
-      'en': 'Linked course (optional)',
-    },
-    'no_course': {'ar': 'من غير كورس', 'en': 'No course'},
     'live_status_scheduled': {'ar': 'مجدول', 'en': 'Scheduled'},
     'live_status_live': {'ar': 'شغال دلوقتي', 'en': 'Live now'},
     'live_status_ended': {'ar': 'انتهى', 'en': 'Ended'},
