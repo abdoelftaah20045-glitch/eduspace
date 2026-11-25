@@ -23,7 +23,7 @@ class AdminPanelRepository {
   }) async {
     var q = _c
         .from('profiles')
-        .select('*, tenant_memberships!inner(tenant_id)')
+        .select('*, tenant_memberships!user_id!inner(tenant_id)')
         .eq('tenant_memberships.tenant_id', TenantContext.id);
     if (status != null) q = q.eq('status', status);
     if (query.trim().isNotEmpty) {
@@ -72,7 +72,7 @@ class AdminPanelRepository {
   static Future<int> _countMembers({String? status}) async {
     var q = _c
         .from('profiles')
-        .select('id, tenant_memberships!inner(tenant_id)')
+        .select('id, tenant_memberships!user_id!inner(tenant_id)')
         .eq('tenant_memberships.tenant_id', TenantContext.id);
     if (status != null) q = q.eq('status', status);
     final rows = await q;

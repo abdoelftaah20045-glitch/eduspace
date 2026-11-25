@@ -96,7 +96,7 @@ class _AdminTeamScreenState extends State<AdminTeamScreen> {
     try {
       final r = await _c
           .from('profiles')
-          .select('id, full_name, email, tenant_memberships!inner(tenant_id)')
+          .select('id, full_name, email, tenant_memberships!user_id!inner(tenant_id)')
           .eq('tenant_memberships.tenant_id', TenantContext.id)
           .or('full_name.ilike.%$q%,email.ilike.%$q%')
           .limit(10);

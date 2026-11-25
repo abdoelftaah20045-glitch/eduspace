@@ -205,25 +205,6 @@ class _CourseEditScreenState extends State<CourseEditScreen> {
                     keyboardType: TextInputType.number,
                   ),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: TextFormField(
-                    controller: _price,
-                    decoration: InputDecoration(labelText: s.t('price')),
-                    keyboardType: TextInputType.number,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: DropdownButtonFormField<String>(
-                    initialValue: _currency,
-                    decoration: InputDecoration(labelText: s.t('currency')),
-                    items: _currencies
-                        .map((c) => DropdownMenuItem(value: c, child: Text(c)))
-                        .toList(),
-                    onChanged: (v) => setState(() => _currency = v ?? 'EGP'),
-                  ),
-                ),
               ],
             ),
             const SizedBox(height: 12),

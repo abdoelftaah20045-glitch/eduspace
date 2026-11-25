@@ -113,7 +113,7 @@ class AdminToolsRepository {
   static Future<Map<String, dynamic>> fetchReport() async {
     final members = await _c
         .from('profiles')
-        .select('id, status, created_at, tenant_memberships!inner(tenant_id)')
+        .select('id, status, created_at, tenant_memberships!user_id!inner(tenant_id)')
         .eq('tenant_memberships.tenant_id', TenantContext.id)
         .limit(5000);
     final results = await Future.wait([
