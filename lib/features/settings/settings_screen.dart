@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/app_state.dart';
 import '../../core/l10n.dart';
+import '../notifications/notification_prefs_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -52,6 +53,15 @@ class SettingsScreen extends StatelessWidget {
               onChanged: (v) {
                 if (v != null) state.setThemeMode(v);
               },
+            ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.notifications_outlined),
+            title: Text(s.t('notification_prefs')),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                  builder: (_) => const NotificationPrefsScreen()),
             ),
           ),
         ],

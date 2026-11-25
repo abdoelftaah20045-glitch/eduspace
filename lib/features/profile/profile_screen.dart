@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/l10n.dart';
+import '../admin/admin_announcements_screen.dart';
 import '../admin/admin_courses_screen.dart';
 import '../admin/admin_exams_screen.dart';
 import '../admin/data/admin_repo.dart';
@@ -79,6 +80,15 @@ class ProfileScreen extends StatelessWidget {
                       builder: (_) => const MyCertificatesScreen()),
                 ),
               ),
+              if (isAdmin)
+                ListTile(
+                  leading: const Icon(Icons.campaign_outlined),
+                  title: Text(s.t('admin_announcements')),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                        builder: (_) => const AdminAnnouncementsScreen()),
+                  ),
+                ),
               if (isAdmin)
                 ListTile(
                   leading: const Icon(Icons.quiz_outlined),

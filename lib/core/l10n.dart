@@ -324,6 +324,41 @@ class S {
     'type_fill_blank': {'ar': 'أكمل الفراغ', 'en': 'Fill in the blank'},
     'type_essay': {'ar': 'مقالي', 'en': 'Essay'},
     'download_pdf': {'ar': 'تحميل PDF', 'en': 'Download PDF'},
+    'admin_announcements': {
+      'ar': 'الإعلانات والإشعارات',
+      'en': 'Announcements & notifications',
+    },
+    'new_announcement': {'ar': 'إعلان جديد', 'en': 'New announcement'},
+    'announcement_title': {'ar': 'عنوان الإعلان', 'en': 'Announcement title'},
+    'announcement_body': {'ar': 'نص الإعلان', 'en': 'Announcement text'},
+    'audience_label': {'ar': 'الجمهور', 'en': 'Audience'},
+    'audience_all': {'ar': 'الكل', 'en': 'Everyone'},
+    'audience_students': {'ar': 'الطلاب', 'en': 'Students'},
+    'audience_course': {'ar': 'كورس محدد', 'en': 'Specific course'},
+    'no_announcements': {'ar': 'مفيش إعلانات لسه', 'en': 'No announcements yet'},
+    'broadcast_notification': {
+      'ar': 'إرسال إشعار للجميع',
+      'en': 'Broadcast notification',
+    },
+    'sent_broadcast': {
+      'ar': 'وصل الإشعار لـ {count} مستخدم',
+      'en': 'Notification sent to {count} users',
+    },
+    'publish': {'ar': 'نشر', 'en': 'Publish'},
+    'send': {'ar': 'إرسال', 'en': 'Send'},
+    'notification_prefs': {
+      'ar': 'تفضيلات الإشعارات',
+      'en': 'Notification preferences',
+    },
+    'pref_announcements': {'ar': 'الإعلانات', 'en': 'Announcements'},
+    'pref_courses': {'ar': 'الكورسات والدروس', 'en': 'Courses and lessons'},
+    'pref_exams': {'ar': 'الامتحانات', 'en': 'Exams'},
+    'pref_certificates': {'ar': 'الشهادات', 'en': 'Certificates'},
+    'pref_general': {'ar': 'إشعارات عامة', 'en': 'General notifications'},
+    'prefs_saved_note': {
+      'ar': 'اتحفظت تفضيلاتك',
+      'en': 'Your preferences are saved',
+    },
   };
 
   String t(String key) {

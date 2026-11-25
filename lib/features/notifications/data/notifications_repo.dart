@@ -86,6 +86,43 @@ class NotificationsRepository {
         .eq('is_read', false);
   }
 
+  /// The current user's notification preferences, or all-true defaults.
+  static Future<Map<String, bool>> fetchPrefs() async {
+    const defaults = {
+      'announcements': true,
+      'courses': true,
+      'exams': true,
+      'certificates': true,
+      'general': true,
+    };
+    final uid = _c.auth.currentUser?.id;
+    if (uid == null) return defaults;
+    try {
+      final row = await _c
+          .from('notification_preferences')
+          .select()
+          .eq('user_id', uid)
+          .maybeSingle();
+      if (row == null) return defaults;
+      return {
+        for (final k in defaults.keys)
+          k: (row[k] as bool?) ?? true,
+      };
+    } catch (_) {
+      return defaults;
+    }
+  }
+
+  static Future<void> savePrefs(Map<String, bool> prefs) async {
+    final uid = _c.auth.currentUser?.id;
+    if (uid == null) return;
+    await _c.from('notification_preferences').upsert({
+      'user_id': uid,
+      ...prefs,
+      'updated_at': DateTime.now().toIso8601String(),
+    });
+  }
+
   /// Latest currently-active announcement, or null.
   static Future<Announcement?> fetchActiveAnnouncement() async {
     final now = DateTime.now().toUtc().toIso8601String();

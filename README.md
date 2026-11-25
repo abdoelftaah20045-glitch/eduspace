@@ -51,7 +51,7 @@
 
 ### 3) شغّل قاعدة البيانات
 - افتح SQL Editor في Supabase.
-- نفّذ ملفات `supabase/migrations/` كلها **بالترتيب**: من `0001_init.sql` لحد `0005_certificate_verify.sql` (انسخ كل ملف ونفّذه Run).
+- نفّذ ملفات `supabase/migrations/` كلها **بالترتيب**: من `0001_init.sql` لحد `0006_notifications_prefs_broadcast.sql` (انسخ كل ملف ونفّذه Run).
 - ده هيعمل الجداول والصلاحيات (RLS) وإنشاء الملف الشخصي تلقائياً عند التسجيل، وهيضيف لغتين (ar, en) والأدوار الأساسية والكورسات والامتحانات والإشعارات والشهادات.
 - من Authentication ثم Providers تأكد إن Email شغال. للتجربة السريعة ممكن تقفل "Confirm email"، بس للإطلاق سيبها شغالة (الشاشة جاهزة لها).
 
@@ -82,10 +82,10 @@ flutter run --dart-define=SUPABASE_URL=الرابط_بتاعك --dart-define=SUP
 | 14. الامتحانات وبنك الأسئلة | اتعمل أساسه للطالب: جداول بنك الأسئلة والامتحانات والمحاولات والإجابات + امتحان مؤقت + تصحيح آلي (اختياري/صح-خطأ/متعدد/أكمل الفراغ) + نتيجة فورية + عدد محاولات وإتاحة بتاريخ في قاعدة البيانات. فاضل: شاشات إنشاء الامتحانات للأدمن، خلط الأسئلة من البنك عشوائيًا، تصحيح المقالي، استيراد Excel/CSV، إظهار الإجابات الصحيحة بعد التصحيح |
 | 21. لوحة الإدارة | اتعمل أول جزء في التطبيق نفسه: إدارة الكورسات كاملة (كورس/أقسام/دروس). فاضل: لوحة الويب وباقي الأقسام (طلاب، مدفوعات، امتحانات، لايفات...) |
 | 17. الشهادات | اتعمل: إصدار تلقائي عند إتمام الكورس 100% (RLS بيتحقق من إكمال كل الدروس) + رقم شهادة فريد + شاشة «شهاداتي» + تصميم شهادة يتشارك كصورة + تصدير PDF للطباعة مع QR + رابط تحقق عام (دالة `verify_certificate` في قاعدة البيانات ترجع حالة الشهادة لأي حد معاه الرقم). فاضل: قوالب شهادات متعددة، صفحة تحقق ويب منسقة، إدارة/إلغاء من لوحة الأدمن (الحالة موجودة في القاعدة) |
-| 18. الإشعارات والإعلانات | اتعمل أساسه: قائمة إشعارات داخلية + تحديد كمقروء + عدّاد على الرئيسية + إعلانات عامة تظهر كبنر (الأدمن يضيفها من Supabase لحد ما تتبني شاشتها). فاضل: إشعارات Push (FCM)، تفضيلات الإشعارات، إنشاء الإعلانات والإشعارات من التطبيق |
+| 18. الإشعارات والإعلانات | اتعمل: قائمة إشعارات داخلية + عدّاد غير المقروء على الرئيسية + بنر إعلانات + الأدمن ينشئ إعلانات من التطبيق + إرسال إشعار لكل المستخدمين (دالة server-side بتحترم تفضيلات كل مستخدم) + شاشة تفضيلات الإشعارات بالفئات في الإعدادات. فاضل: إشعارات Push (FCM)، جدولة إشعار مستقبلي، ترجمة الإشعارات |
 | 11, 13, 15, 16, 19, 20, 22 (المدفوعات، اللايفات، التكليفات، المكتبة، الدعم، المفضلة، App Builder) | لسه — جداولها جاهزة في المخطط وتتضاف مرحلة مرحلة |
 | 23. Multi-Tenant | مؤجل بقرارك — التصميم متجهز لإضافته |
-| 26. قاعدة البيانات | اتنفذ منها لحد دلوقتي: profiles, roles, permissions, user_roles, role_permissions, admin_activity_logs, languages, translation_keys, translations (مرحلة 1) + courses, course_translations, course_sections, lessons, lesson_translations, enrollments, lesson_progress, course_progress_summary (مرحلة 2) + question_banks, questions, question_options, exams, exam_questions, exam_attempts, answers (مرحلة 3) + notifications, announcements, certificates (مرحلة 4) + دالة التحقق العامة من الشهادات verify_certificate (مرحلة 5). الباقي يتضاف مع مراحل المميزات |
+| 26. قاعدة البيانات | اتنفذ منها لحد دلوقتي: profiles, roles, permissions, user_roles, role_permissions, admin_activity_logs, languages, translation_keys, translations (مرحلة 1) + courses, course_translations, course_sections, lessons, lesson_translations, enrollments, lesson_progress, course_progress_summary (مرحلة 2) + question_banks, questions, question_options, exams, exam_questions, exam_attempts, answers (مرحلة 3) + notifications, announcements, certificates (مرحلة 4) + دالة التحقق العامة من الشهادات verify_certificate (مرحلة 5) + notification_preferences ودالة البث admin_broadcast_notification (مرحلة 6). الباقي يتضاف مع مراحل المميزات |
 
 ## هيكل المشروع
 ```
