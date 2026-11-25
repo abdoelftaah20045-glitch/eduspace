@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/l10n.dart';
+import '../../core/tenant.dart';
 import '../../core/widgets.dart';
 import '../courses/course_details_screen.dart';
 import '../courses/courses_screen.dart';
@@ -125,7 +126,28 @@ class _HomeTabState extends State<_HomeTab> {
     final myCourses = _myCourses ?? const <Course>[];
     return Scaffold(
       appBar: AppBar(
-        title: Text(s.t('app_name')),
+        title: ValueListenableBuilder<String>(
+          valueListenable: TenantContext.instance.currentName,
+          builder: (context, tenantName, _) {
+            // The current organization must always be obvious (exec guide
+            // section 3). Hidden when it is the default EduSpace tenant so
+            // the classic home stays unchanged.
+            if (tenantName == TenantContext.defaultTenantName ||
+                tenantName.isEmpty) {
+              return Text(s.t('app_name'));
+            }
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(s.t('app_name')),
+                Text(
+                  tenantName,
+                  style: Theme.of(context).textTheme.labelSmall,
+                ),
+              ],
+            );
+          },
+        ),
         actions: [
           IconButton(
             tooltip: s.t('notifications'),
