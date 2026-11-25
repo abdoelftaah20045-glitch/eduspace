@@ -40,6 +40,9 @@ jobs:
           GRADLE=android/app/build.gradle
           [ -f android/app/build.gradle.kts ] && GRADLE=android/app/build.gradle.kts
           echo "Gradle file: $GRADLE"
+          # file_picker's flutter_plugin_android_lifecycle requires compileSdk 36+
+          sed -i 's/compileSdk = flutter.compileSdkVersion/compileSdk = 36/' "$GRADLE"
+          sed -i 's/compileSdk flutter.compileSdkVersion/compileSdk 36/' "$GRADLE"
           if [ "$GRADLE" = "android/app/build.gradle.kts" ]; then
             cat ci/release-signing.gradle.kts >> "$GRADLE"
           else
