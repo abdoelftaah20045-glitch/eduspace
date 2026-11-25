@@ -124,6 +124,15 @@ class _AdminExamsScreenState extends State<AdminExamsScreen> {
                                         builder: (_) =>
                                             ExamEditScreen(exam: e)))
                                     .then((_) => _load());
+                              } else if (v == 'questions') {
+                                Navigator.of(context)
+                                    .push(MaterialPageRoute(
+                                        builder: (_) => ExamQuestionsScreen(
+                                              examId: e['id'] as String,
+                                              examTitle:
+                                                  (e['title'] as String?) ?? '',
+                                            )))
+                                    .then((_) => _load());
                               } else if (v == 'attempts') {
                                 Navigator.of(context)
                                     .push(MaterialPageRoute(
@@ -137,6 +146,9 @@ class _AdminExamsScreenState extends State<AdminExamsScreen> {
                             itemBuilder: (_) => [
                               PopupMenuItem(
                                   value: 'edit', child: Text(s.t('edit'))),
+                              PopupMenuItem(
+                                  value: 'questions',
+                                  child: Text(s.t('questions_count'))),
                               PopupMenuItem(
                                 value: 'attempts',
                                 child: Text(s.t('exam_attempts_label')),

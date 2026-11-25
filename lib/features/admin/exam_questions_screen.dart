@@ -4,6 +4,7 @@ import '../../core/l10n.dart';
 import '../exams/data/exam_models.dart';
 import 'data/admin_exams_repo.dart';
 import 'question_edit_screen.dart';
+import 'question_import_screen.dart';
 
 /// Admin: the questions attached to one exam, in order. Add from the bank,
 /// create new, or remove.
@@ -44,6 +45,14 @@ class _ExamQuestionsScreenState extends State<ExamQuestionsScreen> {
     try {
       await AdminExamsRepository.attachQuestion(widget.examId, newId);
     } catch (_) {}
+    await _load();
+  }
+
+  Future<void> _import() async {
+    await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+          builder: (_) => QuestionImportScreen(examId: widget.examId)),
+    );
     await _load();
   }
 
@@ -94,6 +103,15 @@ class _ExamQuestionsScreenState extends State<ExamQuestionsScreen> {
                         ),
                       ),
                     ],
+                  ),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: _import,
+                      icon: const Icon(Icons.upload_file),
+                      label: Text(s.t('import_questions')),
+                    ),
                   ),
                   const SizedBox(height: 16),
                   Text(
