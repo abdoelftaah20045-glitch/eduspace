@@ -287,6 +287,7 @@ class _TakeExamScreenState extends State<TakeExamScreen> {
 
 class _QuestionCard extends StatelessWidget {
   const _QuestionCard({
+    super.key,
     required this.index,
     required this.question,
     required this.selected,
