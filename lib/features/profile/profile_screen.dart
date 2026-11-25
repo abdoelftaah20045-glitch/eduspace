@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/l10n.dart';
-import '../admin/admin_announcements_screen.dart';
-import '../admin/admin_courses_screen.dart';
-import '../admin/admin_exams_screen.dart';
+import '../admin/admin_panel_screen.dart';
 import '../admin/data/admin_repo.dart';
 import '../certificates/my_certificates_screen.dart';
 import '../settings/settings_screen.dart';
@@ -82,29 +80,11 @@ class ProfileScreen extends StatelessWidget {
               ),
               if (isAdmin)
                 ListTile(
-                  leading: const Icon(Icons.campaign_outlined),
-                  title: Text(s.t('admin_announcements')),
-                  onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute(
-                        builder: (_) => const AdminAnnouncementsScreen()),
-                  ),
-                ),
-              if (isAdmin)
-                ListTile(
-                  leading: const Icon(Icons.quiz_outlined),
-                  title: Text(s.t('admin_exams')),
-                  onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute(
-                        builder: (_) => const AdminExamsScreen()),
-                  ),
-                ),
-              if (isAdmin)
-                ListTile(
                   leading: const Icon(Icons.admin_panel_settings_outlined),
-                  title: Text(s.t('admin_courses')),
+                  title: Text(s.t('admin_panel')),
                   onTap: () => Navigator.of(context).push(
                     MaterialPageRoute(
-                        builder: (_) => const AdminCoursesScreen()),
+                        builder: (_) => const AdminPanelScreen()),
                   ),
                 ),
               ListTile(
