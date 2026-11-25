@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/l10n.dart';
+import 'admin_attempts_screen.dart';
 import 'data/admin_exams_repo.dart';
 import 'exam_edit_screen.dart';
 import 'exam_questions_screen.dart';
@@ -123,6 +124,12 @@ class _AdminExamsScreenState extends State<AdminExamsScreen> {
                                         builder: (_) =>
                                             ExamEditScreen(exam: e)))
                                     .then((_) => _load());
+                              } else if (v == 'attempts') {
+                                Navigator.of(context)
+                                    .push(MaterialPageRoute(
+                                        builder: (_) =>
+                                            AdminAttemptsScreen(exam: e)))
+                                    .then((_) => _load());
                               } else if (v == 'delete') {
                                 _delete(e);
                               }
@@ -130,6 +137,10 @@ class _AdminExamsScreenState extends State<AdminExamsScreen> {
                             itemBuilder: (_) => [
                               PopupMenuItem(
                                   value: 'edit', child: Text(s.t('edit'))),
+                              PopupMenuItem(
+                                value: 'attempts',
+                                child: Text(s.t('exam_attempts_label')),
+                              ),
                               PopupMenuItem(
                                   value: 'delete', child: Text(s.t('delete'))),
                             ],

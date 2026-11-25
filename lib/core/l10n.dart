@@ -403,6 +403,16 @@ class S {
     'membership_rejected': {'ar': 'اترفض العضو', 'en': 'Member rejected', 'fr': 'Membre refusé', 'es': 'Miembro rechazado', 'de': 'Mitglied abgelehnt'},
     'slug_invalid': {'ar': 'حروف إنجليزية صغيرة وأرقام وشرطات بس', 'en': 'Lowercase letters, numbers and dashes only', 'fr': 'Lettres minuscules, chiffres et tirets uniquement', 'es': 'Solo letras minúsculas, números y guiones', 'de': 'Nur Kleinbuchstaben, Zahlen und Bindestriche'},
     'manage_roles': {'ar': 'إدارة الأدوار', 'en': 'Manage roles', 'fr': 'Gérer les rôles', 'es': 'Gestionar roles', 'de': 'Rollen verwalten'},
+    'exam_attempts_label': {'ar': 'محاولات الامتحان', 'en': 'Exam attempts', 'fr': 'Tentatives d\'examen', 'es': 'Intentos de examen', 'de': 'Prüfungsversuche'},
+    'review_attempt': {'ar': 'مراجعة المحاولة', 'en': 'Review attempt', 'fr': 'Corriger la tentative', 'es': 'Revisar intento', 'de': 'Versuch prüfen'},
+    'points_awarded_label': {'ar': 'النقاط المستحقة', 'en': 'Points awarded', 'fr': 'Points attribués', 'es': 'Puntos otorgados', 'de': 'Vergebene Punkte'},
+    'finalize_grading': {'ar': 'اعتماد النتيجة', 'en': 'Finalize grading', 'fr': 'Finaliser la note', 'es': 'Finalizar calificación', 'de': 'Bewertung abschließen'},
+    'grading_done': {'ar': 'اتصححت واتحدثت النتيجة', 'en': 'Grading saved, score updated', 'fr': 'Correction enregistrée, note mise à jour', 'es': 'Calificación guardada, puntuación actualizada', 'de': 'Bewertung gespeichert, Ergebnis aktualisiert'},
+    'student_answer': {'ar': 'إجابة الطالب', 'en': 'Student answer', 'fr': 'Réponse de l\'étudiant', 'es': 'Respuesta del estudiante', 'de': 'Antwort des Studenten'},
+    'no_attempts': {'ar': 'مفيش محاولات لسه', 'en': 'No attempts yet', 'fr': 'Aucune tentative pour le moment', 'es': 'Aún no hay intentos', 'de': 'Noch keine Versuche'},
+    'correct_label': {'ar': 'صحيحة', 'en': 'Correct', 'fr': 'Correcte', 'es': 'Correcta', 'de': 'Richtig'},
+    'incorrect_label': {'ar': 'غلط', 'en': 'Incorrect', 'fr': 'Incorrecte', 'es': 'Incorrecta', 'de': 'Falsch'},
+    'pending_grading': {'ar': 'في انتظار التصحيح', 'en': 'Pending grading', 'fr': 'En attente de correction', 'es': 'Pendiente de calificar', 'de': 'Wartet auf Bewertung'},
   };
 
   String t(String key) {
