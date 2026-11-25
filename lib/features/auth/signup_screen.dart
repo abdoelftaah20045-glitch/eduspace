@@ -57,6 +57,13 @@ class _SignupScreenState extends State<SignupScreen> {
         },
       );
       if (!mounted) return;
+      // Supabase hides duplicates: an existing email returns a fake success
+      // with an empty identities list and sends nothing.
+      final ids = res.user?.identities;
+      if (res.session == null && ids != null && ids.isEmpty) {
+        setState(() => _error = S.of(context).t('signup_exists'));
+        return;
+      }
       if (res.session != null) {
         // Email confirmation is off: the AuthGate stream already switches
         // to the home screen underneath, so just close this pushed route.
@@ -67,7 +74,10 @@ class _SignupScreenState extends State<SignupScreen> {
         );
       }
     } on AuthException catch (e) {
-      setState(() => _error = e.message);
+      final m = e.message.toLowerCase();
+      setState(() => _error = (m.contains('already') && m.contains('regist'))
+          ? S.of(context).t('signup_exists')
+          : e.message);
     } catch (_) {
       setState(() => _error = S.of(context).t('generic_error'));
     } finally {

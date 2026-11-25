@@ -189,6 +189,7 @@ class S {
     'dr_favorites': {'ar': 'المفضلة', 'en': 'Favorites', 'fr': 'Favoris', 'es': 'Favoritos', 'de': 'Favoriten'},
     'dr_about': {'ar': 'عن التطبيق', 'en': 'About', 'fr': 'À propos', 'es': 'Acerca de', 'de': 'Über'},
     'dr_library': {'ar': 'المكتبة', 'en': 'Library', 'fr': 'Bibliothèque', 'es': 'Biblioteca', 'de': 'Bibliothek'},
+    'signup_exists': {'ar': 'الإيميل ده عليه حساب بالفعل. سجل دخولك أو استخدم نسيت كلمة المرور.', 'en': 'This email already has an account. Sign in or reset your password.', 'fr': 'Cet e-mail a déjà un compte. Connectez-vous ou réinitialisez le mot de passe.', 'es': 'Este correo ya tiene una cuenta. Inicia sesión o restablece la contraseña.', 'de': 'Diese E-Mail hat bereits ein Konto. Melden Sie sich an oder setzen Sie das Passwort zurück.'},
     'audit_label': {'ar': 'سجل العمليات', 'en': 'Audit log', 'fr': 'Audit log', 'es': 'Audit log', 'de': 'Audit log'},
     'no_audit': {'ar': 'لا توجد عمليات مسجلة', 'en': 'No recorded actions', 'fr': 'No recorded actions', 'es': 'No recorded actions', 'de': 'No recorded actions'},
     'org_settings': {'ar': 'إعدادات المؤسسة', 'en': 'Organization settings', 'fr': 'Organization settings', 'es': 'Organization settings', 'de': 'Organization settings'},
