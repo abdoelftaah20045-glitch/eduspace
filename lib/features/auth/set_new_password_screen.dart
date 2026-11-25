@@ -68,7 +68,7 @@ class _SetNewPasswordScreenState extends State<SetNewPasswordScreen> {
                   FilledButton(
                     onPressed: () => Navigator.of(context)
                         .popUntil((r) => r.isFirst),
-                    child: Text(s.t('save')),
+                    child: Text(s.t('done')),
                   ),
                 ],
               )
