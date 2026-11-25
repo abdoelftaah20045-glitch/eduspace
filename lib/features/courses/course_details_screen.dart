@@ -81,8 +81,13 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
     final s = S.of(context);
     final details = _details;
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: Text(details?.course.title ?? ''),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white),
+        title: const SizedBox.shrink(),
         actions: [
           IconButton(
             tooltip: s.t('favorites'),
@@ -117,30 +122,83 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
           : details == null
               ? const Center(child: CircularProgressIndicator())
               : _buildContent(context, s, details),
+      bottomNavigationBar: details == null || _error != null
+          ? null
+          : SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+                child: _buildAction(context, s, details),
+              ),
+            ),
     );
   }
 
   Widget _buildContent(BuildContext context, S s, CourseDetails details) {
     final course = details.course;
     final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
     return ListView(
+      padding: EdgeInsets.zero,
       children: [
-        if (course.coverUrl != null && course.coverUrl!.isNotEmpty)
-          AspectRatio(
-            aspectRatio: 16 / 8,
-            child: Image.network(
-              course.coverUrl!,
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => const SizedBox.shrink(),
-            ),
+        SizedBox(
+          height: 260,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              if (course.coverUrl != null && course.coverUrl!.isNotEmpty)
+                Image.network(
+                  course.coverUrl!,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) =>
+                      Container(color: scheme.primary),
+                )
+              else
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [scheme.primary, const Color(0xFF1565C0)],
+                    ),
+                  ),
+                  child: const Center(
+                    child: Icon(Icons.menu_book_rounded,
+                        size: 72, color: Colors.white70),
+                  ),
+                ),
+              const DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Colors.transparent, Colors.black87],
+                    stops: [0.45, 1.0],
+                  ),
+                ),
+              ),
+              PositionedDirectional(
+                start: 20,
+                end: 20,
+                bottom: 18,
+                child: Text(
+                  course.title,
+                  style: theme.textTheme.headlineSmall?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    shadows: const [
+                      Shadow(color: Colors.black45, blurRadius: 8),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
+        ),
         Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(course.title, style: theme.textTheme.headlineSmall),
-              const SizedBox(height: 8),
               Wrap(
                 spacing: 12,
                 runSpacing: 8,
@@ -175,8 +233,6 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                 Text(course.prerequisites!),
               ],
               const SizedBox(height: 20),
-              _buildAction(context, s, details),
-              const SizedBox(height: 24),
             ],
           ),
         ),

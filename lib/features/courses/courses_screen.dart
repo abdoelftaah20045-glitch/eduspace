@@ -114,9 +114,12 @@ class CourseCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final s = S.of(context);
     final theme = Theme.of(context);
+    final palette =
+        _catalogPalette[course.title.hashCode.abs() % _catalogPalette.length];
     return Card(
       clipBehavior: Clip.antiAlias,
       margin: const EdgeInsets.only(bottom: 12),
+      elevation: 2,
       child: InkWell(
         onTap: () {
           Navigator.of(context).push(
@@ -125,93 +128,143 @@ class CourseCard extends StatelessWidget {
             ),
           );
         },
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Stack(
-              children: [
-                AspectRatio(
-                  aspectRatio: 16 / 7,
-                  child: course.coverUrl != null && course.coverUrl!.isNotEmpty
-                      ? Image.network(
-                          course.coverUrl!,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) =>
-                              const _CoverPlaceholder(),
-                        )
-                      : const _CoverPlaceholder(),
-                ),
-                PositionedDirectional(
-                  top: 4,
-                  end: 4,
-                  child: _FavoriteButton(
-                      courseId: course.id, initial: course.isFavorite),
-                ),
-              ],
-            ),
-            Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Stack(
                 children: [
-                  Text(course.title, style: theme.textTheme.titleMedium),
-                  if (course.instructorName != null &&
-                      course.instructorName!.isNotEmpty) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      course.instructorName!,
-                      style: theme.textTheme.bodySmall,
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: SizedBox(
+                      width: 96,
+                      height: 96,
+                      child: course.coverUrl != null &&
+                              course.coverUrl!.isNotEmpty
+                          ? Image.network(
+                              course.coverUrl!,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) =>
+                                  _Thumb(color: palette),
+                            )
+                          : _Thumb(color: palette),
                     ),
-                  ],
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      _MetaChip(
-                        icon: course.isFree
-                            ? Icons.lock_open
-                            : Icons.payments_outlined,
-                        label: course.isFree
-                            ? s.t('free')
-                            : '${course.price.toStringAsFixed(0)} ${course.currency}',
-                      ),
-                      if (course.level != null) ...[
-                        const SizedBox(width: 8),
-                        _MetaChip(
-                          icon: Icons.signal_cellular_alt,
-                          label: s.t('level_${course.level}'),
-                        ),
-                      ],
-                      if (course.ratingCount > 0) ...[
-                        const SizedBox(width: 8),
-                        _MetaChip(
-                          icon: Icons.star,
-                          label:
-                              '${course.ratingAvg!.toStringAsFixed(1)} (${course.ratingCount})',
-                        ),
-                      ],
-                    ],
                   ),
-                  if (course.isEnrolled &&
-                      course.progressPercent != null) ...[
-                    const SizedBox(height: 8),
-                    LinearProgressIndicator(
-                      value: course.progressPercent! / 100,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '${course.progressPercent}%',
-                      style: theme.textTheme.bodySmall,
-                    ),
-                  ],
+                  PositionedDirectional(
+                    top: 2,
+                    end: 2,
+                    child: _FavoriteButton(
+                        courseId: course.id, initial: course.isFavorite),
+                  ),
                 ],
               ),
-            ),
-          ],
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      course.title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.titleSmall
+                          ?.copyWith(fontWeight: FontWeight.bold),
+                    ),
+                    if (course.instructorName != null &&
+                        course.instructorName!.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        course.instructorName!,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.bodySmall,
+                      ),
+                    ],
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 10,
+                      runSpacing: 6,
+                      children: [
+                        _MetaChip(
+                          icon: course.isFree
+                              ? Icons.lock_open
+                              : Icons.payments_outlined,
+                          label: course.isFree
+                              ? s.t('free')
+                              : '${course.price.toStringAsFixed(0)} ${course.currency}',
+                        ),
+                        if (course.level != null)
+                          _MetaChip(
+                            icon: Icons.signal_cellular_alt,
+                            label: s.t('level_${course.level}'),
+                          ),
+                      ],
+                    ),
+                    if (course.ratingCount > 0) ...[
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          const Icon(Icons.star_rounded,
+                              size: 16, color: Color(0xFFF29900)),
+                          const SizedBox(width: 3),
+                          Text(
+                            '${course.ratingAvg!.toStringAsFixed(1)} (${course.ratingCount})',
+                            style: theme.textTheme.bodySmall,
+                          ),
+                        ],
+                      ),
+                    ],
+                    if (course.isEnrolled &&
+                        course.progressPercent != null) ...[
+                      const SizedBox(height: 8),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(6),
+                        child: LinearProgressIndicator(
+                          value: course.progressPercent! / 100,
+                          minHeight: 6,
+                          backgroundColor:
+                              theme.colorScheme.surfaceContainerHighest,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${course.progressPercent}%',
+                        style: theme.textTheme.bodySmall,
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
+
+class _Thumb extends StatelessWidget {
+  const _Thumb({required this.color});
+
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: color.withValues(alpha: .18),
+      child: Center(child: Icon(Icons.menu_book_rounded, color: color, size: 36)),
+    );
+  }
+}
+
+const _catalogPalette = <Color>[
+  Color(0xFF2196F3),
+  Color(0xFF7C4DFF),
+  Color(0xFFFF7043),
+  Color(0xFF2E9E5B),
+  Color(0xFFF29900),
+];
 
 /// Small heart toggle that keeps its own optimistic state.
 class _FavoriteButton extends StatefulWidget {

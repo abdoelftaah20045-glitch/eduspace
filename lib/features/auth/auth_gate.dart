@@ -4,6 +4,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../home/home_shell.dart';
 import 'account_status_screen.dart';
 import 'login_screen.dart';
+import 'onboarding_screen.dart';
+import 'set_new_password_screen.dart';
 
 /// Routes by auth state, then by profile status (pending/rejected/suspended).
 class AuthGate extends StatelessWidget {
@@ -14,9 +16,34 @@ class AuthGate extends StatelessWidget {
     return StreamBuilder<AuthState>(
       stream: Supabase.instance.client.auth.onAuthStateChange,
       builder: (context, snapshot) {
+        // Recovery email link opened the app: always land on the
+        // set-new-password screen, even when already signed in.
+        if (snapshot.data?.event == AuthChangeEvent.passwordRecovery) {
+          return const SetNewPasswordScreen();
+        }
         final session = Supabase.instance.client.auth.currentSession;
-        if (session == null) return const LoginScreen();
+        if (session == null) return const _UnauthenticatedFlow();
         return const _ProfileStatusLoader();
+      },
+    );
+  }
+}
+
+/// Shows the first-run onboarding once, then the login screen.
+class _UnauthenticatedFlow extends StatelessWidget {
+  const _UnauthenticatedFlow();
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<bool>(
+      future: OnboardingScreen.seen(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+        return snapshot.data! ? const LoginScreen() : const OnboardingScreen();
       },
     );
   }

@@ -42,6 +42,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final s = S.of(context);
+    final scheme = Theme.of(context).colorScheme;
     return Scaffold(
       body: SafeArea(
         child: Center(
@@ -53,16 +54,51 @@ class _LoginScreenState extends State<LoginScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  Center(
+                    child: Container(
+                      width: 88,
+                      height: 88,
+                      decoration: BoxDecoration(
+                        color: scheme.primary,
+                        borderRadius: BorderRadius.circular(26),
+                        boxShadow: [
+                          BoxShadow(
+                            color: scheme.primary.withValues(alpha: .35),
+                            blurRadius: 24,
+                            offset: const Offset(0, 12),
+                          ),
+                        ],
+                      ),
+                      child: Icon(Icons.school_rounded,
+                          size: 44, color: scheme.onPrimary),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
                   Text(
                     s.t('app_name'),
                     textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.headlineLarge,
+                    style: Theme.of(context)
+                        .textTheme
+                        .headlineMedium
+                        ?.copyWith(fontWeight: FontWeight.bold),
                   ),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 6),
+                  Text(
+                    s.t('promo_subtitle'),
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodyMedium
+                        ?.copyWith(color: scheme.onSurfaceVariant),
+                  ),
+                  const SizedBox(height: 28),
                   TextFormField(
                     controller: _email,
                     keyboardType: TextInputType.emailAddress,
-                    decoration: InputDecoration(labelText: s.t('email')),
+                    decoration: InputDecoration(
+                      labelText: s.t('email'),
+                      prefixIcon: const Icon(Icons.mail_outline),
+                    ),
                     validator: (v) {
                       if (v == null || v.trim().isEmpty) {
                         return s.t('required_field');
@@ -75,7 +111,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   TextFormField(
                     controller: _password,
                     obscureText: true,
-                    decoration: InputDecoration(labelText: s.t('password')),
+                    decoration: InputDecoration(
+                      labelText: s.t('password'),
+                      prefixIcon: const Icon(Icons.lock_outline),
+                    ),
                     validator: (v) =>
                         (v == null || v.isEmpty) ? s.t('required_field') : null,
                   ),

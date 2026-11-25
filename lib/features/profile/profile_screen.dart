@@ -53,23 +53,63 @@ class ProfileScreen extends StatelessWidget {
           final name = profile?['full_name'] as String? ?? '';
           final email = profile?['email'] as String? ?? '';
           final isAdmin = profile?['_is_admin'] == true;
+          final scheme = Theme.of(context).colorScheme;
           return ListView(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.all(16),
             children: [
-              _ProfileAvatar(
-                  avatarUrl: profile?['avatar_url'] as String?),
+              // Gradient identity header (reference: profile header cards).
+              Container(
+                padding: const EdgeInsets.symmetric(
+                    vertical: 24, horizontal: 16),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: AlignmentDirectional.topStart,
+                    end: AlignmentDirectional.bottomEnd,
+                    colors: [scheme.primary, const Color(0xFF1565C0)],
+                  ),
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(
+                      color: scheme.primary.withValues(alpha: .3),
+                      blurRadius: 18,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(3),
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                      ),
+                      child: _ProfileAvatar(
+                          avatarUrl: profile?['avatar_url'] as String?),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      name,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    if (email.isNotEmpty)
+                      Text(
+                        email,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: .85),
+                          fontSize: 13,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
               const SizedBox(height: 16),
-              Text(
-                name,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              Text(
-                email,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-              const SizedBox(height: 24),
               ListTile(
                 leading: const Icon(Icons.edit_outlined),
                 title: Text(s.t('edit_profile')),
@@ -105,12 +145,32 @@ class ProfileScreen extends StatelessWidget {
                 ),
               ),
               if (isAdmin)
-                ListTile(
-                  leading: const Icon(Icons.admin_panel_settings_outlined),
-                  title: Text(s.t('admin_panel')),
-                  onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute(
-                        builder: (_) => const AdminPanelScreen()),
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: Card(
+                    color: Theme.of(context).colorScheme.primary,
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16)),
+                    child: ListTile(
+                      leading: Icon(Icons.admin_panel_settings,
+                          color: Theme.of(context).colorScheme.onPrimary,
+                          size: 32),
+                      title: Text(
+                        s.t('admin_panel'),
+                        style: TextStyle(
+                            color: Theme.of(context).colorScheme.onPrimary,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18),
+                      ),
+                      trailing: Icon(Icons.arrow_forward_ios,
+                          color: Theme.of(context).colorScheme.onPrimary),
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                            builder: (_) => const AdminPanelScreen()),
+                      ),
+                    ),
                   ),
                 ),
               ListTile(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -78,6 +79,8 @@ class _HomeTabState extends State<_HomeTab> {
   List<LiveSession> _lives = const [];
   int _unread = 0;
   bool _loaded = false;
+  String _name = '';
+  String? _avatarUrl;
 
   @override
   void initState() {
@@ -103,6 +106,20 @@ class _HomeTabState extends State<_HomeTab> {
       try {
         lives = await LivesRepository.fetchUpcoming();
       } catch (_) {}
+      try {
+        final uid = Supabase.instance.client.auth.currentUser?.id;
+        if (uid != null) {
+          final row = await Supabase.instance.client
+              .from('profiles')
+              .select('full_name, avatar_url')
+              .eq('id', uid)
+              .maybeSingle();
+          if (row != null) {
+            _name = (row['full_name'] as String? ?? '').trim();
+            _avatarUrl = row['avatar_url'] as String?;
+          }
+        }
+      } catch (_) {}
       if (!mounted) return;
       setState(() {
         _continueItem = results[0] as ContinueItem?;
@@ -124,54 +141,149 @@ class _HomeTabState extends State<_HomeTab> {
     final theme = Theme.of(context);
     final item = _continueItem;
     final myCourses = _myCourses ?? const <Course>[];
+    final scheme = theme.colorScheme;
     return Scaffold(
-      appBar: AppBar(
-        title: ValueListenableBuilder<String>(
-          valueListenable: TenantContext.instance.currentName,
-          builder: (context, tenantName, _) {
-            // The current organization must always be obvious (exec guide
-            // section 3). Hidden when it is the default EduSpace tenant so
-            // the classic home stays unchanged.
-            if (tenantName == TenantContext.defaultTenantName ||
-                tenantName.isEmpty) {
-              return Text(s.t('app_name'));
-            }
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(s.t('app_name')),
-                Text(
-                  tenantName,
-                  style: Theme.of(context).textTheme.labelSmall,
-                ),
-              ],
-            );
-          },
-        ),
-        actions: [
-          IconButton(
-            tooltip: s.t('notifications'),
-            icon: Badge(
-              label: Text('$_unread'),
-              isLabelVisible: _unread > 0,
-              child: const Icon(Icons.notifications_outlined),
-            ),
-            onPressed: () {
-              Navigator.of(context)
-                  .push(
-                    MaterialPageRoute(
-                        builder: (_) => const NotificationsScreen()),
-                  )
-                  .then((_) => _load());
-            },
-          ),
-        ],
-      ),
       body: RefreshIndicator(
         onRefresh: _load,
         child: ListView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
           children: [
+            SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 24,
+                      backgroundColor:
+                          scheme.primary.withValues(alpha: .15),
+                      backgroundImage:
+                          (_avatarUrl != null && _avatarUrl!.isNotEmpty)
+                              ? NetworkImage(_avatarUrl!)
+                              : null,
+                      child: (_avatarUrl == null || _avatarUrl!.isEmpty)
+                          ? Icon(Icons.person,
+                              color: scheme.primary, size: 26)
+                          : null,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          ValueListenableBuilder<String>(
+                            valueListenable:
+                                TenantContext.instance.currentName,
+                            builder: (context, tenantName, _) {
+                              // The current organization must always be
+                              // obvious (exec guide section 3).
+                              final org =
+                                  tenantName == TenantContext.defaultTenantName ||
+                                          tenantName.isEmpty
+                                      ? s.t('app_name')
+                                      : tenantName;
+                              return Text(
+                                org,
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                    color: scheme.onSurfaceVariant),
+                              );
+                            },
+                          ),
+                          Text(
+                            '${s.t('welcome')}${_name.isNotEmpty ? '، $_name' : ''} 👋',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.titleLarge
+                                ?.copyWith(fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      tooltip: s.t('notifications'),
+                      style: IconButton.styleFrom(
+                        backgroundColor:
+                            scheme.primary.withValues(alpha: .08),
+                      ),
+                      icon: Badge(
+                        label: Text('$_unread'),
+                        isLabelVisible: _unread > 0,
+                        child:
+                            const Icon(Icons.notifications_outlined),
+                      ),
+                      onPressed: () {
+                        Navigator.of(context)
+                            .push(
+                              MaterialPageRoute(
+                                  builder: (_) =>
+                                      const NotificationsScreen()),
+                            )
+                            .then((_) => _load());
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            // Promo banner (reference: blue illustrated banner).
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: AlignmentDirectional.topStart,
+                  end: AlignmentDirectional.bottomEnd,
+                  colors: [scheme.primary, const Color(0xFF1565C0)],
+                ),
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: scheme.primary.withValues(alpha: .3),
+                    blurRadius: 18,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          s.t('promo_title'),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          s.t('promo_subtitle'),
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: .9),
+                            fontSize: 13,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Container(
+                    width: 64,
+                    height: 64,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: .2),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.rocket_launch_rounded,
+                        color: Colors.white, size: 32),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
             if (!_loaded)
               const Padding(
                 padding: EdgeInsets.all(32),
@@ -179,22 +291,67 @@ class _HomeTabState extends State<_HomeTab> {
               ),
             if (item != null) ...[
               Text(s.t('continue_learning'),
-                  style: theme.textTheme.titleMedium),
+                  style: theme.textTheme.titleMedium
+                      ?.copyWith(fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
               FadeSlideIn(
-                child: Card(
-                clipBehavior: Clip.antiAlias,
-                child: ListTile(
-                  leading: const Icon(Icons.play_circle, size: 36),
-                  title: Text(item.lesson.title),
-                  subtitle: Text(item.course.title),
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => LessonScreen(lesson: item.lesson),
+                child: Material(
+                  color: const Color(0xFFFFF3D6),
+                  borderRadius: BorderRadius.circular(20),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(20),
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => LessonScreen(lesson: item.lesson),
+                        ),
+                      ).then((_) => _load());
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 52,
+                            height: 52,
+                            decoration: const BoxDecoration(
+                              color: Color(0xFFF29900),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.play_arrow_rounded,
+                                color: Colors.white, size: 30),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  item.lesson.title,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 15,
+                                    color: Color(0xFF5D4300),
+                                  ),
+                                ),
+                                const SizedBox(height: 3),
+                                Text(
+                                  item.course.title,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: Color(0xFF8A6A1F),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
-                    ).then((_) => _load());
-                  },
+                    ),
                   ),
                 ),
               ),
@@ -244,7 +401,20 @@ class _HomeTabState extends State<_HomeTab> {
               _UpcomingLives(lives: _lives),
               const SizedBox(height: 24),
             ],
-            Text(s.t('my_courses'), style: theme.textTheme.titleMedium),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(s.t('my_courses'),
+                      style: theme.textTheme.titleMedium
+                          ?.copyWith(fontWeight: FontWeight.bold)),
+                ),
+                Text(
+                  s.t('see_all'),
+                  style: theme.textTheme.bodySmall
+                      ?.copyWith(color: scheme.primary),
+                ),
+              ],
+            ),
             const SizedBox(height: 8),
             if (_loaded && myCourses.isEmpty)
               Card(
@@ -253,26 +423,88 @@ class _HomeTabState extends State<_HomeTab> {
                   child: Text(s.t('no_my_courses')),
                 ),
               ),
-            ...myCourses.take(3).map((c) => Card(
-                  clipBehavior: Clip.antiAlias,
-                  child: ListTile(
-                    leading: const Icon(Icons.menu_book),
-                    title: Text(c.title),
-                    subtitle: c.progressPercent != null
-                        ? LinearProgressIndicator(
-                            value: c.progressPercent! / 100,
-                          )
-                        : null,
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) =>
-                              CourseDetailsScreen(courseId: c.id),
+            ...List.generate(
+              myCourses.length < 3 ? myCourses.length : 3,
+              (i) {
+                final c = myCourses[i];
+                final palette = _coursePalette[i % _coursePalette.length];
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: Material(
+                    color: palette.$1,
+                    borderRadius: BorderRadius.circular(20),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(20),
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                CourseDetailsScreen(courseId: c.id),
+                          ),
+                        ).then((_) => _load());
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.all(14),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 48,
+                              height: 48,
+                              decoration: BoxDecoration(
+                                color: palette.$2,
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              child: const Icon(Icons.menu_book_rounded,
+                                  color: Colors.white, size: 24),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment:
+                                    CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    c.title,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                  if (c.progressPercent != null) ...[
+                                    const SizedBox(height: 6),
+                                    ClipRRect(
+                                      borderRadius:
+                                          BorderRadius.circular(6),
+                                      child: LinearProgressIndicator(
+                                        value: c.progressPercent! / 100,
+                                        minHeight: 6,
+                                        backgroundColor:
+                                            Colors.white.withValues(alpha: .7),
+                                        valueColor:
+                                            AlwaysStoppedAnimation(palette.$2),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 3),
+                                    Text(
+                                      '${c.progressPercent}%',
+                                      style: theme.textTheme.bodySmall,
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Icon(Icons.arrow_forward_ios,
+                                size: 16,
+                                color: theme.colorScheme.onSurfaceVariant),
+                          ],
                         ),
-                      ).then((_) => _load());
-                    },
+                      ),
+                    ),
                   ),
-                )),
+                );
+              },
+            ),
           ],
         ),
       ),
@@ -339,3 +571,11 @@ class _UpcomingLives extends StatelessWidget {
     );
   }
 }
+
+/// Pastel card palette for My Courses (reference: colorful course cards).
+const _coursePalette = <(Color, Color)>[
+  (Color(0xFFE3F0FF), Color(0xFF2196F3)),
+  (Color(0xFFFFE9E1), Color(0xFFFF7043)),
+  (Color(0xFFE8F7EE), Color(0xFF2E9E5B)),
+  (Color(0xFFF3E9FF), Color(0xFF7C4DFF)),
+];

@@ -69,9 +69,35 @@ class _SignupScreenState extends State<SignupScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              Center(
+                child: Container(
+                  width: 72,
+                  height: 72,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.primary,
+                    borderRadius: BorderRadius.circular(22),
+                  ),
+                  child: Icon(Icons.person_add_alt_rounded,
+                      size: 36,
+                      color: Theme.of(context).colorScheme.onPrimary),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                s.t('promo_title'),
+                textAlign: TextAlign.center,
+                style: Theme.of(context)
+                    .textTheme
+                    .titleLarge
+                    ?.copyWith(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 20),
               TextFormField(
                 controller: _name,
-                decoration: InputDecoration(labelText: s.t('full_name')),
+                decoration: InputDecoration(
+                  labelText: s.t('full_name'),
+                  prefixIcon: const Icon(Icons.person_outline),
+                ),
                 validator: (v) =>
                     (v == null || v.trim().isEmpty) ? s.t('required_field') : null,
               ),
@@ -79,7 +105,10 @@ class _SignupScreenState extends State<SignupScreen> {
               TextFormField(
                 controller: _email,
                 keyboardType: TextInputType.emailAddress,
-                decoration: InputDecoration(labelText: s.t('email')),
+                decoration: InputDecoration(
+                  labelText: s.t('email'),
+                  prefixIcon: const Icon(Icons.mail_outline),
+                ),
                 validator: (v) {
                   if (v == null || v.trim().isEmpty) return s.t('required_field');
                   if (!v.contains('@')) return s.t('invalid_email');
@@ -90,7 +119,10 @@ class _SignupScreenState extends State<SignupScreen> {
               TextFormField(
                 controller: _password,
                 obscureText: true,
-                decoration: InputDecoration(labelText: s.t('password')),
+                decoration: InputDecoration(
+                  labelText: s.t('password'),
+                  prefixIcon: const Icon(Icons.lock_outline),
+                ),
                 validator: (v) =>
                     (v == null || v.length < 6) ? s.t('password_short') : null,
               ),
@@ -98,7 +130,10 @@ class _SignupScreenState extends State<SignupScreen> {
               TextFormField(
                 controller: _confirm,
                 obscureText: true,
-                decoration: InputDecoration(labelText: s.t('confirm_password')),
+                decoration: InputDecoration(
+                  labelText: s.t('confirm_password'),
+                  prefixIcon: const Icon(Icons.lock_reset),
+                ),
                 validator: (v) =>
                     v != _password.text ? s.t('passwords_mismatch') : null,
               ),
