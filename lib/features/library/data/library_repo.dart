@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class LibraryItem {
@@ -93,6 +95,30 @@ class LibraryRepository {
         'downloads': ((row['downloads'] as num?)?.toInt() ?? 0) + 1,
       }).eq('id', id);
     } catch (_) {}
+  }
+
+  /// Upload a resource file to the private resources bucket and return its
+  /// `storage://` reference for library_items.file_url.
+  static Future<String> uploadResourceFile({
+    required String fileName,
+    required Uint8List bytes,
+  }) async {
+    final safe = fileName.replaceAll(RegExp(r'[^\w.\-]'), '_');
+    final path = 'uploads/${DateTime.now().millisecondsSinceEpoch}_$safe';
+    await _c.storage.from('resources').uploadBinary(path, bytes);
+    return 'storage://resources/$path';
+  }
+
+  /// Resolve a stored file_url to something openable: private storage
+  /// references become short-lived signed URLs, external links pass through.
+  static Future<String> resolveUrl(String fileUrl) async {
+    if (!fileUrl.startsWith('storage://')) return fileUrl;
+    final rest = fileUrl.substring('storage://'.length);
+    final slash = rest.indexOf('/');
+    if (slash <= 0) return fileUrl;
+    final bucket = rest.substring(0, slash);
+    final path = rest.substring(slash + 1);
+    return _c.storage.from(bucket).createSignedUrl(path, 300);
   }
 
   static Future<String> create(Map<String, dynamic> values) async {

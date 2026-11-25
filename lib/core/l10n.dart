@@ -445,6 +445,10 @@ class S {
     },
     'attachment': {'ar': 'مرفق', 'en': 'Attachment'},
     'attach_file': {'ar': 'أرفق ملف', 'en': 'Attach file'},
+    'url_or_file_required': {
+      'ar': 'اكتب رابط أو ارفق ملف',
+      'en': 'Enter a URL or attach a file',
+    },
     'attachment_url': {
       'ar': 'رابط مرفق (اختياري)',
       'en': 'Attachment link (optional)',

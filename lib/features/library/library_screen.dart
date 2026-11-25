@@ -68,8 +68,8 @@ class _LibraryScreenState extends State<LibraryScreen> {
 
   Future<void> _open(LibraryItem item) async {
     await LibraryRepository.bumpDownloads(item.id);
-    await launchUrl(Uri.parse(item.fileUrl),
-        mode: LaunchMode.externalApplication);
+    final url = await LibraryRepository.resolveUrl(item.fileUrl);
+    await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
   }
 
   @override

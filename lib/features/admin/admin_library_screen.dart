@@ -1,3 +1,6 @@
+import 'dart:typed_data';
+
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/l10n.dart';
@@ -148,6 +151,42 @@ class _LibrarySheetState extends State<_LibrarySheet> {
   String? _courseId;
   List<Map<String, dynamic>> _courses = const [];
   bool _saving = false;
+  String? _fileName;
+  Uint8List? _fileBytes;
+
+  static const _extTypes = {
+    'pdf': 'pdf',
+    'doc': 'word',
+    'docx': 'word',
+    'ppt': 'powerpoint',
+    'pptx': 'powerpoint',
+    'xls': 'excel',
+    'xlsx': 'excel',
+    'png': 'image',
+    'jpg': 'image',
+    'jpeg': 'image',
+    'gif': 'image',
+    'webp': 'image',
+    'mp4': 'video',
+    'mov': 'video',
+    'webm': 'video',
+    'mp3': 'audio',
+    'wav': 'audio',
+    'm4a': 'audio',
+    'zip': 'zip',
+  };
+
+  Future<void> _pickFile() async {
+    final result = await FilePicker.platform.pickFiles(withData: true);
+    final f = result?.files.first;
+    if (f == null || f.bytes == null || !mounted) return;
+    setState(() {
+      _fileName = f.name;
+      _fileBytes = f.bytes;
+      final ext = (f.extension ?? '').toLowerCase();
+      _fileType = _extTypes[ext] ?? 'other';
+    });
+  }
 
   @override
   void initState() {
@@ -171,10 +210,17 @@ class _LibrarySheetState extends State<_LibrarySheet> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _saving = true);
     try {
+      var fileUrl = _url.text.trim();
+      final bytes = _fileBytes;
+      final name = _fileName;
+      if (bytes != null && name != null) {
+        fileUrl = await LibraryRepository.uploadResourceFile(
+            fileName: name, bytes: bytes);
+      }
       await LibraryRepository.create({
         'title': _title.text.trim(),
         'description': _description.text.trim(),
-        'file_url': _url.text.trim(),
+        'file_url': fileUrl,
         'file_type': _fileType,
         'category': _category.text.trim().isEmpty
             ? 'general'
@@ -224,9 +270,28 @@ class _LibrarySheetState extends State<_LibrarySheet> {
                 keyboardType: TextInputType.url,
                 decoration:
                     InputDecoration(labelText: s.t('file_url_label')),
-                validator: (v) => (v == null || v.trim().isEmpty)
-                    ? s.t('required_field')
-                    : null,
+                validator: (v) =>
+                    (v == null || v.trim().isEmpty) && _fileBytes == null
+                        ? s.t('url_or_file_required')
+                        : null,
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  OutlinedButton.icon(
+                    onPressed: _saving ? null : _pickFile,
+                    icon: const Icon(Icons.upload_file, size: 18),
+                    label: Text(s.t('attach_file')),
+                  ),
+                  if (_fileName != null)
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 180),
+                      child: Text(_fileName!,
+                          maxLines: 1, overflow: TextOverflow.ellipsis),
+                    ),
+                ],
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
