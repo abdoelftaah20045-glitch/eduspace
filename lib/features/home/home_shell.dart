@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/l10n.dart';
 import '../../core/widgets.dart';
@@ -9,6 +11,7 @@ import '../courses/data/courses_repo.dart';
 import '../courses/lesson_screen.dart';
 import '../exams/exams_screen.dart';
 import '../notifications/data/notifications_repo.dart';
+import '../lives/data/lives_repo.dart';
 import '../notifications/notifications_screen.dart';
 import '../profile/profile_screen.dart';
 
@@ -71,6 +74,7 @@ class _HomeTabState extends State<_HomeTab> {
   ContinueItem? _continueItem;
   List<Course>? _myCourses;
   Announcement? _announcement;
+  List<LiveSession> _lives = const [];
   int _unread = 0;
   bool _loaded = false;
 
@@ -90,9 +94,13 @@ class _HomeTabState extends State<_HomeTab> {
       // let them break the home tab.
       var unread = 0;
       Announcement? announcement;
+      var lives = <LiveSession>[];
       try {
         unread = await NotificationsRepository.unreadCount();
         announcement = await NotificationsRepository.fetchActiveAnnouncement();
+      } catch (_) {}
+      try {
+        lives = await LivesRepository.fetchUpcoming();
       } catch (_) {}
       if (!mounted) return;
       setState(() {
@@ -100,6 +108,7 @@ class _HomeTabState extends State<_HomeTab> {
         _myCourses = results[1] as List<Course>;
         _unread = unread;
         _announcement = announcement;
+        _lives = lives;
         _loaded = true;
       });
     } catch (_) {
@@ -209,6 +218,10 @@ class _HomeTabState extends State<_HomeTab> {
               ),
               const SizedBox(height: 24),
             ],
+            if (_lives.isNotEmpty) ...[
+              _UpcomingLives(lives: _lives),
+              const SizedBox(height: 24),
+            ],
             Text(s.t('my_courses'), style: theme.textTheme.titleMedium),
             const SizedBox(height: 8),
             if (_loaded && myCourses.isEmpty)
@@ -241,6 +254,66 @@ class _HomeTabState extends State<_HomeTab> {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Upcoming live sessions strip on the home tab (doc section 13).
+class _UpcomingLives extends StatelessWidget {
+  const _UpcomingLives({required this.lives});
+
+  final List<LiveSession> lives;
+
+  @override
+  Widget build(BuildContext context) {
+    final s = S.of(context);
+    final theme = Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(s.t('upcoming_lives'), style: theme.textTheme.titleMedium),
+        const SizedBox(height: 8),
+        ...lives.take(3).map(
+              (l) => Card(
+                clipBehavior: Clip.antiAlias,
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Row(
+                    children: [
+                      Icon(Icons.video_camera_front_outlined,
+                          color: theme.colorScheme.primary),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(l.title,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.w600)),
+                            Text(
+                              '${DateFormat('d MMM, h:mm a', s.locale.languageCode).format(l.startsAt)}'
+                              ' · ${l.durationMinutes} ${s.t('minutes_unit')}'
+                              '${l.hostName != null && l.hostName!.isNotEmpty ? ' · ${l.hostName}' : ''}',
+                              style: theme.textTheme.bodySmall,
+                            ),
+                          ],
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: l.canJoinNow
+                            ? () => launchUrl(Uri.parse(l.joinUrl),
+                                mode: LaunchMode.externalApplication)
+                            : null,
+                        child: Text(s.t('join_live')),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+      ],
     );
   }
 }

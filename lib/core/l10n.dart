@@ -480,6 +480,25 @@ class S {
     'category_payment': {'ar': 'مدفوعات', 'en': 'Payment'},
     'category_technical': {'ar': 'مشكلة تقنية', 'en': 'Technical issue'},
     'category_content': {'ar': 'المحتوى', 'en': 'Content'},
+    'lives_label': {'ar': 'اللايفات', 'en': 'Live sessions'},
+    'upcoming_lives': {'ar': 'لايفات قادمة', 'en': 'Upcoming lives'},
+    'no_lives': {'ar': 'مفيش لايفات لسه', 'en': 'No live sessions yet'},
+    'join_live': {'ar': 'ادخل اللايف', 'en': 'Join live'},
+    'new_live': {'ar': 'لايف جديد', 'en': 'New live'},
+    'edit_live': {'ar': 'تعديل اللايف', 'en': 'Edit live'},
+    'live_title': {'ar': 'عنوان اللايف', 'en': 'Live title'},
+    'join_url': {'ar': 'رابط الانضمام', 'en': 'Join URL'},
+    'host_name': {'ar': 'اسم المقدم', 'en': 'Host name'},
+    'platform_label': {'ar': 'المنصة', 'en': 'Platform'},
+    'linked_course_optional': {
+      'ar': 'الكورس المرتبط (اختياري)',
+      'en': 'Linked course (optional)',
+    },
+    'no_course': {'ar': 'من غير كورس', 'en': 'No course'},
+    'live_status_scheduled': {'ar': 'مجدول', 'en': 'Scheduled'},
+    'live_status_live': {'ar': 'شغال دلوقتي', 'en': 'Live now'},
+    'live_status_ended': {'ar': 'انتهى', 'en': 'Ended'},
+    'live_status_cancelled': {'ar': 'ملغي', 'en': 'Cancelled'},
   };
 
   String t(String key) {
