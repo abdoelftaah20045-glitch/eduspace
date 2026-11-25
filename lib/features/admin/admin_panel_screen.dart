@@ -11,6 +11,9 @@ import 'admin_library_screen.dart';
 import 'admin_lives_screen.dart';
 import 'admin_support_screen.dart';
 import 'admin_users_screen.dart';
+import '../tenancy/data/tenancy_repo.dart';
+import '../tenancy/super_admin_screen.dart';
+import '../tenancy/tenant_members_screen.dart';
 import 'data/admin_panel_repo.dart';
 
 /// Admin hub: dashboard counts + entry to every admin section.
@@ -23,6 +26,7 @@ class AdminPanelScreen extends StatefulWidget {
 
 class _AdminPanelScreenState extends State<AdminPanelScreen> {
   Map<String, int>? _counts;
+  bool _isSuper = false;
 
   @override
   void initState() {
@@ -33,7 +37,13 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
   Future<void> _load() async {
     try {
       final counts = await AdminPanelRepository.fetchCounts();
-      if (mounted) setState(() => _counts = counts);
+      final isSuper = await TenancyRepository.isSuperAdmin();
+      if (mounted) {
+        setState(() {
+          _counts = counts;
+          _isSuper = isSuper;
+        });
+      }
     } catch (_) {
       if (mounted) setState(() => _counts = const {});
     }
@@ -96,7 +106,19 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
       ('lives_label', Icons.video_camera_front_outlined,
           const AdminLivesScreen()),
       ('library_label', Icons.folder_open, const AdminLibraryScreen()),
+      (
+        'tenant_members',
+        Icons.badge_outlined,
+        const TenantMembersScreen()
+      ),
     ];
+    if (_isSuper) {
+      sections.add((
+        'super_admin_panel',
+        Icons.domain_outlined,
+        const SuperAdminScreen()
+      ));
+    }
     return Scaffold(
       appBar: AppBar(title: Text(s.t('admin_panel'))),
       body: RefreshIndicator(
