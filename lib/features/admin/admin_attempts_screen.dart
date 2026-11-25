@@ -122,7 +122,7 @@ class AttemptReviewScreen extends StatefulWidget {
 class _AttemptReviewScreenState extends State<AttemptReviewScreen> {
   List<Map<String, dynamic>>? _answers;
   final _pointsControllers = <String, TextEditingController>{};
-  final _essayCorrect = <String, bool>{};
+  final _essayCorrect = <String, bool?>{};
   bool _busy = false;
 
   @override
@@ -151,7 +151,7 @@ class _AttemptReviewScreenState extends State<AttemptReviewScreen> {
           _pointsControllers[id] = TextEditingController(
               text: ((a['points_awarded'] as num?)?.toDouble() ?? 0)
                   .toStringAsFixed(0));
-          _essayCorrect[id] = a['is_correct'] as bool? ?? false;
+          _essayCorrect[id] = a['is_correct'] as bool?;
         }
       }
       if (mounted) setState(() => _answers = rows);
@@ -283,7 +283,8 @@ class _AttemptReviewScreenState extends State<AttemptReviewScreen> {
                                 selected:
                                     _essayCorrect[a['id'] as String] == true,
                                 onSelected: (v) => setState(() =>
-                                    _essayCorrect[a['id'] as String] = true),
+                                    _essayCorrect[a['id'] as String] =
+                                        v ? true : null),
                               ),
                               const SizedBox(width: 4),
                               ChoiceChip(
@@ -291,7 +292,8 @@ class _AttemptReviewScreenState extends State<AttemptReviewScreen> {
                                 selected:
                                     _essayCorrect[a['id'] as String] == false,
                                 onSelected: (v) => setState(() =>
-                                    _essayCorrect[a['id'] as String] = false),
+                                    _essayCorrect[a['id'] as String] =
+                                        v ? false : null),
                               ),
                             ],
                           ),
