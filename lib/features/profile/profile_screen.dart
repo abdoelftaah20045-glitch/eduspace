@@ -6,6 +6,7 @@ import '../admin/admin_panel_screen.dart';
 import '../admin/data/admin_repo.dart';
 import '../certificates/my_certificates_screen.dart';
 import '../courses/favorites_screen.dart';
+import '../support/support_screen.dart';
 import '../settings/settings_screen.dart';
 import 'edit_profile_screen.dart';
 
@@ -95,6 +96,13 @@ class ProfileScreen extends StatelessWidget {
                         builder: (_) => const AdminPanelScreen()),
                   ),
                 ),
+              ListTile(
+                leading: const Icon(Icons.support_agent),
+                title: Text(s.t('support')),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const SupportScreen()),
+                ),
+              ),
               ListTile(
                 leading: const Icon(Icons.settings_outlined),
                 title: Text(s.t('settings')),

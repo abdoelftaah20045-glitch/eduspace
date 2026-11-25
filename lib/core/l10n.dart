@@ -464,6 +464,22 @@ class S {
     },
     'no_reviews': {'ar': 'مفيش مراجعات لسه', 'en': 'No reviews yet'},
     'student': {'ar': 'طالب', 'en': 'Student'},
+    'support': {'ar': 'الدعم', 'en': 'Support'},
+    'new_ticket': {'ar': 'تذكرة جديدة', 'en': 'New ticket'},
+    'ticket_subject': {'ar': 'الموضوع', 'en': 'Subject'},
+    'ticket_message': {'ar': 'رسالتك', 'en': 'Your message'},
+    'no_tickets': {'ar': 'مفيش تذاكر لسه', 'en': 'No tickets yet'},
+    'status_new': {'ar': 'جديدة', 'en': 'New'},
+    'status_in_progress': {'ar': 'قيد المعالجة', 'en': 'In progress'},
+    'status_waiting_user': {'ar': 'بانتظار ردك', 'en': 'Waiting for you'},
+    'status_resolved': {'ar': 'محلولة', 'en': 'Resolved'},
+    'reply_label': {'ar': 'اكتب ردًا...', 'en': 'Write a reply...'},
+    'support_team': {'ar': 'فريق الدعم', 'en': 'Support team'},
+    'category_label': {'ar': 'التصنيف', 'en': 'Category'},
+    'category_general': {'ar': 'عام', 'en': 'General'},
+    'category_payment': {'ar': 'مدفوعات', 'en': 'Payment'},
+    'category_technical': {'ar': 'مشكلة تقنية', 'en': 'Technical issue'},
+    'category_content': {'ar': 'المحتوى', 'en': 'Content'},
   };
 
   String t(String key) {
