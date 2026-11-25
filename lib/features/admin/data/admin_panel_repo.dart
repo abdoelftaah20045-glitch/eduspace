@@ -1,6 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/tenant.dart';
+import 'admin_tools_repo.dart';
 
 /// Admin panel data: users review, dashboard counts, enrollments,
 /// certificates management. RLS enforces admin rights server-side.
@@ -41,6 +42,10 @@ class AdminPanelRepository {
           : reason.trim(),
       'updated_at': DateTime.now().toIso8601String(),
     }).eq('id', id);
+    await AdminToolsRepository.log('student.status',
+        entity: 'profile',
+        entityId: id,
+        details: {'status': status, if (reason != null && reason.trim().isNotEmpty) 'reason': reason.trim()});
   }
 
   // ---------- dashboard ----------

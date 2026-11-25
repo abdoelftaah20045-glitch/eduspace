@@ -11,6 +11,10 @@ import 'admin_library_screen.dart';
 import 'admin_lives_screen.dart';
 import 'admin_support_screen.dart';
 import 'admin_users_screen.dart';
+import 'admin_reports_screen.dart';
+import 'admin_categories_screen.dart';
+import 'admin_audit_screen.dart';
+import 'admin_org_settings_screen.dart';
 import '../tenancy/data/tenancy_repo.dart';
 import '../tenancy/super_admin_screen.dart';
 import '../tenancy/tenant_members_screen.dart';
@@ -54,6 +58,14 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
     final s = S.of(context);
     final c = _counts;
     final sections = <(String, String, IconData, Color, Widget)>[
+      ('reports_label', 'admin_sub_reports', Icons.insights_outlined,
+          const Color(0xFFF29900), const AdminReportsScreen()),
+      ('categories_label', 'admin_sub_categories', Icons.category_outlined,
+          const Color(0xFF00897B), const AdminCategoriesScreen()),
+      ('org_settings', 'admin_sub_settings', Icons.settings_outlined,
+          const Color(0xFF607D8B), const AdminOrgSettingsScreen()),
+      ('audit_label', 'admin_sub_audit', Icons.history, 
+          const Color(0xFF8D6E63), const AdminAuditScreen()),
       ('users_label', 'admin_sub_users', Icons.people_outline,
           const Color(0xFF5C6BC0), const AdminUsersScreen()),
       ('tab_courses', 'admin_sub_courses', Icons.menu_book_outlined,
