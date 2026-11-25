@@ -517,6 +517,8 @@ class S {
     'title_label': {'ar': 'العنوان', 'en': 'Title'},
     'search_label': {'ar': 'ابحث...', 'en': 'Search...'},
     'filter_all': {'ar': 'الكل', 'en': 'All'},
+    'signature_label': {'ar': 'التوقيع', 'en': 'Signature'},
+    'date_label': {'ar': 'التاريخ', 'en': 'Date'},
   };
 
   String t(String key) {
