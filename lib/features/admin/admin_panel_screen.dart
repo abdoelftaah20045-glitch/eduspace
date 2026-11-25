@@ -10,6 +10,7 @@ import 'admin_exams_screen.dart';
 import 'admin_library_screen.dart';
 import 'admin_lives_screen.dart';
 import 'admin_support_screen.dart';
+import 'admin_team_screen.dart';
 import 'admin_users_screen.dart';
 import 'admin_reports_screen.dart';
 import 'admin_categories_screen.dart';
@@ -63,6 +64,8 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
           const Color(0xFFF29900), const AdminReportsScreen()),
       ('targeted_notify', 'admin_sub_notify', Icons.notifications_active_outlined,
           const Color(0xFFE53935), const AdminNotifyScreen()),
+      ('team_roles', 'admin_sub_team', Icons.admin_panel_settings_outlined,
+          const Color(0xFF6A1B9A), const AdminTeamScreen()),
       ('categories_label', 'admin_sub_categories', Icons.category_outlined,
           const Color(0xFF00897B), const AdminCategoriesScreen()),
       ('org_settings', 'admin_sub_settings', Icons.settings_outlined,
