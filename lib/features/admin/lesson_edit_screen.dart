@@ -1,3 +1,4 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/l10n.dart';
@@ -37,6 +38,35 @@ class _LessonEditScreenState extends State<LessonEditScreen> {
   late bool _freePreview =
       (widget.lesson?['is_free_preview'] as bool?) ?? false;
   bool _saving = false;
+  bool _uploading = false;
+
+  bool get _uploadableType => const [
+        'video',
+        'pdf',
+        'document',
+        'presentation',
+        'audio',
+      ].contains(_type);
+
+  Future<void> _pickMedia() async {
+    final s = S.of(context);
+    final result = await FilePicker.platform.pickFiles(withData: true);
+    final f = result?.files.first;
+    if (f == null || f.bytes == null || !mounted) return;
+    setState(() => _uploading = true);
+    try {
+      final ref = await AdminRepository.uploadLessonMedia(
+          fileName: f.name, bytes: f.bytes!);
+      if (mounted) setState(() => _mediaUrl.text = ref);
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(s.t('generic_error'))));
+      }
+    } finally {
+      if (mounted) setState(() => _uploading = false);
+    }
+  }
 
   static const _types = [
     'video',
@@ -126,6 +156,23 @@ class _LessonEditScreenState extends State<LessonEditScreen> {
               decoration: InputDecoration(
                 labelText: s.t('media_url'),
                 helperText: s.t('media_url_hint'),
+                suffixIcon: !_uploadableType
+                    ? null
+                    : _uploading
+                        ? const Padding(
+                            padding: EdgeInsets.all(10),
+                            child: SizedBox(
+                              width: 18,
+                              height: 18,
+                              child:
+                                  CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          )
+                        : IconButton(
+                            tooltip: s.t('upload_file'),
+                            icon: const Icon(Icons.upload_outlined),
+                            onPressed: _pickMedia,
+                          ),
               ),
               keyboardType: TextInputType.url,
             ),

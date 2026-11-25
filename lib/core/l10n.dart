@@ -419,6 +419,7 @@ class S {
     'cert_valid': {'ar': 'شهادة صحيحة', 'en': 'Valid certificate', 'fr': 'Certificat valide', 'es': 'Certificado válido', 'de': 'Gültiges Zertifikat'},
     'timezone_label': {'ar': 'المنطقة الزمنية', 'en': 'Timezone', 'fr': 'Fuseau horaire', 'es': 'Zona horaria', 'de': 'Zeitzone'},
     'upload_cover': {'ar': 'رفع صورة الغلاف', 'en': 'Upload cover image', 'fr': 'Téléverser l\'image de couverture', 'es': 'Subir imagen de portada', 'de': 'Titelbild hochladen'},
+    'upload_file': {'ar': 'رفع ملف', 'en': 'Upload file', 'fr': 'Téléverser un fichier', 'es': 'Subir archivo', 'de': 'Datei hochladen'},
   };
 
   String t(String key) {

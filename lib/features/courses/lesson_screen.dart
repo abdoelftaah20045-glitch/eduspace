@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+import '../../core/storage_urls.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../core/l10n.dart';
@@ -57,7 +59,8 @@ class _LessonScreenState extends State<LessonScreen> {
   }
 
   Future<void> _openExternal(String url) async {
-    final uri = Uri.tryParse(url);
+    final resolved = await resolveStorageUrl(url);
+    final uri = Uri.tryParse(resolved);
     if (uri == null) return;
     await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
@@ -111,17 +114,26 @@ class _LessonScreenState extends State<LessonScreen> {
       case 'video':
         final url = lesson.mediaUrl;
         if (url == null || url.isEmpty) return Text(s.t('no_content'));
-        return _VideoLesson(
-          key: ValueKey(lesson.id),
-          url: url,
-          startAtSeconds: lesson.positionSeconds,
-          onProgress: (seconds, done) {
-            CoursesRepository.saveProgress(
-              lesson.id,
-              positionSeconds: seconds,
-              completed: done ? true : null,
-            ).catchError((_) {});
-            if (done && mounted) setState(() => _completed = true);
+        return FutureBuilder<String>(
+          future: resolveStorageUrl(url),
+          builder: (context, snap) {
+            final resolved = snap.data;
+            if (resolved == null) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            return _VideoLesson(
+              key: ValueKey(lesson.id),
+              url: resolved,
+              startAtSeconds: lesson.positionSeconds,
+              onProgress: (seconds, done) {
+                CoursesRepository.saveProgress(
+                  lesson.id,
+                  positionSeconds: seconds,
+                  completed: done ? true : null,
+                ).catchError((_) {});
+                if (done && mounted) setState(() => _completed = true);
+              },
+            );
           },
         );
       case 'text':

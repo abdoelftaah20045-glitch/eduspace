@@ -42,6 +42,20 @@ class AdminRepository {
     return rows;
   }
 
+  /// Upload a lesson media file (video, pdf, audio, ...) to the private
+  /// course-media bucket; returns a `storage://` reference for
+  /// lessons.media_url that the player resolves to a signed URL.
+  static Future<String> uploadLessonMedia({
+    required String fileName,
+    required Uint8List bytes,
+  }) async {
+    final safe = fileName.replaceAll(RegExp(r'[^\w.\-]'), '_');
+    final path =
+        '${TenantContext.id}/lessons/${DateTime.now().millisecondsSinceEpoch}_$safe';
+    await _c.storage.from('course-media').uploadBinary(path, bytes);
+    return 'storage://course-media/$path';
+  }
+
   /// Upload a course cover image to the public `covers` bucket and
   /// return its public URL, ready to store in courses.cover_url.
   static Future<String> uploadCourseCover({
