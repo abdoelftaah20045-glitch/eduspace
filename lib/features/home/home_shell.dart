@@ -17,6 +17,7 @@ import '../notifications/data/notifications_repo.dart';
 import '../lives/data/lives_repo.dart';
 import '../notifications/notifications_screen.dart';
 import '../profile/profile_screen.dart';
+import 'app_drawer.dart';
 
 /// Bottom navigation shell: Home / Courses / Exams / Account.
 class HomeShell extends StatefulWidget {
@@ -144,6 +145,7 @@ class _HomeTabState extends State<_HomeTab> {
     final myCourses = _myCourses ?? const <Course>[];
     final scheme = theme.colorScheme;
     return Scaffold(
+      drawer: AppDrawer(name: _name, avatarUrl: _avatarUrl),
       body: RefreshIndicator(
         onRefresh: _load,
         child: ListView(
@@ -154,6 +156,12 @@ class _HomeTabState extends State<_HomeTab> {
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 child: Row(
                   children: [
+                    Builder(
+                      builder: (ctx) => IconButton(
+                        icon: const Icon(Icons.menu),
+                        onPressed: () => Scaffold.of(ctx).openDrawer(),
+                      ),
+                    ),
                     CircleAvatar(
                       radius: 24,
                       backgroundColor:
