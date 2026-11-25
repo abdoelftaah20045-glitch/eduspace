@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/l10n.dart';
+import '../certificates/data/certificates_repo.dart';
 import 'data/course_models.dart';
 import 'data/courses_repo.dart';
 import 'lesson_screen.dart';
@@ -34,6 +35,10 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
         _details = details;
         _error = null;
       });
+      // A fully completed course earns its certificate automatically.
+      if (details.enrolled && details.percent == 100) {
+        CertificatesRepository.ensureIssued(details).catchError((_) {});
+      }
     } catch (_) {
       if (!mounted) return;
       setState(() => _error = 'load');

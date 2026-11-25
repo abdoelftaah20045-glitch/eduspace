@@ -220,6 +220,33 @@ class S {
       'ar': 'السؤال المقالي بيتراجع يدويًا من الإدارة',
       'en': 'Essay answers are reviewed manually by the admin',
     },
+    'notifications': {'ar': 'الإشعارات', 'en': 'Notifications'},
+    'no_notifications': {'ar': 'مفيش إشعارات لسه', 'en': 'No notifications yet'},
+    'mark_all_read': {
+      'ar': 'تحديد الكل كمقروء',
+      'en': 'Mark all as read',
+    },
+    'no_certificates': {
+      'ar': 'مفيش شهادات لسه. كمّل كورس كامل عشان تاخد شهادتك.',
+      'en': 'No certificates yet. Finish a full course to earn yours.',
+    },
+    'certificate_of_completion': {
+      'ar': 'شهادة إتمام',
+      'en': 'Certificate of Completion',
+    },
+    'this_certifies': {
+      'ar': 'تشهد منصة EduSpace بأن',
+      'en': 'EduSpace certifies that',
+    },
+    'has_completed': {
+      'ar': 'قد أتم بنجاح كورس',
+      'en': 'has successfully completed the course',
+    },
+    'issued_on': {'ar': 'تاريخ الإصدار', 'en': 'Issued on'},
+    'cert_number': {'ar': 'رقم الشهادة', 'en': 'Certificate no.'},
+    'share': {'ar': 'مشاركة', 'en': 'Share'},
+    'status_cancelled': {'ar': 'ملغاة', 'en': 'Cancelled'},
+    'hours_label': {'ar': 'عدد الساعات', 'en': 'Hours'},
   };
 
   String t(String key) {

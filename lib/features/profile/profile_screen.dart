@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/l10n.dart';
 import '../admin/admin_courses_screen.dart';
 import '../admin/data/admin_repo.dart';
+import '../certificates/my_certificates_screen.dart';
 import '../settings/settings_screen.dart';
 import 'edit_profile_screen.dart';
 
@@ -67,6 +68,14 @@ class ProfileScreen extends StatelessWidget {
                 title: Text(s.t('edit_profile')),
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute(builder: (_) => const EditProfileScreen()),
+                ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.workspace_premium_outlined),
+                title: Text(s.t('my_certificates')),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                      builder: (_) => const MyCertificatesScreen()),
                 ),
               ),
               if (isAdmin)
