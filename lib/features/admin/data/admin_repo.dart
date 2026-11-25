@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/tenant.dart';
@@ -38,6 +40,19 @@ class AdminRepository {
         .order('created_at', ascending: false)
         .limit(100);
     return rows;
+  }
+
+  /// Upload a course cover image to the public `covers` bucket and
+  /// return its public URL, ready to store in courses.cover_url.
+  static Future<String> uploadCourseCover({
+    required String fileName,
+    required Uint8List bytes,
+  }) async {
+    final safe = fileName.replaceAll(RegExp(r'[^\w.\-]'), '_');
+    final path =
+        '${TenantContext.id}/${DateTime.now().millisecondsSinceEpoch}_$safe';
+    await _c.storage.from('covers').uploadBinary(path, bytes);
+    return _c.storage.from('covers').getPublicUrl(path);
   }
 
   static Future<String> createCourse(Map<String, dynamic> values) async {

@@ -112,7 +112,8 @@ class LibraryRepository {
     required Uint8List bytes,
   }) async {
     final safe = fileName.replaceAll(RegExp(r'[^\w.\-]'), '_');
-    final path = 'uploads/${DateTime.now().millisecondsSinceEpoch}_$safe';
+    final path =
+        '${TenantContext.id}/uploads/${DateTime.now().millisecondsSinceEpoch}_$safe';
     await _c.storage.from('resources').uploadBinary(path, bytes);
     return 'storage://resources/$path';
   }

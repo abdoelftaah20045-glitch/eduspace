@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../core/l10n.dart';
 import 'data/admin_repo.dart';
@@ -37,6 +38,31 @@ class _CourseEditScreenState extends State<CourseEditScreen> {
   late String _currency =
       widget.course?['currency'] as String? ?? 'EGP';
   bool _saving = false;
+  bool _uploadingCover = false;
+
+  Future<void> _pickCover() async {
+    final s = S.of(context);
+    final file = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 1600,
+      imageQuality: 85,
+    );
+    if (file == null || !mounted) return;
+    setState(() => _uploadingCover = true);
+    try {
+      final bytes = await file.readAsBytes();
+      final url = await AdminRepository.uploadCourseCover(
+          fileName: file.name, bytes: bytes);
+      if (mounted) setState(() => _cover.text = url);
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(s.t('generic_error'))));
+      }
+    } finally {
+      if (mounted) setState(() => _uploadingCover = false);
+    }
+  }
 
   static const _levels = ['all_levels', 'beginner', 'intermediate', 'advanced'];
   static const _statuses = [
@@ -132,7 +158,23 @@ class _CourseEditScreenState extends State<CourseEditScreen> {
             const SizedBox(height: 12),
             TextFormField(
               controller: _cover,
-              decoration: InputDecoration(labelText: s.t('cover_url')),
+              decoration: InputDecoration(
+                labelText: s.t('cover_url'),
+                suffixIcon: _uploadingCover
+                    ? const Padding(
+                        padding: EdgeInsets.all(10),
+                        child: SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      )
+                    : IconButton(
+                        tooltip: s.t('upload_cover'),
+                        icon: const Icon(Icons.upload_outlined),
+                        onPressed: _pickCover,
+                      ),
+              ),
               keyboardType: TextInputType.url,
             ),
             const SizedBox(height: 12),
