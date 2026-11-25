@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../core/storage_urls.dart';
+
 import '../../core/l10n.dart';
 import 'data/assignments_repo.dart';
 
@@ -218,7 +220,8 @@ class _AssignmentCardState extends State<_AssignmentCard> {
             ),
             if (a.attachmentUrl != null && a.attachmentUrl!.isNotEmpty)
               TextButton.icon(
-                onPressed: () => launchUrl(Uri.parse(a.attachmentUrl!),
+                onPressed: () async => launchUrl(
+                    Uri.parse(await resolveStorageUrl(a.attachmentUrl!)),
                     mode: LaunchMode.externalApplication),
                 icon: const Icon(Icons.attach_file, size: 18),
                 label: Text(s.t('attachment')),

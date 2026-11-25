@@ -1,3 +1,4 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -183,6 +184,27 @@ class _AssignmentSheetState extends State<_AssignmentSheet> {
   late bool _allowLate = widget.assignment?.allowLate ?? false;
   DateTime? _dueAt;
   bool _saving = false;
+  bool _uploading = false;
+
+  Future<void> _pickAttachment() async {
+    final s = S.of(context);
+    final result = await FilePicker.platform.pickFiles(withData: true);
+    final f = result?.files.first;
+    if (f == null || f.bytes == null || !mounted) return;
+    setState(() => _uploading = true);
+    try {
+      final ref = await AdminRepository.uploadAssignmentAttachment(
+          fileName: f.name, bytes: f.bytes!);
+      if (mounted) setState(() => _attachment.text = ref);
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(s.t('generic_error'))));
+      }
+    } finally {
+      if (mounted) setState(() => _uploading = false);
+    }
+  }
 
   @override
   void initState() {
@@ -274,8 +296,23 @@ class _AssignmentSheetState extends State<_AssignmentSheet> {
               TextFormField(
                 controller: _attachment,
                 keyboardType: TextInputType.url,
-                decoration:
-                    InputDecoration(labelText: s.t('attachment_url')),
+                decoration: InputDecoration(
+                  labelText: s.t('attachment_url'),
+                  suffixIcon: _uploading
+                      ? const Padding(
+                          padding: EdgeInsets.all(10),
+                          child: SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        )
+                      : IconButton(
+                          tooltip: s.t('upload_file'),
+                          icon: const Icon(Icons.upload_outlined),
+                          onPressed: _pickAttachment,
+                        ),
+                ),
               ),
               const SizedBox(height: 12),
               Row(

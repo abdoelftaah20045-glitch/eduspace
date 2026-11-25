@@ -42,6 +42,19 @@ class AdminRepository {
     return rows;
   }
 
+  /// Upload an assignment attachment to the private course-media bucket;
+  /// returns a `storage://` reference for assignments.attachment_url.
+  static Future<String> uploadAssignmentAttachment({
+    required String fileName,
+    required Uint8List bytes,
+  }) async {
+    final safe = fileName.replaceAll(RegExp(r'[^\w.\-]'), '_');
+    final path =
+        '${TenantContext.id}/assignments/${DateTime.now().millisecondsSinceEpoch}_$safe';
+    await _c.storage.from('course-media').uploadBinary(path, bytes);
+    return 'storage://course-media/$path';
+  }
+
   /// Upload a lesson media file (video, pdf, audio, ...) to the private
   /// course-media bucket; returns a `storage://` reference for
   /// lessons.media_url that the player resolves to a signed URL.
