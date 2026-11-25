@@ -138,6 +138,23 @@ class _AdminSubmissionsScreenState extends State<AdminSubmissionsScreen> {
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis),
                                 ),
+                              if (sub.filePath != null &&
+                                  sub.filePath!.isNotEmpty)
+                                TextButton.icon(
+                                  onPressed: () async {
+                                    final url = await AssignmentsRepository
+                                        .signedSubmissionUrl(sub.filePath!);
+                                    await launchUrl(Uri.parse(url),
+                                        mode: LaunchMode.externalApplication);
+                                  },
+                                  icon: const Icon(Icons.attach_file,
+                                      size: 18),
+                                  label: Text(
+                                    sub.filePath!.split('/').last,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
                               if (sub.isGraded &&
                                   (sub.feedback ?? '').isNotEmpty)
                                 Text('${s.t('feedback_label')}: ${sub.feedback}'),

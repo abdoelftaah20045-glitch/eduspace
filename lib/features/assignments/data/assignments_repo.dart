@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class Assignment {
@@ -64,6 +66,7 @@ class Submission {
     required this.userId,
     this.textAnswer = '',
     this.linkUrl,
+    this.filePath,
     required this.status,
     this.score,
     this.feedback,
@@ -76,6 +79,10 @@ class Submission {
   final String userId;
   final String textAnswer;
   final String? linkUrl;
+
+  /// Path inside the private `submissions` storage bucket, if a file was
+  /// uploaded with this submission.
+  final String? filePath;
   final String status;
   final double? score;
   final String? feedback;
@@ -94,6 +101,7 @@ class Submission {
       userId: m['user_id'] as String,
       textAnswer: (m['text_answer'] as String?) ?? '',
       linkUrl: m['link_url'] as String?,
+      filePath: m['file_path'] as String?,
       status: (m['status'] as String?) ?? 'submitted',
       score: (m['score'] as num?)?.toDouble(),
       feedback: m['feedback'] as String?,
@@ -141,6 +149,7 @@ class AssignmentsRepository {
     required Assignment assignment,
     required String textAnswer,
     String? linkUrl,
+    String? filePath,
   }) async {
     final uid = _c.auth.currentUser!.id;
     final late = assignment.isOverdue;
@@ -150,11 +159,34 @@ class AssignmentsRepository {
       'text_answer': textAnswer,
       'link_url':
           (linkUrl == null || linkUrl.trim().isEmpty) ? null : linkUrl.trim(),
+      'file_path':
+          (filePath == null || filePath.trim().isEmpty) ? null : filePath.trim(),
       'status': late ? 'late' : 'submitted',
       'submitted_at': DateTime.now().toIso8601String(),
       'updated_at': DateTime.now().toIso8601String(),
     }, onConflict: 'assignment_id,user_id');
   }
+
+  /// Upload a submission file to the private submissions bucket and return
+  /// its storage path (<uid>/<assignment_id>/<filename>).
+  static Future<String> uploadSubmissionFile({
+    required String assignmentId,
+    required String fileName,
+    required Uint8List bytes,
+  }) async {
+    final uid = _c.auth.currentUser!.id;
+    final path = '$uid/$assignmentId/$fileName';
+    await _c.storage.from('submissions').uploadBinary(
+          path,
+          bytes,
+          fileOptions: const FileOptions(upsert: true),
+        );
+    return path;
+  }
+
+  /// Short-lived signed URL to open a submission file (owner or admin).
+  static Future<String> signedSubmissionUrl(String path) =>
+      _c.storage.from('submissions').createSignedUrl(path, 300);
 
   // ---------- admin ----------
 

@@ -444,6 +444,7 @@ class S {
       'en': 'Assignment description',
     },
     'attachment': {'ar': 'مرفق', 'en': 'Attachment'},
+    'attach_file': {'ar': 'أرفق ملف', 'en': 'Attach file'},
     'attachment_url': {
       'ar': 'رابط مرفق (اختياري)',
       'en': 'Attachment link (optional)',

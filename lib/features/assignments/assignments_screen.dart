@@ -1,3 +1,6 @@
+import 'dart:typed_data';
+
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -84,6 +87,30 @@ class _AssignmentCardState extends State<_AssignmentCard> {
   late final _link = TextEditingController(
       text: widget.assignment.mySubmission?.linkUrl ?? '');
   bool _busy = false;
+  String? _fileName;
+  Uint8List? _fileBytes;
+
+  Future<void> _pickFile() async {
+    final result = await FilePicker.platform.pickFiles(withData: true);
+    final f = result?.files.first;
+    if (f == null || f.bytes == null || !mounted) return;
+    setState(() {
+      _fileName = f.name;
+      _fileBytes = f.bytes;
+    });
+  }
+
+  Future<void> _openFile(String path) async {
+    try {
+      final url = await AssignmentsRepository.signedSubmissionUrl(path);
+      await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(S.of(context).t('generic_error'))));
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -94,18 +121,34 @@ class _AssignmentCardState extends State<_AssignmentCard> {
 
   Future<void> _submit() async {
     final s = S.of(context);
-    if (_text.text.trim().isEmpty && _link.text.trim().isEmpty) {
+    if (_text.text.trim().isEmpty &&
+        _link.text.trim().isEmpty &&
+        _fileBytes == null &&
+        widget.assignment.mySubmission?.filePath == null) {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(s.t('submission_empty'))));
       return;
     }
     setState(() => _busy = true);
     try {
+      String? filePath = widget.assignment.mySubmission?.filePath;
+      final bytes = _fileBytes;
+      final name = _fileName;
+      if (bytes != null && name != null) {
+        filePath = await AssignmentsRepository.uploadSubmissionFile(
+          assignmentId: widget.assignment.id,
+          fileName: name,
+          bytes: bytes,
+        );
+      }
       await AssignmentsRepository.submit(
         assignment: widget.assignment,
         textAnswer: _text.text.trim(),
         linkUrl: _link.text,
+        filePath: filePath,
       );
+      _fileBytes = null;
+      _fileName = null;
       await widget.onChanged();
     } catch (_) {
       if (mounted) {
@@ -208,6 +251,28 @@ class _AssignmentCardState extends State<_AssignmentCard> {
                   keyboardType: TextInputType.url,
                   decoration:
                       InputDecoration(labelText: s.t('link_url_label')),
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 4,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    OutlinedButton.icon(
+                      onPressed: _busy ? null : _pickFile,
+                      icon: const Icon(Icons.attach_file, size: 18),
+                      label: Text(s.t('attach_file')),
+                    ),
+                    if (_fileName != null)
+                      Text(_fileName!, style: theme.textTheme.bodySmall)
+                    else if (sub?.filePath != null)
+                      TextButton.icon(
+                        onPressed: () => _openFile(sub!.filePath!),
+                        icon: const Icon(Icons.insert_drive_file_outlined,
+                            size: 18),
+                        label: Text(sub!.filePath!.split('/').last),
+                      ),
+                  ],
                 ),
                 const SizedBox(height: 8),
                 Align(
