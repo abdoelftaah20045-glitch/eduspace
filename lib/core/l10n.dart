@@ -146,6 +146,8 @@ class S {
     'lesson_open_mode': {'ar': 'موعد فتح الدرس', 'en': 'When the lesson opens', 'fr': 'Ouverture', 'es': 'Apertura', 'de': 'Oeffnung'},
     'open_now': {'ar': 'مفتوح الآن', 'en': 'Open now', 'fr': 'Ouvert', 'es': 'Abierto', 'de': 'Offen'},
     'open_on_date': {'ar': 'يفتح في موعد معين', 'en': 'Opens on a date', 'fr': 'Ouvre a une date', 'es': 'Abre en fecha', 'de': 'Oeffnet am Datum'},
+    'avail_from': {'ar': 'تاريخ بدء إتاحة الكورس', 'en': 'Available from', 'fr': 'Disponible a partir du', 'es': 'Disponible desde', 'de': 'Verfuegbar ab'},
+    'avail_until': {'ar': 'تاريخ انتهاء الإتاحة', 'en': 'Available until', 'fr': 'Disponible jusqu au', 'es': 'Disponible hasta', 'de': 'Verfuegbar bis'},
     'audit_label': {'ar': 'سجل العمليات', 'en': 'Audit log', 'fr': 'Audit log', 'es': 'Audit log', 'de': 'Audit log'},
     'no_audit': {'ar': 'لا توجد عمليات مسجلة', 'en': 'No recorded actions', 'fr': 'No recorded actions', 'es': 'No recorded actions', 'de': 'No recorded actions'},
     'org_settings': {'ar': 'إعدادات المؤسسة', 'en': 'Organization settings', 'fr': 'Organization settings', 'es': 'Organization settings', 'de': 'Organization settings'},

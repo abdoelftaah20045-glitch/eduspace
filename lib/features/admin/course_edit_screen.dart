@@ -37,6 +37,13 @@ class _CourseEditScreenState extends State<CourseEditScreen> {
   late String _status = widget.course?['status'] as String? ?? 'draft';
   late String _currency =
       widget.course?['currency'] as String? ?? 'EGP';
+  late DateTime? _from = widget.course?['available_at'] != null
+      ? DateTime.tryParse(widget.course!['available_at'].toString())?.toLocal()
+      : null;
+  late DateTime? _until = widget.course?['available_until'] != null
+      ? DateTime.tryParse(widget.course!['available_until'].toString())
+          ?.toLocal()
+      : null;
   bool _saving = false;
   bool _uploadingCover = false;
 
@@ -62,6 +69,15 @@ class _CourseEditScreenState extends State<CourseEditScreen> {
     } finally {
       if (mounted) setState(() => _uploadingCover = false);
     }
+  }
+
+  Future<DateTime?> _pickDate(DateTime? cur) {
+    final now = DateTime.now();
+    return showDatePicker(
+        context: context,
+        initialDate: cur ?? now,
+        firstDate: now.subtract(const Duration(days: 365)),
+        lastDate: now.add(const Duration(days: 365 * 5)));
   }
 
   static const _levels = ['all_levels', 'beginner', 'intermediate', 'advanced'];
@@ -101,6 +117,8 @@ class _CourseEditScreenState extends State<CourseEditScreen> {
       'price': double.tryParse(_price.text.trim()) ?? 0,
       'currency': _currency,
       'level': _level,
+      'available_at': _from?.toUtc().toIso8601String(),
+      'available_until': _until?.toUtc().toIso8601String(),
       'status': _status,
       'prerequisites': _prerequisites.text.trim(),
     };
@@ -217,6 +235,41 @@ class _CourseEditScreenState extends State<CourseEditScreen> {
                       DropdownMenuItem(value: l, child: Text(s.t('level_$l'))))
                   .toList(),
               onChanged: (v) => setState(() => _level = v ?? 'all_levels'),
+            ),
+            const SizedBox(height: 8),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.event_available_outlined),
+              title: Text(s.t('avail_from')),
+              subtitle: Text(_from == null
+                  ? '-'
+                  : _from!.toString().substring(0, 10)),
+              trailing: _from == null
+                  ? null
+                  : IconButton(
+                      icon: const Icon(Icons.clear),
+                      onPressed: () => setState(() => _from = null)),
+              onTap: () async {
+                final d = await _pickDate(_from);
+                if (d != null) setState(() => _from = d);
+              },
+            ),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.event_busy_outlined),
+              title: Text(s.t('avail_until')),
+              subtitle: Text(_until == null
+                  ? '-'
+                  : _until!.toString().substring(0, 10)),
+              trailing: _until == null
+                  ? null
+                  : IconButton(
+                      icon: const Icon(Icons.clear),
+                      onPressed: () => setState(() => _until = null)),
+              onTap: () async {
+                final d = await _pickDate(_until);
+                if (d != null) setState(() => _until = d);
+              },
             ),
             const SizedBox(height: 12),
             DropdownButtonFormField<String>(
