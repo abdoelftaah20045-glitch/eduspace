@@ -6,6 +6,7 @@ import 'app.dart';
 import 'core/app_state.dart';
 import 'core/config.dart';
 import 'core/integrations.dart';
+import 'core/recovery.dart';
 import 'core/push_service.dart';
 import 'core/tenant.dart';
 
@@ -23,7 +24,7 @@ Future<void> main() async {
         authFlowType: AuthFlowType.pkce,
       ),
     );
-    listenForPasswordRecovery();
+    await initRecoveryListener();
   }
   // Push notifications: no-op unless built with FCM_ENABLED=true and the
   // Firebase config files (exec guide section 17, Push).

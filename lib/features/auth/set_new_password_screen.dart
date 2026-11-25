@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/l10n.dart';
+import '../../core/recovery.dart';
 
 /// Shown when the user lands in the app from a password-recovery email link
 /// (AuthChangeEvent.passwordRecovery). Lets them set a brand new password.
@@ -66,8 +67,7 @@ class _SetNewPasswordScreenState extends State<SetNewPasswordScreen> {
                   ),
                   const SizedBox(height: 20),
                   FilledButton(
-                    onPressed: () => Navigator.of(context)
-                        .popUntil((r) => r.isFirst),
+                    onPressed: clearRecovery,
                     child: Text(s.t('done')),
                   ),
                 ],

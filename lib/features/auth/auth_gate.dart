@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../core/recovery.dart';
 import '../home/home_shell.dart';
 import 'account_status_screen.dart';
 import 'login_screen.dart';
@@ -13,17 +14,20 @@ class AuthGate extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<AuthState>(
-      stream: Supabase.instance.client.auth.onAuthStateChange,
-      builder: (context, snapshot) {
+    return ValueListenableBuilder<bool>(
+      valueListenable: recoveryMode,
+      builder: (context, recovering, _) {
         // Recovery email link opened the app: always land on the
         // set-new-password screen, even when already signed in.
-        if (snapshot.data?.event == AuthChangeEvent.passwordRecovery) {
-          return const SetNewPasswordScreen();
-        }
-        final session = Supabase.instance.client.auth.currentSession;
-        if (session == null) return const _UnauthenticatedFlow();
-        return const _ProfileStatusLoader();
+        if (recovering) return const SetNewPasswordScreen();
+        return StreamBuilder<AuthState>(
+          stream: Supabase.instance.client.auth.onAuthStateChange,
+          builder: (context, snapshot) {
+            final session = Supabase.instance.client.auth.currentSession;
+            if (session == null) return const _UnauthenticatedFlow();
+            return const _ProfileStatusLoader();
+          },
+        );
       },
     );
   }

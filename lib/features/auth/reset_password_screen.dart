@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/config.dart';
 import '../../core/l10n.dart';
+import '../../core/recovery.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
   const ResetPasswordScreen({super.key});
@@ -19,6 +20,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   Future<void> _send() async {
     setState(() => _busy = true);
     try {
+      await markRecoveryRequested();
       await Supabase.instance.client.auth.resetPasswordForEmail(
         _email.text.trim(),
         redirectTo: kAuthRedirectUrl,
