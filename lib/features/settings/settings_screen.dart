@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/app_state.dart';
 import '../../core/l10n.dart';
@@ -64,8 +65,86 @@ class SettingsScreen extends StatelessWidget {
                   builder: (_) => const NotificationPrefsScreen()),
             ),
           ),
+          // S49: change password.
+          ListTile(
+            leading: const Icon(Icons.lock_reset),
+            title: Text(s.t('change_password')),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => _changePassword(context),
+          ),
+          // S50: about.
+          ListTile(
+            leading: const Icon(Icons.info_outline),
+            title: Text(s.t('about_app')),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => showAboutDialog(
+              context: context,
+              applicationName: s.t('app_name'),
+              applicationVersion: '0.2.0',
+              applicationLegalese: s.t('about_legalese'),
+            ),
+          ),
         ],
       ),
     );
+  }
+
+  Future<void> _changePassword(BuildContext context) async {
+    final s = S.of(context);
+    final password = TextEditingController();
+    final confirm = TextEditingController();
+    final messenger = ScaffoldMessenger.of(context);
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(s.t('change_password')),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: password,
+              obscureText: true,
+              decoration: InputDecoration(labelText: s.t('new_password')),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: confirm,
+              obscureText: true,
+              decoration: InputDecoration(labelText: s.t('confirm_password')),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(s.t('cancel')),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(s.t('save')),
+          ),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    if (password.text.length < 8) {
+      messenger.showSnackBar(
+          SnackBar(content: Text(s.t('password_too_short'))));
+      return;
+    }
+    if (password.text != confirm.text) {
+      messenger.showSnackBar(
+          SnackBar(content: Text(s.t('password_mismatch'))));
+      return;
+    }
+    try {
+      await Supabase.instance.client.auth
+          .updateUser(UserAttributes(password: password.text));
+      messenger.showSnackBar(
+          SnackBar(content: Text(s.t('password_changed'))));
+    } catch (_) {
+      messenger.showSnackBar(
+          SnackBar(content: Text(s.t('generic_error'))));
+    }
   }
 }

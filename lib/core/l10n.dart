@@ -63,6 +63,25 @@ class S {
       'ar': 'تعذر رفع الصورة، جرب تاني',
       'en': 'Could not upload the photo, try again',
     },
+    'change_password': {'ar': 'تغيير كلمة المرور', 'en': 'Change password'},
+    'new_password': {'ar': 'كلمة المرور الجديدة', 'en': 'New password'},
+    'password_changed': {
+      'ar': 'تم تغيير كلمة المرور',
+      'en': 'Password changed',
+    },
+    'password_mismatch': {
+      'ar': 'كلمتا المرور غير متطابقتين',
+      'en': 'Passwords do not match',
+    },
+    'password_too_short': {
+      'ar': 'كلمة المرور لازم 8 أحرف على الأقل',
+      'en': 'Password must be at least 8 characters',
+    },
+    'about_app': {'ar': 'عن التطبيق', 'en': 'About the app'},
+    'about_legalese': {
+      'ar': 'منصة تعليمية للكورسات والامتحانات والشهادات.',
+      'en': 'A learning platform for courses, exams and certificates.',
+    },
     'save': {'ar': 'حفظ', 'en': 'Save'},
     'cancel': {'ar': 'إلغاء', 'en': 'Cancel'},
     'settings': {'ar': 'الإعدادات', 'en': 'Settings'},
