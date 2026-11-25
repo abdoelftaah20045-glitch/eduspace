@@ -450,6 +450,20 @@ class S {
     'status_submitted': {'ar': 'تم التسليم', 'en': 'Submitted'},
     'status_late': {'ar': 'متأخر', 'en': 'Late'},
     'status_graded': {'ar': 'تم التقييم', 'en': 'Graded'},
+    'favorites': {'ar': 'المفضلة', 'en': 'Favorites'},
+    'no_favorites': {
+      'ar': 'مفيش كورسات في المفضلة لسه',
+      'en': 'No favorite courses yet',
+    },
+    'reviews': {'ar': 'التقييمات والمراجعات', 'en': 'Ratings & reviews'},
+    'write_review': {'ar': 'اكتب مراجعة', 'en': 'Write a review'},
+    'your_review': {'ar': 'مراجعتك', 'en': 'Your review'},
+    'review_hint': {
+      'ar': 'قول رأيك في الكورس (اختياري)',
+      'en': 'Share your thoughts (optional)',
+    },
+    'no_reviews': {'ar': 'مفيش مراجعات لسه', 'en': 'No reviews yet'},
+    'student': {'ar': 'طالب', 'en': 'Student'},
   };
 
   String t(String key) {

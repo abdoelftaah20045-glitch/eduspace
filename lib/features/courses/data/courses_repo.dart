@@ -19,7 +19,46 @@ class CoursesRepository {
       q = q.or('title.ilike.$pattern,description.ilike.$pattern,field.ilike.$pattern');
     }
     final rows = await q.order('created_at', ascending: false).limit(50);
-    return rows.map((m) => Course.fromMap(m)).toList();
+    return _mergeSocial(rows.map((m) => Course.fromMap(m)).toList());
+  }
+
+  /// Merges favorites and rating stats into courses.
+  static Future<List<Course>> _mergeSocial(List<Course> courses) async {
+    if (courses.isEmpty) return courses;
+    final ids = courses.map((c) => c.id).toList();
+    Set<String> favorites = {};
+    try {
+      final favRows = await _c
+          .from('favorites')
+          .select('course_id')
+          .eq('user_id', _uid)
+          .inFilter('course_id', ids);
+      favorites = favRows.map((m) => m['course_id'] as String).toSet();
+    } catch (_) {}
+    final ratingSum = <String, double>{};
+    final ratingCount = <String, int>{};
+    try {
+      final reviewRows = await _c
+          .from('course_reviews')
+          .select('course_id, rating')
+          .inFilter('course_id', ids);
+      for (final m in reviewRows) {
+        final id = m['course_id'] as String;
+        ratingSum[id] =
+            (ratingSum[id] ?? 0) + ((m['rating'] as num?)?.toDouble() ?? 0);
+        ratingCount[id] = (ratingCount[id] ?? 0) + 1;
+      }
+    } catch (_) {}
+    return [
+      for (final c in courses)
+        c.withSocial(
+          isFavorite: favorites.contains(c.id),
+          ratingAvg: (ratingCount[c.id] ?? 0) > 0
+              ? ratingSum[c.id]! / ratingCount[c.id]!
+              : null,
+          ratingCount: ratingCount[c.id] ?? 0,
+        ),
+    ];
   }
 
   /// Courses the current user is enrolled in, with progress percent.
@@ -125,12 +164,70 @@ class CoursesRepository {
             ))
         .toList();
 
+    final mergedCourse = (await _mergeSocial([course])).first;
     return CourseDetails(
-      course: course,
+      course: mergedCourse,
       sections: mergedSections,
       enrolled: enrolled,
       progress: progress,
     );
+  }
+
+  // ---------- favorites & reviews (doc 20) ----------
+
+  static Future<void> setFavorite(String courseId, bool favorite) async {
+    if (favorite) {
+      await _c.from('favorites').upsert({
+        'user_id': _uid,
+        'course_id': courseId,
+      });
+    } else {
+      await _c
+          .from('favorites')
+          .delete()
+          .eq('user_id', _uid)
+          .eq('course_id', courseId);
+    }
+  }
+
+  /// Favorite courses, newest favorite first.
+  static Future<List<Course>> fetchFavoriteCourses() async {
+    final rows = await _c
+        .from('favorites')
+        .select('*, courses(*)')
+        .eq('user_id', _uid)
+        .order('created_at', ascending: false);
+    final courses = <Course>[];
+    for (final m in rows) {
+      final c = m['courses'];
+      if (c == null) continue;
+      courses.add(Course.fromMap(Map<String, dynamic>.from(c as Map))
+          .withSocial(isFavorite: true));
+    }
+    return _mergeSocial(courses);
+  }
+
+  static Future<List<CourseReview>> fetchReviews(String courseId) async {
+    final rows = await _c
+        .from('course_reviews')
+        .select('*, profiles(full_name)')
+        .eq('course_id', courseId)
+        .order('created_at', ascending: false)
+        .limit(50);
+    return rows
+        .map((m) => CourseReview.fromMap(m, viewerId: _uid))
+        .toList();
+  }
+
+  static Future<void> upsertReview(
+      String courseId, int rating, String body) async {
+    await _c.from('course_reviews').upsert({
+      'user_id': _uid,
+      'course_id': courseId,
+      'rating': rating,
+      'body': body.trim(),
+      'updated_at': DateTime.now().toIso8601String(),
+    }, onConflict: 'user_id,course_id');
   }
 
   /// Self-enroll into a free, published course (RLS enforces both).

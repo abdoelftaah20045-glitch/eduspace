@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/l10n.dart';
 import '../assignments/assignments_screen.dart';
 import '../certificates/data/certificates_repo.dart';
+import 'course_reviews.dart';
 import 'data/course_models.dart';
 import 'data/courses_repo.dart';
 import 'lesson_screen.dart';
@@ -21,6 +22,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
   CourseDetails? _details;
   String? _error;
   bool _enrolling = false;
+  bool _isFav = false;
 
   @override
   void initState() {
@@ -35,6 +37,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
       setState(() {
         _details = details;
         _error = null;
+        _isFav = details.course.isFavorite;
       });
       // A fully completed course earns its certificate automatically.
       if (details.enrolled && details.percent == 100) {
@@ -81,6 +84,21 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
       appBar: AppBar(
         title: Text(details?.course.title ?? ''),
         actions: [
+          IconButton(
+            tooltip: s.t('favorites'),
+            icon: Icon(
+                _isFav ? Icons.favorite : Icons.favorite_border,
+                color: _isFav ? Colors.redAccent : null),
+            onPressed: () async {
+              setState(() => _isFav = !_isFav);
+              try {
+                await CoursesRepository.setFavorite(
+                    widget.courseId, _isFav);
+              } catch (_) {
+                if (mounted) setState(() => _isFav = !_isFav);
+              }
+            },
+          ),
           if (details?.enrolled == true)
             IconButton(
               tooltip: s.t('assignments_label'),
@@ -134,6 +152,11 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                     _Meta(icon: Icons.signal_cellular_alt, label: s.t('level_${course.level}')),
                   if (course.field != null && course.field!.isNotEmpty)
                     _Meta(icon: Icons.category_outlined, label: course.field!),
+                  if (course.ratingCount > 0)
+                    _Meta(
+                        icon: Icons.star_outline,
+                        label:
+                            '${course.ratingAvg!.toStringAsFixed(1)} (${course.ratingCount})'),
                 ],
               ),
               if (course.instructorName != null &&
@@ -166,6 +189,10 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
             padding: const EdgeInsets.all(24),
             child: Center(child: Text(s.t('no_lessons'))),
           ),
+        ReviewsSection(
+          courseId: widget.courseId,
+          enrolled: details.enrolled,
+        ),
       ],
     );
   }

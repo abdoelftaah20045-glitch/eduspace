@@ -5,6 +5,7 @@ import '../../core/l10n.dart';
 import '../admin/admin_panel_screen.dart';
 import '../admin/data/admin_repo.dart';
 import '../certificates/my_certificates_screen.dart';
+import '../courses/favorites_screen.dart';
 import '../settings/settings_screen.dart';
 import 'edit_profile_screen.dart';
 
@@ -68,6 +69,13 @@ class ProfileScreen extends StatelessWidget {
                 title: Text(s.t('edit_profile')),
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute(builder: (_) => const EditProfileScreen()),
+                ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.favorite_border),
+                title: Text(s.t('favorites')),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const FavoritesScreen()),
                 ),
               ),
               ListTile(

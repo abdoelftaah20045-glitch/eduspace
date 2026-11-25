@@ -21,6 +21,9 @@ class Course {
     this.lessonsSequential = false,
     this.isEnrolled = false,
     this.progressPercent,
+    this.isFavorite = false,
+    this.ratingAvg,
+    this.ratingCount = 0,
   });
 
   final String id;
@@ -43,7 +46,37 @@ class Course {
   final bool isEnrolled;
   final int? progressPercent;
 
+  /// Social layer: merged in by the repository.
+  final bool isFavorite;
+  final double? ratingAvg;
+  final int ratingCount;
+
   bool get isFree => price <= 0;
+
+  Course withSocial({bool? isFavorite, double? ratingAvg, int? ratingCount}) {
+    return Course(
+      id: id,
+      title: title,
+      description: description,
+      coverUrl: coverUrl,
+      field: field,
+      level: level,
+      instructorName: instructorName,
+      language: language,
+      prerequisites: prerequisites,
+      hours: hours,
+      price: price,
+      currency: currency,
+      status: status,
+      visibility: visibility,
+      lessonsSequential: lessonsSequential,
+      isEnrolled: isEnrolled,
+      progressPercent: progressPercent,
+      isFavorite: isFavorite ?? this.isFavorite,
+      ratingAvg: ratingAvg ?? this.ratingAvg,
+      ratingCount: ratingCount ?? this.ratingCount,
+    );
+  }
 
   factory Course.fromMap(Map<String, dynamic> m) {
     return Course(
@@ -223,6 +256,43 @@ class LessonProgress {
       lastViewedAt: m['last_viewed_at'] != null
           ? DateTime.tryParse(m['last_viewed_at'] as String)
           : null,
+    );
+  }
+}
+
+/// One course review with the author's display name.
+class CourseReview {
+  CourseReview({
+    required this.id,
+    required this.userId,
+    required this.rating,
+    this.body = '',
+    required this.createdAt,
+    this.authorName = '',
+    this.isMine = false,
+  });
+
+  final String id;
+  final String userId;
+  final int rating;
+  final String body;
+  final DateTime createdAt;
+  final String authorName;
+  final bool isMine;
+
+  factory CourseReview.fromMap(Map<String, dynamic> m, {String? viewerId}) {
+    final profile = m['profiles'];
+    final uid = m['user_id'] as String;
+    return CourseReview(
+      id: m['id'] as String,
+      userId: uid,
+      rating: (m['rating'] as num?)?.toInt() ?? 0,
+      body: (m['body'] as String?) ?? '',
+      createdAt:
+          DateTime.tryParse((m['created_at'] ?? '').toString())?.toLocal() ??
+              DateTime.now(),
+      authorName: profile is Map ? (profile['full_name'] as String?) ?? '' : '',
+      isMine: viewerId != null && uid == viewerId,
     );
   }
 }

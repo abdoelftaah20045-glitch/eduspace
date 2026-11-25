@@ -128,15 +128,26 @@ class CourseCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            AspectRatio(
-              aspectRatio: 16 / 7,
-              child: course.coverUrl != null && course.coverUrl!.isNotEmpty
-                  ? Image.network(
-                      course.coverUrl!,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => const _CoverPlaceholder(),
-                    )
-                  : const _CoverPlaceholder(),
+            Stack(
+              children: [
+                AspectRatio(
+                  aspectRatio: 16 / 7,
+                  child: course.coverUrl != null && course.coverUrl!.isNotEmpty
+                      ? Image.network(
+                          course.coverUrl!,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) =>
+                              const _CoverPlaceholder(),
+                        )
+                      : const _CoverPlaceholder(),
+                ),
+                PositionedDirectional(
+                  top: 4,
+                  end: 4,
+                  child: _FavoriteButton(
+                      courseId: course.id, initial: course.isFavorite),
+                ),
+              ],
             ),
             Padding(
               padding: const EdgeInsets.all(12),
@@ -170,6 +181,14 @@ class CourseCard extends StatelessWidget {
                           label: s.t('level_${course.level}'),
                         ),
                       ],
+                      if (course.ratingCount > 0) ...[
+                        const SizedBox(width: 8),
+                        _MetaChip(
+                          icon: Icons.star,
+                          label:
+                              '${course.ratingAvg!.toStringAsFixed(1)} (${course.ratingCount})',
+                        ),
+                      ],
                     ],
                   ),
                   if (course.isEnrolled &&
@@ -188,6 +207,48 @@ class CourseCard extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Small heart toggle that keeps its own optimistic state.
+class _FavoriteButton extends StatefulWidget {
+  const _FavoriteButton({required this.courseId, required this.initial});
+
+  final String courseId;
+  final bool initial;
+
+  @override
+  State<_FavoriteButton> createState() => _FavoriteButtonState();
+}
+
+class _FavoriteButtonState extends State<_FavoriteButton> {
+  late bool _fav = widget.initial;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.black38,
+      shape: const CircleBorder(),
+      child: InkWell(
+        customBorder: const CircleBorder(),
+        onTap: () async {
+          setState(() => _fav = !_fav);
+          try {
+            await CoursesRepository.setFavorite(widget.courseId, _fav);
+          } catch (_) {
+            if (mounted) setState(() => _fav = !_fav);
+          }
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(8),
+          child: Icon(
+            _fav ? Icons.favorite : Icons.favorite_border,
+            color: _fav ? Colors.redAccent : Colors.white,
+            size: 20,
+          ),
         ),
       ),
     );
