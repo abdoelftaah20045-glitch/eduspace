@@ -45,7 +45,25 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       body: Padding(
         padding: const EdgeInsets.all(24),
         child: _sent
-            ? Center(child: Text(s.t('reset_link_sent'), textAlign: TextAlign.center))
+            ? Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(s.t('reset_link_sent'), textAlign: TextAlign.center),
+                  const SizedBox(height: 16),
+                  Text(s.t('reset_link_hint'),
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodySmall),
+                  const SizedBox(height: 16),
+                  OutlinedButton(
+                    onPressed: _busy
+                        ? null
+                        : () {
+                            setState(() => _sent = false);
+                          },
+                    child: Text(s.t('reset_send_again')),
+                  ),
+                ],
+              )
             : Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [

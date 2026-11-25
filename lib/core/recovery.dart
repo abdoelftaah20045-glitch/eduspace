@@ -85,9 +85,30 @@ Future<void> initRecoveryListener() async {
       rootNavigatorKey.currentState?.popUntil((r) => r.isFirst);
     }
   });
+  startRecoveryResumeCheck();
   // The link that launched the app may already have been exchanged before
   // the listener existed.
   if (await _looksLikeRecovery(auth.currentSession)) {
     recoveryMode.value = true;
   }
+}
+
+class _ResumeCheck with WidgetsBindingObserver {
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) async {
+    if (state != AppLifecycleState.resumed) return;
+    // The link may have created the session while the app was in the
+    // background: re-check on every return to the foreground.
+    final auth = Supabase.instance.client.auth;
+    if (!recoveryMode.value && await _looksLikeRecovery(auth.currentSession)) {
+      _enter();
+    }
+  }
+}
+
+bool _observing = false;
+void startRecoveryResumeCheck() {
+  if (_observing) return;
+  _observing = true;
+  WidgetsBinding.instance.addObserver(_ResumeCheck());
 }
