@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/l10n.dart';
 import '../admin/admin_courses_screen.dart';
+import '../admin/admin_exams_screen.dart';
 import '../admin/data/admin_repo.dart';
 import '../certificates/my_certificates_screen.dart';
 import '../settings/settings_screen.dart';
@@ -78,6 +79,15 @@ class ProfileScreen extends StatelessWidget {
                       builder: (_) => const MyCertificatesScreen()),
                 ),
               ),
+              if (isAdmin)
+                ListTile(
+                  leading: const Icon(Icons.quiz_outlined),
+                  title: Text(s.t('admin_exams')),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                        builder: (_) => const AdminExamsScreen()),
+                  ),
+                ),
               if (isAdmin)
                 ListTile(
                   leading: const Icon(Icons.admin_panel_settings_outlined),
