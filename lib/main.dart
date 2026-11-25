@@ -23,6 +23,7 @@ Future<void> main() async {
         authFlowType: AuthFlowType.pkce,
       ),
     );
+    listenForPasswordRecovery();
   }
   // Push notifications: no-op unless built with FCM_ENABLED=true and the
   // Firebase config files (exec guide section 17, Push).

@@ -55,12 +55,22 @@ class _SetNewPasswordScreenState extends State<SetNewPasswordScreen> {
       body: Padding(
         padding: const EdgeInsets.all(24),
         child: _done
-            ? Center(
-                child: Text(
-                  s.t('password_changed'),
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
+            ? Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    s.t('password_changed'),
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 20),
+                  FilledButton(
+                    onPressed: () => Navigator.of(context)
+                        .popUntil((r) => r.isFirst),
+                    child: Text(s.t('save')),
+                  ),
+                ],
               )
             : Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
