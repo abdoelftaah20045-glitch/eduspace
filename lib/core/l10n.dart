@@ -413,6 +413,10 @@ class S {
     'correct_label': {'ar': 'صحيحة', 'en': 'Correct', 'fr': 'Correcte', 'es': 'Correcta', 'de': 'Richtig'},
     'incorrect_label': {'ar': 'غلط', 'en': 'Incorrect', 'fr': 'Incorrecte', 'es': 'Incorrecta', 'de': 'Falsch'},
     'pending_grading': {'ar': 'في انتظار التصحيح', 'en': 'Pending grading', 'fr': 'En attente de correction', 'es': 'Pendiente de calificar', 'de': 'Wartet auf Bewertung'},
+    'verify_certificate_title': {'ar': 'التحقق من شهادة', 'en': 'Verify a certificate', 'fr': 'Vérifier un certificat', 'es': 'Verificar un certificado', 'de': 'Zertifikat prüfen'},
+    'verify_action': {'ar': 'تحقق', 'en': 'Verify', 'fr': 'Vérifier', 'es': 'Verificar', 'de': 'Prüfen'},
+    'cert_not_found': {'ar': 'الرقم ده مش موجود', 'en': 'No certificate with this number', 'fr': 'Aucun certificat avec ce numéro', 'es': 'No hay ningún certificado con este número', 'de': 'Kein Zertifikat mit dieser Nummer'},
+    'cert_valid': {'ar': 'شهادة صحيحة', 'en': 'Valid certificate', 'fr': 'Certificat valide', 'es': 'Certificado válido', 'de': 'Gültiges Zertifikat'},
   };
 
   String t(String key) {

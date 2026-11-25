@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../core/l10n.dart';
 import 'certificate_view_screen.dart';
 import 'data/certificates_repo.dart';
+import 'verify_certificate_screen.dart';
 
 /// "My certificates": every certificate the student earned.
 class MyCertificatesScreen extends StatefulWidget {
@@ -36,7 +37,19 @@ class _MyCertificatesScreenState extends State<MyCertificatesScreen> {
     final s = S.of(context);
     final theme = Theme.of(context);
     return Scaffold(
-      appBar: AppBar(title: Text(s.t('my_certificates'))),
+      appBar: AppBar(
+        title: Text(s.t('my_certificates')),
+        actions: [
+          IconButton(
+            tooltip: s.t('verify_certificate_title'),
+            icon: const Icon(Icons.verified_outlined),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                  builder: (_) => const VerifyCertificateScreen()),
+            ),
+          ),
+        ],
+      ),
       body: RefreshIndicator(
         onRefresh: _load,
         child: _certs == null
