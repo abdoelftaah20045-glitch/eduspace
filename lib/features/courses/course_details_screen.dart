@@ -1,3 +1,4 @@
+import '../home/home_widgets.dart';
 import 'package:flutter/material.dart';
 
 import '../payments/payment_screen.dart';
@@ -334,7 +335,8 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                       style: theme.textTheme.titleMedium
                           ?.copyWith(fontWeight: FontWeight.w800)),
                   const SizedBox(height: 6),
-                  Text(course.description, style: theme.textTheme.bodyMedium),
+                  ExpandableText(course.description,
+                      style: theme.textTheme.bodyMedium),
                   const SizedBox(height: 16),
                 ],
                 if (course.instructorName != null &&

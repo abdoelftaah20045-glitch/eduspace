@@ -462,6 +462,8 @@ class S {
     'pf_no_certs': {'ar': 'لسه معندكش شهادات. خلّص كورس وهتظهر هنا', 'en': 'No certificates yet. Finish a course and it shows here', 'fr': 'No certificates yet', 'es': 'No certificates yet', 'de': 'No certificates yet'},
     'pf_no_courses': {'ar': 'لسه مش مشترك في كورسات', 'en': 'You are not enrolled in any course yet', 'fr': 'No courses yet', 'es': 'No courses yet', 'de': 'No courses yet'},
     'top_mentors': {'ar': 'أفضل المدرّسين', 'en': 'Top mentors', 'fr': 'Top mentors', 'es': 'Top mentors', 'de': 'Top mentors'},
+    'show_more': {'ar': 'عرض المزيد', 'en': 'Show more', 'fr': 'Voir plus', 'es': 'Ver más', 'de': 'Mehr anzeigen'},
+    'show_less': {'ar': 'عرض أقل', 'en': 'Show less', 'fr': 'Voir moins', 'es': 'Ver menos', 'de': 'Weniger anzeigen'},
     'audit_label': {'ar': 'سجل العمليات', 'en': 'Audit log', 'fr': 'Audit log', 'es': 'Audit log', 'de': 'Audit log'},
     'no_audit': {'ar': 'لا توجد عمليات مسجلة', 'en': 'No recorded actions', 'fr': 'No recorded actions', 'es': 'No recorded actions', 'de': 'No recorded actions'},
     'org_settings': {'ar': 'إعدادات المؤسسة', 'en': 'Organization settings', 'fr': 'Organization settings', 'es': 'Organization settings', 'de': 'Organization settings'},

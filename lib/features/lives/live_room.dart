@@ -99,6 +99,20 @@ class _LiveRoomScreenState extends State<LiveRoomScreen> {
             child: Stack(children: [
               Positioned.fill(child: InAppWebPlayer(url: _url)),
               PositionedDirectional(
+                end: 8,
+                bottom: 8,
+                child: GestureDetector(
+                  onTap: () => Navigator.of(context).maybePop(),
+                  child: Container(
+                    width: 44,
+                    height: 44,
+                    decoration: const BoxDecoration(
+                        color: Color(0xFFE53935), shape: BoxShape.circle),
+                    child: const Icon(Icons.call_end, color: Colors.white),
+                  ),
+                ),
+              ),
+              PositionedDirectional(
                 start: 8,
                 top: 8,
                 child: Container(

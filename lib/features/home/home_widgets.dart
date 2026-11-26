@@ -224,3 +224,45 @@ class TopMentors extends StatelessWidget {
     );
   }
 }
+
+/// Text clamped to a few lines with a "show more / less" toggle.
+class ExpandableText extends StatefulWidget {
+  const ExpandableText(this.text, {super.key, this.style, this.lines = 4});
+
+  final String text;
+  final TextStyle? style;
+  final int lines;
+
+  @override
+  State<ExpandableText> createState() => _ExpandableTextState();
+}
+
+class _ExpandableTextState extends State<ExpandableText> {
+  bool _open = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final s = S.of(context);
+    final scheme = Theme.of(context).colorScheme;
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      AnimatedSize(
+        duration: const Duration(milliseconds: 180),
+        alignment: Alignment.topCenter,
+        child: Text(widget.text,
+            style: widget.style,
+            maxLines: _open ? null : widget.lines,
+            overflow: _open ? TextOverflow.visible : TextOverflow.ellipsis),
+      ),
+      if (widget.text.length > 140)
+        GestureDetector(
+          onTap: () => setState(() => _open = !_open),
+          child: Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: Text(_open ? s.t('show_less') : s.t('show_more'),
+                style: TextStyle(
+                    color: scheme.primary, fontWeight: FontWeight.w700)),
+          ),
+        ),
+    ]);
+  }
+}
