@@ -24,11 +24,15 @@ async function pickModels(key: string): Promise<string[]> {
     const full = listed.filter((n) => !/lite/.test(n)).slice(0, 1);
     return [...new Set([...lite, ...full, ...fixed])];
   } catch (_) {
+    console.error("listModels failed");
     return fixed;
   }
 }
 
+console.log("ai-assistant boot ok");
+
 Deno.serve(async (req: Request) => {
+  console.log("request", req.method);
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
   try {
     const key = Deno.env.get("GEMINI_API_KEY");
@@ -63,6 +67,7 @@ Deno.serve(async (req: Request) => {
             signal: AbortSignal.timeout(24000),
           });
         } catch (e) {
+          console.error("fetch error", model, String(e));
           errs.push(`${model}: ${String(e).slice(0, 60)}`);
           break;
         }
@@ -79,8 +84,10 @@ Deno.serve(async (req: Request) => {
         break;
       }
     }
+    console.error("gemini failed", errs.join(" | "));
     return json({ error: "gemini", detail: errs.join(" | ").slice(0, 500) });
   } catch (e) {
-    return json({ error: String(e) });
+    console.error("handler error", String(e));
+    return json({ error: "handler", detail: String(e) });
   }
 });
