@@ -337,6 +337,7 @@ class S {
     'lb_empty': {'ar': 'لسه مفيش نقاط', 'en': 'No points yet', 'fr': 'No points yet', 'es': 'No points yet', 'de': 'No points yet'},
     'lb_level': {'ar': 'مستوى', 'en': 'Level', 'fr': 'Level', 'es': 'Level', 'de': 'Level'},
     'lb_sql_needed': {'ar': 'لوحة المتصدرين محتاجة تشغيل SQL الجزء 17', 'en': 'Leaderboard needs SQL part 17', 'fr': 'Leaderboard needs SQL part 17', 'es': 'Leaderboard needs SQL part 17', 'de': 'Leaderboard needs SQL part 17'},
+    'words_unit': {'ar': 'كلمة', 'en': 'words', 'fr': 'mots', 'es': 'palabras', 'de': 'Wörter'},
     'audit_label': {'ar': 'سجل العمليات', 'en': 'Audit log', 'fr': 'Audit log', 'es': 'Audit log', 'de': 'Audit log'},
     'no_audit': {'ar': 'لا توجد عمليات مسجلة', 'en': 'No recorded actions', 'fr': 'No recorded actions', 'es': 'No recorded actions', 'de': 'No recorded actions'},
     'org_settings': {'ar': 'إعدادات المؤسسة', 'en': 'Organization settings', 'fr': 'Organization settings', 'es': 'Organization settings', 'de': 'Organization settings'},

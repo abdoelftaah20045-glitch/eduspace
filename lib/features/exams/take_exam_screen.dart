@@ -417,23 +417,48 @@ class _QuestionCard extends StatelessWidget {
                     },
                   ))
             else ...[
-              TextField(
-                maxLines: question.type == 'essay' ? 4 : 1,
-                decoration: InputDecoration(
-                  hintText: question.type == 'essay'
-                      ? s.t('type_answer')
-                      : s.t('type_short_answer'),
-                ),
-                onChanged: (v) => texts[question.id] = v,
-              ),
-              if (question.type == 'essay')
-                Padding(
-                  padding: const EdgeInsets.only(top: 4),
-                  child: Text(
-                    s.t('essay_review_note'),
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                ),
+              StatefulBuilder(builder: (ctx, setW) {
+                final words = (texts[question.id] ?? '')
+                    .trim()
+                    .split(RegExp(r'\s+'))
+                    .where((w) => w.isNotEmpty)
+                    .length;
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TextFormField(
+                      initialValue: texts[question.id],
+                      minLines: question.type == 'essay' ? 5 : 1,
+                      maxLines: question.type == 'essay' ? 10 : 1,
+                      decoration: InputDecoration(
+                        hintText: question.type == 'essay'
+                            ? s.t('type_answer')
+                            : s.t('type_short_answer'),
+                      ),
+                      onChanged: (v) {
+                        texts[question.id] = v;
+                        if (question.type == 'essay') setW(() {});
+                      },
+                    ),
+                    if (question.type == 'essay')
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Row(children: [
+                          Text('$words ${s.t('words_unit')}',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(fontWeight: FontWeight.w700)),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(s.t('essay_review_note'),
+                                style: Theme.of(context).textTheme.bodySmall),
+                          ),
+                        ]),
+                      ),
+                  ],
+                );
+              }),
             ],
           ],
         ),
