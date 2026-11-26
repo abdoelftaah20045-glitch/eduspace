@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/l10n.dart';
+import '../../core/remote_ui.dart';
 import '../support/support_screen.dart';
 
 /// Help center: searchable FAQ plus a shortcut to support.
@@ -17,9 +18,20 @@ class _HelpScreenState extends State<HelpScreen> {
   @override
   Widget build(BuildContext context) {
     final s = S.of(context);
-    final items = [
-      for (var i = 1; i <= 8; i++) (s.t('faq_q$i'), s.t('faq_a$i'))
-    ].where((e) {
+    final lang = s.locale.languageCode;
+    String pick(dynamic m) {
+      if (m is! Map) return '';
+      for (final l in [lang, 'ar', 'en']) {
+        final v = m[l]?.toString() ?? '';
+        if (v.trim().isNotEmpty) return v;
+      }
+      return '';
+    }
+
+    final all = RemoteUi.faq.isNotEmpty
+        ? [for (final e in RemoteUi.faq) (pick(e['q']), pick(e['a']))]
+        : [for (var i = 1; i <= 8; i++) (s.t('faq_q$i'), s.t('faq_a$i'))];
+    final items = all.where((e) {
       final q = _q.trim().toLowerCase();
       return q.isEmpty ||
           e.$1.toLowerCase().contains(q) ||

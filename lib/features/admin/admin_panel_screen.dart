@@ -7,7 +7,9 @@ import '../../core/tenant.dart';
 import 'data/admin_repo.dart';
 import '../../core/l10n.dart';
 import '../../core/paid_courses.dart';
+import 'admin_faq_screen.dart';
 import 'admin_layout_screen.dart';
+import 'admin_look_screen.dart';
 import 'admin_texts_screen.dart';
 import 'admin_announcements_screen.dart';
 import 'admin_assignments_screen.dart';
@@ -116,6 +118,10 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
           const Color(0xFF3949AB), const AdminTextsScreen()),
       ('ui_layout', 'admin_sub_layout', Icons.dashboard_customize_outlined,
           const Color(0xFF00897B), const AdminLayoutScreen()),
+      ('ui_faq', 'admin_sub_faq', Icons.help_outline,
+          const Color(0xFFF29900), const AdminFaqScreen()),
+      ('ui_look', 'admin_sub_look', Icons.palette_outlined,
+          const Color(0xFFD81B60), const AdminLookScreen()),
       ('org_settings', 'admin_sub_settings', Icons.settings_outlined,
           const Color(0xFF607D8B), const AdminOrgSettingsScreen()),
       ('audit_label', 'admin_sub_audit', Icons.history, 
@@ -179,6 +185,8 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
       'categories_label': 'courses',
       'org_settings': 'settings',
       'ui_texts': 'settings',
+      'ui_faq': 'settings',
+      'ui_look': 'settings',
       'ui_layout': 'settings',
       'audit_label': 'reports',
       'admin_payments': 'students',

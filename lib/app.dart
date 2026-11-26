@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'core/recovery.dart';
+import 'core/remote_ui.dart';
 
 import 'core/app_state.dart';
 import 'core/config.dart';
@@ -19,6 +20,7 @@ class EduSpaceApp extends StatelessWidget {
       animation: Listenable.merge([
         AppState.instance.locale,
         AppState.instance.themeMode,
+        RemoteUi.version,
       ]),
       builder: (context, _) {
         return MaterialApp(

@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import 'remote_ui.dart';
+
 // Primary blue taken from the owner's mockups (#2563EB). Light, calm surfaces.
 const _seed = Color(0xFF2563EB);
 const _lightBg = Color(0xFFF5F7FB);
@@ -62,10 +64,10 @@ ThemeData _base(ColorScheme scheme) {
 
 ThemeData buildLightTheme() {
   final scheme = ColorScheme.fromSeed(
-    seedColor: _seed,
+    seedColor: RemoteUi.primaryColor ?? _seed,
     brightness: Brightness.light,
   ).copyWith(
-    primary: _seed,
+    primary: RemoteUi.primaryColor ?? _seed,
     onPrimary: Colors.white,
     surface: Colors.white,
     surfaceContainerHighest: const Color(0xFFE8EEF9),
@@ -88,7 +90,7 @@ ThemeData buildDarkTheme() {
   const surf = Color(0xFF283248);
   const text = Color(0xFFE2E8F4);
   final scheme = ColorScheme.fromSeed(
-    seedColor: _seed,
+    seedColor: RemoteUi.primaryColor ?? _seed,
     brightness: Brightness.dark,
   ).copyWith(
     primary: const Color(0xFF7E9FF2),

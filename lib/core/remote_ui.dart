@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'tenant.dart';
@@ -12,6 +13,15 @@ class RemoteUi {
   static final ValueNotifier<int> version = ValueNotifier<int>(0);
   static Map<String, Map<String, String>> texts = {};
   static Map<String, Map<String, dynamic>> layout = {};
+  static List<Map<String, dynamic>> faq = [];
+  static String? primaryHex;
+
+  static Color? get primaryColor {
+    final h = primaryHex?.replaceAll('#', '').trim();
+    if (h == null || h.length != 6) return null;
+    final v = int.tryParse(h, radix: 16);
+    return v == null ? null : Color(0xFF000000 | v);
+  }
 
   static Future<void> load() async {
     try {
@@ -19,10 +29,23 @@ class RemoteUi {
           .from('tenant_settings')
           .select('setting_key, setting_value')
           .eq('tenant_id', TenantContext.id)
-          .inFilter('setting_key', ['ui_texts', 'ui_layout']);
+          .inFilter('setting_key', ['ui_texts', 'ui_layout', 'ui_faq', 'ui_look']);
       for (final r in rows) {
         final v = r['setting_value'];
         if (v is! Map) continue;
+        if (r['setting_key'] == 'ui_faq') {
+          faq = [
+            for (final e in (v['items'] as List? ?? const []))
+              Map<String, dynamic>.from(e as Map),
+          ];
+          version.value++;
+          continue;
+        }
+        if (r['setting_key'] == 'ui_look') {
+          primaryHex = v['primary']?.toString();
+          version.value++;
+          continue;
+        }
         if (r['setting_key'] == 'ui_texts') {
           setTexts({
             for (final e in v.entries)
