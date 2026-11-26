@@ -27,6 +27,8 @@ dependencies:
   barcode: ^2.2.0
   printing: ^5.13.0
   intl: any
+  http: ^1.2.0
+  open_filex: ^4.5.0
 
 dev_dependencies:
   flutter_test:

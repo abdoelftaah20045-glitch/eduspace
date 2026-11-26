@@ -1,3 +1,4 @@
+import 'core/updater.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -60,4 +61,5 @@ Future<void> main() async {
   } else {
     runApp(const EduSpaceApp());
   }
+  Future<void>.delayed(const Duration(seconds: 5), Updater.checkOnLaunch);
 }

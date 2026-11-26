@@ -56,6 +56,9 @@ jobs:
         run: |
           # Release builds need INTERNET permission (flutter create adds it to debug/profile only)
           MANIFEST=android/app/src/main/AndroidManifest.xml
+          if ! grep -q "REQUEST_INSTALL_PACKAGES" "$MANIFEST"; then
+            sed -i '0,/<manifest /a\    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>' "$MANIFEST"
+          fi
           if ! grep -q "android.permission.INTERNET" "$MANIFEST"; then
             sed -i '0,/<manifest /a\    <uses-permission android:name="android.permission.INTERNET"/>\n    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>' "$MANIFEST"
           fi
@@ -101,6 +104,7 @@ jobs:
           --dart-define=SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}
           --dart-define=SENTRY_DSN=${{ secrets.SENTRY_DSN }}
           --dart-define=FCM_ENABLED=${{ secrets.FCM_ENABLED }}
+          --dart-define=APP_BUILD=${{ github.run_number }}
 
       - name: Show APK sizes
         run: ls -lh build/app/outputs/flutter-apk/
@@ -123,3 +127,20 @@ jobs:
             --title "Latest APK" \
             --prerelease \
             --notes "Latest successful build from main. Most phones: arm64-v8a. Signed with the stable EduSpace release key when signing secrets are set, otherwise the debug key."
+
+      - name: Publish update feed (public releases repo)
+        env:
+          GH_TOKEN: ${{ secrets.RELEASES_TOKEN }}
+        run: |
+          if [ -z "$GH_TOKEN" ]; then echo "RELEASES_TOKEN not set, skipping"; exit 0; fi
+          cp build/app/outputs/flutter-apk/app-arm64-v8a-release.apk deki.apk
+          VERSION=$(grep -m1 '^version:' pubspec.yaml | sed 's/version: *//; s/+.*//')
+          NOTES=$(git log -1 --pretty=%s | head -c 200 | tr -d '"\\')
+          printf '{"build": %s, "version": "%s", "apk": "deki.apk", "notes": "%s"}\n' \
+            "${{ github.run_number }}" "$VERSION" "$NOTES" > version.json
+          cat version.json
+          R=abdoelftaah20045-glitch/deki-releases
+          gh release delete latest --repo $R --yes --cleanup-tag 2>/dev/null || true
+          gh release create latest deki.apk version.json --repo $R \
+            --title "Deki build ${{ github.run_number }}" \
+            --notes "Update feed for the in-app updater."
