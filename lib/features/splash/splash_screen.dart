@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../ai/ai_fab.dart';
+
 import '../../core/app_lockup.dart';
 import '../../core/l10n.dart';
 import '../auth/auth_gate.dart';
@@ -20,6 +22,7 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => aiFabHidden.value++);
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 2800),
@@ -41,6 +44,7 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   void dispose() {
+    WidgetsBinding.instance.addPostFrameCallback((_) => aiFabHidden.value--);
     _controller.dispose();
     super.dispose();
   }
