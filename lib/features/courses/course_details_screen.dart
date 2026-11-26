@@ -279,20 +279,47 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
     final course = details.course;
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    final navy = theme.brightness == Brightness.dark
-        ? scheme.primaryContainer
-        : const Color(0xFF14264A);
-    final onNavy = theme.brightness == Brightness.dark
-        ? scheme.onPrimaryContainer
-        : Colors.white;
-    final tabs = <(int, String)>[
-      (0, s.t('cd_about')),
-      (1, s.t('cd_lessons')),
-      (2, s.t('cd_reviews')),
-      if (_lives.isNotEmpty) (3, s.t('cd_schedule')),
-    ];
+    final dark = theme.brightness == Brightness.dark;
+    final navy = dark ? scheme.primaryContainer : const Color(0xFF0B1F44);
+    final onNavy = dark ? scheme.onPrimaryContainer : Colors.white;
     String two(int n) => n.toString().padLeft(2, '0');
     String date(DateTime d) => '${d.year}-${two(d.month)}-${two(d.day)}';
+    Widget h(String t) => Padding(
+          padding: const EdgeInsets.fromLTRB(20, 24, 20, 10),
+          child: Text(t,
+              style: theme.textTheme.titleLarge
+                  ?.copyWith(fontWeight: FontWeight.w800)),
+        );
+    final allLessons = [for (final sec in details.sections) ...sec.lessons];
+    final doneCount = allLessons.where((l) => l.completed).length;
+    var learn = <String>[
+      for (final g in (course.goals ?? '').split(RegExp(r'[\n\u2022;]')))
+        if (g.trim().isNotEmpty) g.trim()
+    ];
+    if (learn.isEmpty) {
+      learn = [
+        for (final sec in details.sections)
+          if (sec.title.trim().isNotEmpty) sec.title.trim()
+      ].take(6).toList();
+    }
+    Widget stat(IconData i, String top, String bottom) => Expanded(
+          child: Column(children: [
+            Icon(i, size: 22, color: scheme.primary),
+            const SizedBox(height: 6),
+            Text(top,
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                    fontWeight: FontWeight.w800, fontSize: 13)),
+            Text(bottom,
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                    fontSize: 11, color: scheme.onSurfaceVariant)),
+          ]),
+        );
     Widget row(String k, String v) => Padding(
           padding: const EdgeInsets.symmetric(vertical: 5),
           child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -310,407 +337,303 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
     return ListView(
       padding: const EdgeInsets.only(bottom: 24),
       children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(20),
-            child: AspectRatio(
-              aspectRatio: 16 / 9,
-              child: Stack(fit: StackFit.expand, children: [
-                Container(color: navy),
-                if (course.coverUrl != null && course.coverUrl!.isNotEmpty)
-                  Image.network(course.coverUrl!,
-                      fit: BoxFit.contain,
-                      errorBuilder: (_, __, ___) => const SizedBox.shrink())
-                else
-                  Center(
-                      child: Icon(Icons.menu_book_rounded,
-                          size: 72, color: onNavy.withValues(alpha: .6))),
-                Positioned.fill(
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Colors.transparent,
-                          Colors.black.withValues(alpha: .15),
-                          Colors.black.withValues(alpha: .78),
-                        ],
-                        stops: const [0.35, 0.6, 1],
-                      ),
-                    ),
+        // Hero: cover then dark info block, like a Coursera course page.
+        AspectRatio(
+          aspectRatio: 16 / 9,
+          child: Stack(fit: StackFit.expand, children: [
+            Container(color: navy),
+            if (course.coverUrl != null && course.coverUrl!.isNotEmpty)
+              Image.network(course.coverUrl!,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => const SizedBox.shrink())
+            else
+              Center(
+                  child: Icon(Icons.menu_book_rounded,
+                      size: 72, color: onNavy.withValues(alpha: .6))),
+          ]),
+        ),
+        Container(
+          color: navy,
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if ((course.field ?? '').isNotEmpty)
+                Text(course.field!.toUpperCase(),
+                    style: TextStyle(
+                        color: onNavy.withValues(alpha: .7),
+                        fontSize: 11,
+                        letterSpacing: .8,
+                        fontWeight: FontWeight.w700)),
+              const SizedBox(height: 4),
+              Text(course.title,
+                  style: TextStyle(
+                      color: onNavy,
+                      fontSize: 24,
+                      height: 1.2,
+                      fontWeight: FontWeight.w800)),
+              if ((course.instructorName ?? '').isNotEmpty) ...[
+                const SizedBox(height: 10),
+                Row(children: [
+                  CircleAvatar(
+                    radius: 13,
+                    backgroundColor: Colors.white24,
+                    backgroundImage:
+                        (course.instructorPhotoUrl ?? '').isNotEmpty
+                            ? NetworkImage(course.instructorPhotoUrl!)
+                            : null,
+                    child: (course.instructorPhotoUrl ?? '').isEmpty
+                        ? Icon(Icons.person, size: 16, color: onNavy)
+                        : null,
                   ),
-                ),
-                PositionedDirectional(
-                  start: 14,
-                  end: 14,
-                  bottom: 12,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (course.level != null)
-                        Container(
-                          margin: const EdgeInsets.only(bottom: 6),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 3),
-                          decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(14)),
-                          child: Row(mainAxisSize: MainAxisSize.min, children: [
-                            Text(s.t('level_${course.level}'),
-                                style: const TextStyle(
-                                    color: Color(0xFF14264A),
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w700)),
-                            const SizedBox(width: 4),
-                            const Icon(Icons.signal_cellular_alt,
-                                size: 13, color: Color(0xFFE53935)),
-                          ]),
-                        ),
-                      Text(course.title,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 20,
-                              fontWeight: FontWeight.w800)),
-                      if ((course.instructorName ?? '').isNotEmpty)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 4),
-                          child: Row(children: [
-                            const Icon(Icons.person_outline,
-                                size: 14, color: Colors.white70),
-                            const SizedBox(width: 4),
-                            Expanded(
-                              child: Text(course.instructorName!,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                      color: Colors.white70, fontSize: 12.5)),
-                            ),
-                          ]),
-                        ),
-                    ],
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                        '${s.t('cd_instructor')}: ${course.instructorName!}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(color: onNavy, fontSize: 13.5)),
                   ),
-                ),
-                if (false)
-                  PositionedDirectional(
-                    start: 10,
-                    bottom: 10,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(14)),
-                      child: Row(mainAxisSize: MainAxisSize.min, children: [
-                        Text(s.t('level_${course.level}'),
-                            style: const TextStyle(
-                                color: Color(0xFF14264A),
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700)),
-                        const SizedBox(width: 4),
-                        const Icon(Icons.signal_cellular_alt,
-                            size: 13, color: Color(0xFFE53935)),
-                      ]),
-                    ),
-                  ),
+                ]),
+              ],
+              const SizedBox(height: 12),
+              Wrap(spacing: 16, runSpacing: 6, children: [
+                if (course.ratingCount > 0)
+                  Row(mainAxisSize: MainAxisSize.min, children: [
+                    const Icon(Icons.star_rounded,
+                        size: 18, color: Color(0xFFF29900)),
+                    const SizedBox(width: 3),
+                    Text(
+                        '${course.ratingAvg!.toStringAsFixed(1)} (${course.ratingCount} ${s.t('cd_reviews')})',
+                        style: TextStyle(color: onNavy, fontSize: 13)),
+                  ]),
+                Row(mainAxisSize: MainAxisSize.min, children: [
+                  Icon(Icons.groups_outlined, size: 18, color: onNavy),
+                  const SizedBox(width: 4),
+                  Text('$_members ${s.t('cd_students')}',
+                      style: TextStyle(color: onNavy, fontSize: 13)),
+                ]),
               ]),
-            ),
+            ],
           ),
         ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 4),
-          child: Wrap(spacing: 16, runSpacing: 6, children: [
-            _Meta(
-                icon: Icons.groups_outlined,
-                label: '$_members ${s.t('cd_students')}'),
-            _Meta(
-                icon: Icons.menu_book_outlined,
-                label: '${details.totalLessons} ${s.t('lessons')}'),
-            if (course.hours != null && course.hours! > 0)
-              _Meta(
-                  icon: Icons.schedule,
-                  label: '${course.hours} ${s.t('hours')}'),
-            if (course.ratingCount > 0)
-              _Meta(
-                  icon: Icons.star_outline,
-                  label:
-                      '${course.ratingAvg!.toStringAsFixed(1)} (${course.ratingCount})'),
-          ]),
-        ),
-        const SizedBox(height: 12),
-        Container(
-          margin: const EdgeInsets.symmetric(horizontal: 16),
-          padding: const EdgeInsets.all(4),
-          decoration: BoxDecoration(
-              color: scheme.surfaceContainerHighest.withValues(alpha: .5),
-              borderRadius: BorderRadius.circular(24)),
-          child: Row(children: [
-            for (final e in tabs)
-              Expanded(
-                child: GestureDetector(
-                  onTap: () => setState(() => _tab = e.$1),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 180),
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                    decoration: BoxDecoration(
-                      color: _tab == e.$1 ? navy : Colors.transparent,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Center(
-                      child: Text(e.$2,
-                          style: TextStyle(
-                              fontSize: 12.5,
-                              fontWeight: FontWeight.w700,
-                              color: _tab == e.$1
-                                  ? onNavy
-                                  : scheme.onSurfaceVariant)),
-                    ),
-                  ),
-                ),
-              ),
-          ]),
-        ),
-        if (_tab == 0)
-          Padding(
-            padding: const EdgeInsets.all(16),
+        if (details.enrolled)
+          Container(
+            margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: scheme.outlineVariant),
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _introCard(context, s, details),
-                const SizedBox(height: 16),
-                if (course.description.isNotEmpty) ...[
-                  Text(s.t('cd_about'),
-                      style: theme.textTheme.titleMedium
-                          ?.copyWith(fontWeight: FontWeight.w800)),
-                  const SizedBox(height: 6),
-                  ExpandableText(course.description,
-                      style: theme.textTheme.bodyMedium),
-                  const SizedBox(height: 16),
-                ],
-                if (course.instructorName != null &&
-                    course.instructorName!.isNotEmpty)
-                  Card(
-                    child: ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor: scheme.primaryContainer,
-                        backgroundImage:
-                            (course.instructorPhotoUrl ?? '').isNotEmpty
-                                ? NetworkImage(course.instructorPhotoUrl!)
-                                : null,
-                        child: (course.instructorPhotoUrl ?? '').isEmpty
-                            ? const Icon(Icons.person)
-                            : null,
-                      ),
-                      title: Text(course.instructorName!,
-                          style: const TextStyle(fontWeight: FontWeight.w700)),
-                      subtitle: Text(s.t('cd_instructor')),
-                    ),
-                  ),
-                Container(
-                  margin: const EdgeInsets.symmetric(vertical: 6),
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: scheme.primary.withValues(alpha: .08),
-                    borderRadius: BorderRadius.circular(18),
-                    border: Border.all(
-                        color: scheme.primary.withValues(alpha: .25)),
-                  ),
-                  child: Wrap(spacing: 28, runSpacing: 12, children: [
-                    _Meta(
-                        icon: Icons.menu_book,
-                        label: '${details.totalLessons} ${s.t('lessons')}'),
-                    _Meta(
-                        icon: Icons.workspace_premium_outlined,
-                        label: s.t('cd_certificate')),
-                    if (course.hours != null && course.hours! > 0)
-                      _Meta(
-                          icon: Icons.schedule,
-                          label: '${course.hours} ${s.t('hours')}'),
-                  ]),
+                Row(children: [
+                  Text(s.t('cd_complete'),
+                      style: const TextStyle(fontWeight: FontWeight.w800)),
+                  const Spacer(),
+                  Text('${details.percent}%',
+                      style: TextStyle(
+                          color: scheme.primary, fontWeight: FontWeight.w800)),
+                ]),
+                const SizedBox(height: 8),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(6),
+                  child: LinearProgressIndicator(
+                      value: details.percent / 100, minHeight: 8),
                 ),
-                if (course.skills.isNotEmpty) ...[
-                  const SizedBox(height: 8),
-                  Text(s.t('cd_skills').split(' (').first,
-                      style: theme.textTheme.titleMedium
-                          ?.copyWith(fontWeight: FontWeight.w800)),
-                  const SizedBox(height: 8),
-                  Wrap(spacing: 8, runSpacing: 8, children: [
-                    for (final k in course.skills)
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 14, vertical: 8),
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: scheme.outlineVariant)),
-                        child: Text(k, style: const TextStyle(fontSize: 13)),
-                      ),
-                  ]),
-                  const SizedBox(height: 8),
-                ],
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Row(children: [
-                      Text(s.t('cd_members'),
-                          style: const TextStyle(fontWeight: FontWeight.w700)),
-                      const Spacer(),
-                      SizedBox(
-                        height: 28,
-                        child: Stack(children: [
-                          for (var i = 0; i < _avatars.length; i++)
-                            PositionedDirectional(
-                              end: i * 18.0,
-                              child: CircleAvatar(
-                                radius: 14,
-                                backgroundImage: NetworkImage(_avatars[i]),
-                              ),
-                            ),
-                          SizedBox(width: 28.0 + _avatars.length * 18),
-                        ]),
-                      ),
-                      const SizedBox(width: 8),
-                      Text('+$_members ${s.t('cd_students')}',
-                          style: TextStyle(
-                              color: scheme.primary,
-                              fontWeight: FontWeight.w700,
-                              fontSize: 12)),
-                    ]),
-                  ),
-                ),
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(14),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(s.t('cd_details'),
-                            style: const TextStyle(
-                                fontWeight: FontWeight.w800, fontSize: 15)),
-                        const SizedBox(height: 6),
-                        if (course.field != null && course.field!.isNotEmpty)
-                          row(s.t('cd_category'), course.field!),
-                        if (course.level != null)
-                          row(s.t('level_label'), s.t('level_${course.level}')),
-                        row(s.t('cd_language'), course.language.toUpperCase()),
-                        row(
-                            s.t('cd_students'),
-                            course.maxStudents != null
-                                ? '$_members (max ${course.maxStudents})'
-                                : '$_members'),
-                        if (course.availableAt != null)
-                          row(s.t('cd_start'), date(course.availableAt!)),
-                        if (course.availableUntil != null)
-                          row(s.t('cd_end'), date(course.availableUntil!)),
-                        if (course.hours != null && course.hours! > 0)
-                          row(s.t('hours'), '${course.hours}'),
-                        if ((course.effort ?? '').isNotEmpty)
-                          row(s.t('cd_effort'), course.effort!),
-                        if ((course.goals ?? '').isNotEmpty)
-                          row(s.t('cd_goals'), course.goals!),
-                        if (course.prerequisites != null &&
-                            course.prerequisites!.isNotEmpty)
-                          row(s.t('prerequisites'), course.prerequisites!),
-                      ],
-                    ),
-                  ),
-                ),
+                const SizedBox(height: 6),
+                Text('$doneCount / ${allLessons.length} ${s.t('lessons')}',
+                    style: theme.textTheme.bodySmall),
               ],
             ),
           ),
-        if (_tab == 1)
-          ...List<Widget>.generate(details.sections.length, (si) {
-            var n = 0;
-            for (var k = 0; k < si; k++) {
-              n += details.sections[k].lessons.length;
-            }
-            return _SectionTile(
-              section: details.sections[si],
-              index: si,
-              startNumber: n,
-              currentId: details.continueLesson?.id,
-              onLessonTap: _openLesson,
-            );
-          }),
-        if (_tab == 1 && details.sections.isEmpty)
+        Container(
+          margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 6),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: scheme.outlineVariant),
+          ),
+          child: Row(children: [
+            stat(Icons.signal_cellular_alt,
+                course.level != null ? s.t('level_${course.level}') : '-',
+                s.t('level_label')),
+            stat(
+                Icons.schedule,
+                course.hours != null && course.hours! > 0
+                    ? '${course.hours} ${s.t('hours')}'
+                    : '${allLessons.length}',
+                course.hours != null && course.hours! > 0
+                    ? s.t('cd_effort')
+                    : s.t('lessons')),
+            stat(Icons.translate, course.language.toUpperCase(),
+                s.t('cd_language')),
+            stat(Icons.workspace_premium_outlined, s.t('cd_certificate'), ' '),
+          ]),
+        ),
+        if (learn.isNotEmpty) ...[
+          h(s.t('cd_learn')),
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: scheme.outlineVariant),
+            ),
+            child: Column(children: [
+              for (final g in learn)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 5),
+                  child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(Icons.check, size: 20, color: scheme.primary),
+                        const SizedBox(width: 10),
+                        Expanded(
+                            child: Text(g,
+                                style: const TextStyle(
+                                    fontSize: 14, height: 1.35))),
+                      ]),
+                ),
+            ]),
+          ),
+        ],
+        if (course.skills.isNotEmpty) ...[
+          h(s.t('cd_skills').split(' (').first),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Wrap(spacing: 8, runSpacing: 8, children: [
+              for (final k in course.skills)
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  decoration: BoxDecoration(
+                      color: scheme.primary.withValues(alpha: .08),
+                      borderRadius: BorderRadius.circular(20)),
+                  child: Text(k,
+                      style: TextStyle(
+                          fontSize: 13,
+                          color: scheme.primary,
+                          fontWeight: FontWeight.w600)),
+                ),
+            ]),
+          ),
+        ],
+        if (course.description.isNotEmpty) ...[
+          h(s.t('cd_about')),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child:
+                ExpandableText(course.description, style: theme.textTheme.bodyMedium),
+          ),
+        ],
+        h(s.t('cd_syllabus')),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+          child: Text(
+              '${details.sections.length} ${s.t('cd_modules')} \u00b7 ${allLessons.length} ${s.t('lessons')}',
+              style: theme.textTheme.bodySmall),
+        ),
+        if (details.sections.isEmpty)
           Padding(
             padding: const EdgeInsets.all(24),
             child: Center(child: Text(s.t('no_lessons'))),
           ),
-        if (_tab == 2)
-          ReviewsSection(
-            courseId: widget.courseId,
-            enrolled: details.enrolled,
+        ...List<Widget>.generate(details.sections.length, (si) {
+          var n = 0;
+          for (var k = 0; k < si; k++) {
+            n += details.sections[k].lessons.length;
+          }
+          return _SectionTile(
+            section: details.sections[si],
+            index: si,
+            startNumber: n,
+            currentId: details.continueLesson?.id,
+            onLessonTap: _openLesson,
+          );
+        }),
+        if (_lives.isNotEmpty) ...[
+          h(s.t('cd_weekly')),
+          for (var i = 0; i < _lives.length; i++)
+            Builder(builder: (_) {
+              final l = _lives[i];
+              final st = DateTime.tryParse('${l['starts_at']}')?.toLocal();
+              final dur = (l['duration_minutes'] as num?)?.toInt() ?? 60;
+              final en = st?.add(Duration(minutes: dur));
+              String hm(DateTime d) => '${two(d.hour)}:${two(d.minute)}';
+              final next = st != null && st.isAfter(DateTime.now());
+              return Container(
+                margin: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                      color: next ? scheme.primary : scheme.outlineVariant,
+                      width: next ? 1.6 : 1),
+                ),
+                child: Row(children: [
+                  Text('${s.t('cd_session_no')} ${i + 1}',
+                      style: const TextStyle(fontWeight: FontWeight.w700)),
+                  const Spacer(),
+                  if (st != null)
+                    Text('${date(st)}  ${hm(st)} - ${hm(en!)}',
+                        style: TextStyle(
+                            fontSize: 12, color: scheme.onSurfaceVariant)),
+                ]),
+              );
+            }),
+        ],
+        if ((course.instructorName ?? '').isNotEmpty) ...[
+          h(s.t('cd_instructor')),
+          Card(
+            margin: const EdgeInsets.symmetric(horizontal: 16),
+            child: ListTile(
+              leading: CircleAvatar(
+                backgroundColor: scheme.primaryContainer,
+                backgroundImage: (course.instructorPhotoUrl ?? '').isNotEmpty
+                    ? NetworkImage(course.instructorPhotoUrl!)
+                    : null,
+                child: (course.instructorPhotoUrl ?? '').isEmpty
+                    ? const Icon(Icons.person)
+                    : null,
+              ),
+              title: Text(course.instructorName!,
+                  style: const TextStyle(fontWeight: FontWeight.w700)),
+            ),
           ),
-        if (_tab == 3)
-          Padding(
-            padding: const EdgeInsets.all(16),
+        ],
+        h(s.t('cd_details')),
+        Card(
+          margin: const EdgeInsets.symmetric(horizontal: 16),
+          child: Padding(
+            padding: const EdgeInsets.all(14),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(14),
-                    child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(children: [
-                            Text(s.t('cd_complete'),
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.w700)),
-                            const Spacer(),
-                            Text('${details.percent}%',
-                                style: TextStyle(
-                                    color: scheme.primary,
-                                    fontWeight: FontWeight.w800)),
-                          ]),
-                          const SizedBox(height: 8),
-                          LinearProgressIndicator(
-                              value: details.percent / 100,
-                              minHeight: 8,
-                              borderRadius: BorderRadius.circular(6)),
-                        ]),
-                  ),
-                ),
-                Text(s.t('cd_weekly'),
-                    style: const TextStyle(
-                        fontWeight: FontWeight.w800, fontSize: 15)),
-                const SizedBox(height: 8),
-                for (var i = 0; i < _lives.length; i++)
-                  Builder(builder: (_) {
-                    final l = _lives[i];
-                    final st = DateTime.tryParse('${l['starts_at']}')?.toLocal();
-                    final dur = (l['duration_minutes'] as num?)?.toInt() ?? 60;
-                    final en = st?.add(Duration(minutes: dur));
-                    String hm(DateTime d) => '${two(d.hour)}:${two(d.minute)}';
-                    final next = st != null && st.isAfter(DateTime.now());
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 8),
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                            color: next ? scheme.primary : scheme.outlineVariant,
-                            width: next ? 1.6 : 1),
-                      ),
-                      child: Row(children: [
-                        Text('${s.t('cd_session_no')} ${i + 1}',
-                            style: const TextStyle(fontWeight: FontWeight.w700)),
-                        const Spacer(),
-                        if (st != null)
-                          Text('${date(st)}  ${hm(st)} - ${hm(en!)}',
-                              style: TextStyle(
-                                  fontSize: 12,
-                                  color: scheme.onSurfaceVariant)),
-                      ]),
-                    );
-                  }),
+                if (course.field != null && course.field!.isNotEmpty)
+                  row(s.t('cd_category'), course.field!),
+                if (course.level != null)
+                  row(s.t('level_label'), s.t('level_${course.level}')),
+                row(s.t('cd_language'), course.language.toUpperCase()),
+                if (course.availableAt != null)
+                  row(s.t('cd_start'), date(course.availableAt!)),
+                if (course.availableUntil != null)
+                  row(s.t('cd_end'), date(course.availableUntil!)),
+                if ((course.effort ?? '').isNotEmpty)
+                  row(s.t('cd_effort'), course.effort!),
+                if (course.prerequisites != null &&
+                    course.prerequisites!.isNotEmpty)
+                  row(s.t('prerequisites'), course.prerequisites!),
               ],
             ),
           ),
+        ),
+        h(s.t('cd_reviews')),
+        ReviewsSection(
+          courseId: widget.courseId,
+          enrolled: details.enrolled,
+        ),
       ],
     );
   }
@@ -835,9 +758,17 @@ class _SectionTile extends StatelessWidget {
     final s = S.of(context);
     return ExpansionTile(
       initiallyExpanded: true,
-      title: Text('${_roman(index + 1)} - ${section.title}',
-          style: const TextStyle(fontWeight: FontWeight.w800)),
-      subtitle: Text('${section.lessons.length} ${s.t('lessons')}'),
+      title: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text('${s.t('cd_module')} ${index + 1}',
+            style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: Theme.of(context).colorScheme.onSurfaceVariant)),
+        Text(section.title,
+            style: const TextStyle(fontWeight: FontWeight.w800)),
+      ]),
+      subtitle: Text(
+          '${section.lessons.where((l) => l.completed).length}/${section.lessons.length} ${s.t('lessons')}'),
       children: [
         for (var i = 0; i < section.lessons.length; i++)
           Builder(builder: (_) {
