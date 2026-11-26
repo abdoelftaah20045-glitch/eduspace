@@ -7,7 +7,9 @@ import '../../core/config.dart';
 import '../../core/l10n.dart';
 
 class VerifyEmailScreen extends StatefulWidget {
-  const VerifyEmailScreen({super.key});
+  const VerifyEmailScreen({super.key, this.email});
+
+  final String? email;
 
   @override
   State<VerifyEmailScreen> createState() => _VerifyEmailScreenState();
@@ -41,7 +43,9 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
 
   Future<void> _resend() async {
     final s = S.of(context);
-    final email = Supabase.instance.client.auth.currentUser?.email ?? '';
+    final email = widget.email ??
+        Supabase.instance.client.auth.currentUser?.email ??
+        '';
     if (email.isEmpty || _cooldown > 0) return;
     setState(() => _sending = true);
     try {
@@ -74,7 +78,9 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
   @override
   Widget build(BuildContext context) {
     final s = S.of(context);
-    final email = Supabase.instance.client.auth.currentUser?.email ?? '';
+    final email = widget.email ??
+        Supabase.instance.client.auth.currentUser?.email ??
+        '';
     return Scaffold(
       body: SafeArea(
         child: Padding(

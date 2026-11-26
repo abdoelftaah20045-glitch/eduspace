@@ -71,7 +71,7 @@ class _SignupScreenState extends State<SignupScreen> {
         Navigator.of(context).popUntil((route) => route.isFirst);
       } else {
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const VerifyEmailScreen()),
+          MaterialPageRoute(builder: (_) => VerifyEmailScreen(email: _email.text.trim())),
         );
       }
     } on AuthException catch (e) {
