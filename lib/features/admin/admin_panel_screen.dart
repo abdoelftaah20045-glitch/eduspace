@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'data/admin_repo.dart';
 import '../../core/l10n.dart';
 import 'admin_announcements_screen.dart';
 import 'admin_assignments_screen.dart';
@@ -33,6 +34,8 @@ class AdminPanelScreen extends StatefulWidget {
 class _AdminPanelScreenState extends State<AdminPanelScreen> {
   Map<String, int>? _counts;
   bool _isSuper = false;
+  bool _fullAdmin = true;
+  List<String> _scopes = const [];
 
   @override
   void initState() {
@@ -44,10 +47,14 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
     try {
       final counts = await AdminPanelRepository.fetchCounts();
       final isSuper = await TenancyRepository.isSuperAdmin();
+      final full = await AdminRepository.isAdmin();
+      final scopes = await AdminRepository.myScopes();
       if (mounted) {
         setState(() {
           _counts = counts;
           _isSuper = isSuper;
+          _fullAdmin = full || isSuper;
+          _scopes = scopes;
         });
       }
     } catch (_) {
@@ -125,6 +132,28 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
         const TenantMembersScreen()
       ),
     ];
+    const scopeOf = {
+      'reports_label': 'reports',
+      'targeted_notify': 'announcements',
+      'categories_label': 'courses',
+      'org_settings': 'settings',
+      'audit_label': 'reports',
+      'users_label': 'students',
+      'tab_courses': 'courses',
+      'tab_exams': 'exams',
+      'enrollments_label': 'students',
+      'assignments_label': 'courses',
+      'pref_certificates': 'certificates',
+      'admin_announcements': 'announcements',
+      'support': 'support',
+      'lives_label': 'lives',
+      'library_label': 'library',
+      'tenant_members': 'students',
+    };
+    if (!_fullAdmin) {
+      sections.removeWhere(
+          (sec) => !_scopes.contains(scopeOf[sec.$1] ?? '_none_'));
+    }
     if (_isSuper) {
       sections.add((
         'super_admin_panel',

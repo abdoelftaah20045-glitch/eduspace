@@ -24,7 +24,7 @@ class ProfileScreen extends StatelessWidget {
         .select('full_name, email, avatar_url')
         .eq('id', uid)
         .maybeSingle();
-    final admin = await AdminRepository.isAdmin();
+    final admin = await AdminRepository.hasAdminAccess();
     return {...?profile, '_is_admin': admin};
   }
 

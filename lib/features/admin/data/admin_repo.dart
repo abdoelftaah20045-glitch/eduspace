@@ -31,6 +31,23 @@ class AdminRepository {
     }
   }
 
+  /// Staff scopes (courses, exams, support, ...) from the my_scopes RPC.
+  /// Empty when SQL part 11 is not installed or the user has no staff role.
+  static Future<List<String>> myScopes() async {
+    try {
+      final r = await _c.rpc('my_scopes', params: {'t': TenantContext.id});
+      return (r as List).map((e) => e.toString()).toList();
+    } catch (_) {
+      return const [];
+    }
+  }
+
+  /// True for admins and for staff that hold at least one scope.
+  static Future<bool> hasAdminAccess() async {
+    if (await isAdmin()) return true;
+    return (await myScopes()).isNotEmpty;
+  }
+
   /// Every course regardless of status, newest first.
   static Future<List<Map<String, dynamic>>> fetchAllCourses() async {
     final rows = await _c

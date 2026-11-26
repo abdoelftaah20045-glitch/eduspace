@@ -87,7 +87,7 @@ class AppDrawer extends StatelessWidget {
             item(Icons.settings_outlined, 'settings', const SettingsScreen()),
             item(Icons.info_outline, 'dr_about', const AboutScreen()),
             FutureBuilder<bool>(
-              future: AdminRepository.isAdmin(),
+              future: AdminRepository.hasAdminAccess(),
               builder: (context, snap) => snap.data == true
                   ? item(Icons.admin_panel_settings_outlined, 'dr_admin',
                       const AdminPanelScreen())
