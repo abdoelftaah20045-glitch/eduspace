@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../core/tenant.dart';
 
 import 'data/admin_repo.dart';
 import '../../core/l10n.dart';
@@ -40,6 +42,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
   bool _fullAdmin = true;
   List<String> _scopes = const [];
   int _supportWaiting = 0;
+  String? _accessWarn;
 
   @override
   void initState() {
@@ -50,7 +53,25 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
     _load();
   }
 
+  Future<void> _checkAccess() async {
+    try {
+      final r = await Supabase.instance.client
+          .rpc('admin_access_check', params: {'p_tenant': TenantContext.id});
+      final m = Map<String, dynamic>.from(r as Map);
+      final ok = m['is_tenant_admin'] == true;
+      final warn = ok
+          ? null
+          : (m['is_admin'] == true && m['is_member'] != true)
+              ? 'admin_no_member'
+              : 'admin_no_access';
+      if (mounted) setState(() => _accessWarn = warn);
+    } catch (_) {
+      if (mounted) setState(() => _accessWarn = 'admin_access_sql');
+    }
+  }
+
   Future<void> _load() async {
+    _checkAccess();
     SupportRepository.awaitingAdminCount().then((n) {
       if (mounted) setState(() => _supportWaiting = n);
     }).catchError((_) {});
@@ -242,6 +263,24 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                 ),
               ),
             ),
+            if (_accessWarn != null)
+              Container(
+                margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFEBEE),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: const Color(0xFFE53935)),
+                ),
+                child: Row(children: [
+                  const Icon(Icons.lock_outline, color: Color(0xFFE53935)),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(s.t(_accessWarn!),
+                        style: const TextStyle(color: Color(0xFFB71C1C))),
+                  ),
+                ]),
+              ),
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
               child: GridView.count(
