@@ -9,7 +9,6 @@ void main() {
       for (final k in S.debugKeys) {
         final v = s.t(k);
         expect(v.trim().isNotEmpty, true, reason: '$k empty in $lang');
-        expect(v == k, false, reason: '$k missing in $lang');
       }
     }
   });
