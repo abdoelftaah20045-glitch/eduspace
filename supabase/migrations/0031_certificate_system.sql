@@ -122,3 +122,9 @@ drop policy if exists certificates_insert_self_completed on public.certificates;
 -- Announcements: several images per announcement (public URLs).
 alter table public.announcements add column if not exists images jsonb not null default '[]'::jsonb;
 alter table public.announcements add column if not exists slide_seconds int not null default 4;
+
+-- Students may read question bank names (used as chapter names in the quiz
+-- result analysis). Banks hold no answers.
+drop policy if exists question_banks_member_read on public.question_banks;
+create policy question_banks_member_read on public.question_banks
+  for select to authenticated using (public.is_tenant_member(tenant_id));

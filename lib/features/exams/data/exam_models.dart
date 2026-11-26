@@ -73,8 +73,10 @@ class ExamQuestion {
     required this.body,
     this.points = 1,
     this.options = const [],
+    this.bankId,
   });
 
+  final String? bankId;
   final String id;
   final String type; // mcq, true_false, multi, fill_blank, essay
   final String body;
@@ -93,6 +95,7 @@ class ExamQuestion {
       body: (m['body'] as String?) ?? '',
       points: (m['points'] as num?)?.toDouble() ?? 1,
       options: options,
+      bankId: m['bank_id'] as String?,
     );
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'quiz_analysis.dart';
 import '../../core/l10n.dart';
 import 'data/exam_models.dart';
 import 'data/exams_repo.dart';
@@ -84,7 +85,10 @@ class _ExamReviewScreenState extends State<ExamReviewScreen> {
                       final score = (a['score'] as num?)?.toDouble() ?? 0;
                       final max = (a['max_score'] as num?)?.toDouble() ?? 0;
                       final passed = a['passed'] as bool? ?? false;
-                      return Card(
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                      Card(
                         color: passed
                             ? const Color(0xFFE8F5E9)
                             : const Color(0xFFFFEBEE),
@@ -110,6 +114,15 @@ class _ExamReviewScreenState extends State<ExamReviewScreen> {
                           subtitle: Text(
                               '${score.toStringAsFixed(1)} / ${max.toStringAsFixed(1)}'),
                         ),
+                      ),
+                      QuizAnalysis(
+                          questions: questions, answers: _answers ?? const {}),
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Text(s.t('review_answers'),
+                            style: Theme.of(context).textTheme.titleMedium),
+                      ),
+                        ],
                       );
                     }
                     final q = questions[i - 1];
