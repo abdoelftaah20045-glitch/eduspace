@@ -41,7 +41,6 @@ class _CertificateViewScreenState extends State<CertificateViewScreen> {
   bool _sharing = false;
   bool _exporting = false;
   Map<String, dynamic>? _settings;
-  String? _langOverride;
 
   @override
   void initState() {
@@ -51,9 +50,7 @@ class _CertificateViewScreenState extends State<CertificateViewScreen> {
     });
   }
 
-  String get _lang =>
-      _langOverride ??
-      (Localizations.localeOf(context).languageCode == 'ar' ? 'ar' : 'en');
+  String get _lang => widget.cert.lang;
 
   /// Public verification link encoded in the PDF's QR code.
   String get _verifyUrl =>
@@ -184,17 +181,6 @@ class _CertificateViewScreenState extends State<CertificateViewScreen> {
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          Center(
-            child: SegmentedButton<String>(
-              segments: const [
-                ButtonSegment(value: 'ar', label: Text('العربية')),
-                ButtonSegment(value: 'en', label: Text('English')),
-              ],
-              selected: {_lang},
-              onSelectionChanged: (v) => setState(() => _langOverride = v.first),
-            ),
-          ),
-          const SizedBox(height: 12),
           RepaintBoundary(
             key: _captureKey,
             child: AspectRatio(

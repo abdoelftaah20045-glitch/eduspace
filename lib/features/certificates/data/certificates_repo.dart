@@ -16,6 +16,7 @@ class Certificate {
     this.hours,
     required this.status,
     required this.issuedAt,
+    this.lang = 'ar',
   });
 
   final String id;
@@ -26,6 +27,7 @@ class Certificate {
   final double? hours;
   final String status;
   final DateTime issuedAt;
+  final String lang;
 
   bool get isValid => status == 'valid';
 
@@ -37,6 +39,7 @@ class Certificate {
         courseTitle: (m['course_title'] as String?) ?? '',
         hours: (m['hours'] as num?)?.toDouble(),
         status: (m['status'] as String?) ?? 'valid',
+        lang: (m['lang'] as String?) == 'en' ? 'en' : 'ar',
         issuedAt:
             DateTime.tryParse((m['issued_at'] ?? '').toString())?.toLocal() ??
                 DateTime.now(),
@@ -73,8 +76,8 @@ class CertificatesRepository {
         .eq('user_id', user.id)
         .eq('course_id', details.course.id)
         .eq('tenant_id', TenantContext.id)
-        .maybeSingle();
-    if (existing != null) return Certificate.fromMap(existing);
+        .order('lang');
+    if (existing.length >= 2) return Certificate.fromMap(existing.first);
     if (details.percent < 100) return null;
     // Preferred path: the server checks the course rules (completion, exam
     // grade, on/off) and issues. Falls back to a direct insert when the
@@ -92,6 +95,7 @@ class CertificatesRepository {
     final studentName = (metaName == null || metaName.isEmpty)
         ? (user.email ?? 'Student')
         : metaName;
+    if (existing.isNotEmpty) return Certificate.fromMap(existing.first);
     final inserted = await _c
         .from('certificates')
         .insert({

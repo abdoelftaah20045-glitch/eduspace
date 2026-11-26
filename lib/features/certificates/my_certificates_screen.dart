@@ -94,7 +94,7 @@ class _MyCertificatesScreenState extends State<MyCertificatesScreen> {
                                 const TextStyle(fontWeight: FontWeight.w600),
                           ),
                           subtitle: Text(
-                            '${c.certificateNumber}\n'
+                            '${c.lang == 'ar' ? 'العربية' : 'English'}  ·  ${c.certificateNumber}\n'
                             '${DateFormat('d MMM y', s.locale.languageCode).format(c.issuedAt)}'
                             '${c.isValid ? '' : ' · ${s.t('status_cancelled')}'}',
                           ),

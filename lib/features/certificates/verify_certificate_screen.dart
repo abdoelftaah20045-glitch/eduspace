@@ -102,34 +102,45 @@ class _VerifyCertificateScreenState extends State<VerifyCertificateScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: valid
+                    ? const Color(0xFF16A34A)
+                    : const Color(0xFFDC2626),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Column(children: [
                 Icon(
                   valid
                       ? Icons.verified
                       : found
-                          ? Icons.cancel_outlined
+                          ? Icons.gpp_bad_outlined
                           : Icons.search_off,
-                  color: valid
-                      ? Colors.green
-                      : found
-                          ? Colors.orange
-                          : Colors.grey,
-                  size: 32,
+                  color: Colors.white,
+                  size: 48,
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    !found
-                        ? s.t('cert_not_found')
-                        : valid
-                            ? s.t('cert_valid')
-                            : s.t('status_cancelled'),
-                    style: theme.textTheme.titleMedium
-                        ?.copyWith(fontWeight: FontWeight.bold),
+                const SizedBox(height: 8),
+                Text(
+                  !found
+                      ? s.t('cert_not_found')
+                      : valid
+                          ? s.t('cert_valid')
+                          : s.t('status_cancelled'),
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.titleLarge?.copyWith(
+                      color: Colors.white, fontWeight: FontWeight.w800),
+                ),
+                if (!valid)
+                  const Padding(
+                    padding: EdgeInsets.only(top: 6),
+                    child: Text('INVALID / غير صالحة',
+                        style: TextStyle(
+                            color: Colors.white70,
+                            fontWeight: FontWeight.w700)),
                   ),
-                ),
-              ],
+              ]),
             ),
             if (found) ...[
               const Divider(height: 24),
@@ -137,6 +148,7 @@ class _VerifyCertificateScreenState extends State<VerifyCertificateScreen> {
               _row(s.t('tab_courses'), result['course_title'] as String? ?? ''),
               _row(s.t('hours_label'), '${result['hours'] ?? 0}'),
               if (issued.isNotEmpty) _row(s.t('issued_on'), issued),
+              _row('Language', result['lang'] == 'en' ? 'English' : 'العربية'),
               _row(s.t('cert_number'),
                   result['certificate_number'] as String? ?? ''),
             ],
