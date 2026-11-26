@@ -79,7 +79,7 @@ class _AiOverlayState extends State<AiOverlay>
       builder: (context, _, __) => Stack(
       children: [
         widget.child,
-        if (!_open &&
+        if (_signedIn && !_open &&
             aiFabHidden.value == 0 &&
             MediaQuery.of(context).viewInsets.bottom == 0)
           Positioned(
