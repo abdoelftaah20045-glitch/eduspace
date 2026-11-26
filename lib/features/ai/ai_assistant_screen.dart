@@ -138,11 +138,21 @@ class _AiChatPanelState extends State<AiChatPanel> {
       final data = res.data;
       if (data is Map && (data['text'] ?? '').toString().isNotEmpty) {
         reply = data['text'].toString();
+      } else if (data is Map && data['error'] == 'no_key') {
+        reply = 'مفتاح Gemini (GEMINI_API_KEY) مش متسجل في Supabase Secrets، أو اتسجل بعد نشر الدالة. احفظه تاني وأعد نشر الدالة (Deploy).';
+      } else if (data is Map && data['error'] == 'gemini') {
+        reply = 'المفتاح موجود لكن Gemini رفض الطلب: ${data['detail']}';
+      } else if (data is Map && data['error'] != null) {
+        reply = 'خطأ في الدالة: ${data['error']}';
       } else {
         reply = s.t('ai_not_ready');
       }
-    } catch (_) {
-      reply = s.t('ai_not_ready');
+    } on FunctionException catch (e) {
+      reply = e.status == 404
+          ? 'الدالة ai-assistant مش موجودة في Supabase. اتأكد إن اسمها بالظبط ai-assistant وإنها اتعملها Deploy.'
+          : 'الدالة رجّعت خطأ (${e.status}): ${e.details ?? ''}';
+    } catch (e) {
+      reply = 'تعذر الوصول للمساعد: $e';
     }
     if (!mounted) return;
     setState(() {

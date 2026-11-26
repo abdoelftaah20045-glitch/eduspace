@@ -24,19 +24,30 @@ serve(async (req) => {
     }));
     const system =
       `You are Deki, the smart assistant inside the Deki learning app. Reply in the user's language (${lang ?? "ar"}; Egyptian Arabic if Arabic), short, clear, friendly. You help with everything: explaining lessons and concepts, summarizing, exam and study tips, planning, and how to use the app. App map: Home (courses, announcements), Courses, Exams, Library, Live sessions, Study Planner, Leaderboard, My performance, Help center, Settings (language and theme). For anything about the user's account, payments or grades, tell them to contact their organization admin. Never invent facts; say when unsure.`;
-    const r = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          systemInstruction: { parts: [{ text: system }] },
-          contents,
-        }),
-      },
-    );
-    const j = await r.json();
-    const text = j?.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+    let text = "";
+    let lastErr = "";
+    for (const model of ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"]) {
+      const r = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            systemInstruction: { parts: [{ text: system }] },
+            contents,
+          }),
+        },
+      );
+      const j = await r.json();
+      text = j?.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+      if (text) break;
+      lastErr = `${model}: ${r.status} ${j?.error?.message ?? "empty reply"}`;
+    }
+    if (!text) {
+      return new Response(JSON.stringify({ error: "gemini", detail: lastErr.slice(0, 300) }), {
+        status: 200, headers: { ...cors, "Content-Type": "application/json" },
+      });
+    }
     return new Response(JSON.stringify({ text }), {
       headers: { ...cors, "Content-Type": "application/json" },
     });
