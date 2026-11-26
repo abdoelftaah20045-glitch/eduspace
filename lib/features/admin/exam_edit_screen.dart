@@ -99,7 +99,14 @@ class _ExamEditScreenState extends State<ExamEditScreen> {
     };
     try {
       if (widget.exam == null) {
-        await AdminExamsRepository.createExam(values);
+        final newId = await AdminExamsRepository.createExam(values);
+        if (!mounted) return;
+        // Go straight to adding the questions of the new exam.
+        await Navigator.of(context).pushReplacement(MaterialPageRoute(
+          builder: (_) => ExamQuestionsScreen(
+              examId: newId, examTitle: _title.text.trim()),
+        ));
+        return;
       } else {
         await AdminExamsRepository.updateExam(
             widget.exam!['id'] as String, values);

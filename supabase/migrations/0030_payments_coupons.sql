@@ -165,3 +165,24 @@ create policy receipts_read on storage.objects
   using (bucket_id = 'receipts'
          and ((storage.foldername(name))[1] = auth.uid()::text
               or public.is_admin()));
+
+-- ---------- files attached under each lesson ----------
+create table if not exists public.lesson_files (
+  id uuid primary key default gen_random_uuid(),
+  tenant_id uuid not null default public.default_tenant_id()
+    references public.tenants (id) on delete cascade,
+  lesson_id uuid not null references public.lessons (id) on delete cascade,
+  name text not null,
+  file_url text not null,
+  created_at timestamptz not null default now()
+);
+create index if not exists lesson_files_lesson_idx on public.lesson_files (lesson_id);
+alter table public.lesson_files enable row level security;
+drop policy if exists lesson_files_read on public.lesson_files;
+create policy lesson_files_read on public.lesson_files
+  for select to authenticated using (true);
+drop policy if exists lesson_files_admin on public.lesson_files;
+create policy lesson_files_admin on public.lesson_files
+  for all to authenticated
+  using (public.is_tenant_admin(tenant_id))
+  with check (public.is_tenant_admin(tenant_id));

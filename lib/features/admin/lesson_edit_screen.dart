@@ -1,4 +1,7 @@
 import 'package:file_picker/file_picker.dart';
+import '../../core/in_app_player.dart';
+import '../../core/storage_urls.dart';
+import '../courses/lesson_files.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/l10n.dart';
@@ -252,6 +255,27 @@ class _LessonEditScreenState extends State<LessonEditScreen> {
                     : _openAt!.toString().substring(0, 16)),
                 onTap: _pickOpenAt,
               ),
+            if (_type == 'video' || _type == 'live')
+              Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: TextButton.icon(
+                  onPressed: () async {
+                    final u = await resolveStorageUrl(_mediaUrl.text.trim());
+                    if (u.isEmpty || !context.mounted) return;
+                    Navigator.of(context).push(MaterialPageRoute(
+                        builder: (_) => InAppPlayerScreen(
+                            url: u, title: _title.text.trim())));
+                  },
+                  icon: const Icon(Icons.play_circle_outline),
+                  label: Text(s.t('preview_video')),
+                ),
+              ),
+            const Divider(height: 32),
+            if (widget.lesson != null)
+              LessonFiles(
+                  lessonId: widget.lesson!['id'].toString(), canEdit: true)
+            else
+              Text(s.t('lesson_files_save_first')),
             const SizedBox(height: 24),
             FilledButton.icon(
               onPressed: _saving ? null : _save,

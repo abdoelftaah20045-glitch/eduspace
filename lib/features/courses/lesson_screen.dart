@@ -1,4 +1,5 @@
 import '../../core/in_app_player.dart';
+import 'lesson_files.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -79,6 +80,8 @@ class _LessonScreenState extends State<LessonScreen> {
             const SizedBox(height: 16),
             Text(lesson.content),
           ],
+          const SizedBox(height: 16),
+          LessonFiles(lessonId: lesson.id),
           const SizedBox(height: 24),
           if (!_completed)
             SizedBox(
