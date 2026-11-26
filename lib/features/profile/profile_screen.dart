@@ -13,6 +13,7 @@ import '../support/support_screen.dart';
 import '../settings/settings_screen.dart';
 import '../tenancy/select_tenant_screen.dart';
 import 'edit_profile_screen.dart';
+import 'profile_stats.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -110,6 +111,8 @@ class ProfileScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
+              const ProfileStats(),
+              const SizedBox(height: 8),
               ListTile(
                 leading: const Icon(Icons.edit_outlined),
                 title: Text(s.t('edit_profile')),
