@@ -153,7 +153,7 @@ class CertificateCard extends StatelessWidget {
       width: 300 * k,
       height: 200 * k,
       child: Image.asset(
-          _ar ? 'assets/brand/sig_ar.png' : 'assets/brand/sig_en.png',
+          'assets/brand/sig_en.png',
           fit: BoxFit.contain),
     ));
     for (final x in [690.0, 1350.0]) {
