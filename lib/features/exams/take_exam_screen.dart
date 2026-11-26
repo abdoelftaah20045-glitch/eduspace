@@ -1,3 +1,4 @@
+import 'exam_result_screen.dart';
 import 'dart:async';
 
 import 'dart:ui' show FontFeature;
@@ -26,6 +27,7 @@ class _TakeExamScreenState extends State<TakeExamScreen> {
   bool _submitting = false;
   Timer? _timer;
   int _secondsLeft = 0;
+  DateTime _startedAt = DateTime.now();
 
   /// questionId -> selected option ids (mcq/true_false/multi)
   final Map<String, Set<String>> _selected = {};
@@ -55,6 +57,7 @@ class _TakeExamScreenState extends State<TakeExamScreen> {
       final attemptId = await ExamsRepository.startAttempt(widget.exam.id);
       final questions = await ExamsRepository.fetchQuestions(widget.exam);
       if (!mounted) return;
+      _startedAt = DateTime.now();
       setState(() {
         _attemptId = attemptId;
         _questions = questions;
@@ -163,101 +166,18 @@ class _TakeExamScreenState extends State<TakeExamScreen> {
         texts: _texts,
       );
       if (!mounted) return;
-      await showDialog<void>(
-        context: context,
-        barrierDismissible: false,
-        builder: (ctx) => AlertDialog(
-          icon: Icon(
-            result.passed ? Icons.celebration_outlined : Icons.sentiment_dissatisfied_outlined,
-            size: 48,
-            color: result.passed
-                ? Theme.of(ctx).colorScheme.primary
-                : Theme.of(ctx).colorScheme.error,
-          ),
-          title: Text(result.passed ? s.t('exam_passed') : s.t('exam_failed')),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _ScoreBox(score: result.score, maxScore: result.maxScore),
-              const SizedBox(height: 14),
-              Builder(builder: (_) {
-                final pct = result.maxScore > 0
-                    ? (result.score / result.maxScore * 100).clamp(0, 100).toDouble()
-                    : 0.0;
-                final col = pct >= 80
-                    ? const Color(0xFF2E9E5B)
-                    : pct >= 60
-                        ? const Color(0xFFE8805A)
-                        : pct >= 40
-                            ? const Color(0xFFF29900)
-                            : const Color(0xFFE53935);
-                final tip = pct >= 80
-                    ? 'tip_excellent'
-                    : pct >= 60
-                        ? 'tip_good'
-                        : pct >= 40
-                            ? 'tip_fair'
-                            : 'tip_weak';
-                return Column(children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: LinearProgressIndicator(
-                        value: pct / 100,
-                        minHeight: 10,
-                        color: col,
-                        backgroundColor: col.withValues(alpha: .15)),
-                  ),
-                  const SizedBox(height: 4),
-                  Text('${pct.toStringAsFixed(0)}%',
-                      style: TextStyle(color: col, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: col.withValues(alpha: .1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(children: [
-                      Icon(Icons.lightbulb_outline, color: col, size: 20),
-                      const SizedBox(width: 8),
-                      Expanded(child: Text(s.t(tip), style: const TextStyle(fontSize: 13))),
-                    ]),
-                  ),
-                  const SizedBox(height: 14),
-                ]);
-              }),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _ResultCount(
-                      value: correctCount,
-                      label: s.t('correct_count'),
-                      color: const Color(0xFF2E9E5B)),
-                  _ResultCount(
-                      value: incorrectCount,
-                      label: s.t('incorrect_count'),
-                      color: const Color(0xFFE53935)),
-                  _ResultCount(
-                      value: skippedCount,
-                      label: s.t('unanswered_count'),
-                      color: const Color(0xFFF29900)),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Text(
-                '${s.t('pass_grade')}: ${widget.exam.passGrade.toStringAsFixed(1)}',
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-          actions: [
-            FilledButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: Text(s.t('done')),
-            ),
-          ],
+      await Navigator.of(context).push(MaterialPageRoute(
+        builder: (_) => ExamResultScreen(
+          exam: widget.exam,
+          score: result.score,
+          maxScore: result.maxScore,
+          passed: result.passed,
+          correct: correctCount,
+          incorrect: incorrectCount,
+          unanswered: skippedCount,
+          elapsed: DateTime.now().difference(_startedAt),
         ),
-      );
+      ));
       if (!mounted) return;
       Navigator.of(context).pop(true);
     } catch (_) {

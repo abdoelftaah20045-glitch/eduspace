@@ -111,6 +111,77 @@ class _PerformanceScreenState extends State<PerformanceScreen> {
                   : ListView(
                       padding: const EdgeInsets.all(16),
                       children: [
+                        Builder(builder: (context) {
+                          final avg = rows.fold<double>(0, (a, b) => a + b.pct) /
+                              rows.length;
+                          final recent = rows.take(10).toList().reversed.toList();
+                          final scheme = Theme.of(context).colorScheme;
+                          return Column(children: [
+                            SizedBox(
+                              width: 150,
+                              height: 150,
+                              child: Stack(alignment: Alignment.center, children: [
+                                SizedBox(
+                                  width: 150,
+                                  height: 150,
+                                  child: CircularProgressIndicator(
+                                    value: avg / 100,
+                                    strokeWidth: 13,
+                                    strokeCap: StrokeCap.round,
+                                    color: scheme.primary,
+                                    backgroundColor:
+                                        scheme.primary.withValues(alpha: .15),
+                                  ),
+                                ),
+                                Column(mainAxisSize: MainAxisSize.min, children: [
+                                  Text('${avg.round()}%',
+                                      style: const TextStyle(
+                                          fontSize: 30,
+                                          fontWeight: FontWeight.w800)),
+                                  Text(s.t('perf_avg'),
+                                      style: const TextStyle(fontSize: 12)),
+                                ]),
+                              ]),
+                            ),
+                            const SizedBox(height: 16),
+                            SizedBox(
+                              height: 90,
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  for (final a in recent)
+                                    Expanded(
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 3),
+                                        child: Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.end,
+                                          children: [
+                                            Text('${a.pct.round()}',
+                                                style: const TextStyle(
+                                                    fontSize: 10)),
+                                            const SizedBox(height: 2),
+                                            Container(
+                                              height: 4 + 64 * (a.pct / 100),
+                                              decoration: BoxDecoration(
+                                                color: a.pct >= 60
+                                                    ? const Color(0xFF16A34A)
+                                                    : const Color(0xFFDC2626),
+                                                borderRadius:
+                                                    BorderRadius.circular(5),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                          ]);
+                        }),
                         Row(children: [
                           _stat(
                               s.t('perf_avg'),
