@@ -37,3 +37,7 @@ flutter:
   assets:
     - assets/logo.png
     - assets/brand/
+  fonts:
+    - family: Marhey
+      fonts:
+        - asset: assets/fonts/Marhey.ttf

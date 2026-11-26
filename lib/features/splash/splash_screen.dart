@@ -106,8 +106,11 @@ class _SplashScreenState extends State<SplashScreen>
                         s.t('splash_tagline'),
                         style: Theme.of(context)
                             .textTheme
-                            .bodyMedium
-                            ?.copyWith(color: Colors.black54),
+                            .titleMedium
+                            ?.copyWith(
+                                color: const Color(0xFF1D4ED8),
+                                fontFamily: 'Marhey',
+                                fontSize: 22),
                       ),
                     ],
                   ),

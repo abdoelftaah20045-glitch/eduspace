@@ -389,7 +389,7 @@ class S {
     'level_intermediate': {'ar': 'متوسط', 'en': 'Intermediate', 'fr': 'Intermédiaire', 'es': 'Intermedio', 'de': 'Fortgeschritten'},
     'level_advanced': {'ar': 'متقدم', 'en': 'Advanced', 'fr': 'Avancé', 'es': 'Avanzado', 'de': 'Profi'},
     'level_all_levels': {'ar': 'كل المستويات', 'en': 'All levels', 'fr': 'Tous niveaux', 'es': 'Todos los niveles', 'de': 'Alle Niveaus'},
-    'splash_tagline': {'ar': 'ابدأ، اتعلم، وتألق', 'en': 'Start, learn, shine', 'fr': 'Commencez, apprenez, brillez', 'es': 'Empieza, aprende, brilla', 'de': 'Starten, lernen, glänzen'},
+    'splash_tagline': {'ar': 'المعرفة حق للجميع', 'en': 'Knowledge for everyone', 'fr': 'Le savoir pour tous', 'es': 'El conocimiento es para todos', 'de': 'Wissen für alle'},
     'resend_sent': {'ar': 'اتبعت رابط التحقق من تاني', 'en': 'Verification email sent again', 'fr': 'E-mail de vérification renvoyé', 'es': 'Correo de verificación reenviado', 'de': 'Bestätigungs-E-Mail erneut gesendet'},
     'admin_courses': {'ar': 'إدارة الكورسات', 'en': 'Manage courses', 'fr': 'Gérer les cours', 'es': 'Gestionar cursos', 'de': 'Kurse verwalten'},
     'new_course': {'ar': 'كورس جديد', 'en': 'New course', 'fr': 'Nouveau cours', 'es': 'Nuevo curso', 'de': 'Neuer Kurs'},
