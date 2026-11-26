@@ -70,7 +70,7 @@ class _CertsStripState extends State<CertsStrip> {
             itemCount: groups.length,
             itemBuilder: (_, i) {
               final g = groups[i];
-              final c = pickCertLang(g, s.locale.languageCode);
+              final c = pickCertLang(g, 'en');
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 6),
                 child: InkWell(

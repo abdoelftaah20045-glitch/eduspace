@@ -76,7 +76,7 @@ class _MyCertificatesScreenState extends State<MyCertificatesScreen> {
                     itemCount: groupCertsByCourse(_certs!).length,
                     itemBuilder: (context, i) {
                       final group = groupCertsByCourse(_certs!)[i];
-                      final c = pickCertLang(group, s.locale.languageCode);
+                      final c = pickCertLang(group, 'en');
                       return Card(
                         clipBehavior: Clip.antiAlias,
                         child: ListTile(

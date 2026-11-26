@@ -45,7 +45,8 @@ class _CertificateViewScreenState extends State<CertificateViewScreen> {
   bool _sharing = false;
   bool _exporting = false;
   Map<String, dynamic>? _settings;
-  late Certificate _cert = widget.cert;
+  late Certificate _cert = pickCertLang(
+      widget.siblings.isEmpty ? [widget.cert] : widget.siblings, 'en');
 
   @override
   void initState() {
@@ -56,6 +57,37 @@ class _CertificateViewScreenState extends State<CertificateViewScreen> {
   }
 
   String get _lang => _cert.lang;
+
+  List<Certificate> get _variants {
+    final l = widget.siblings.isEmpty ? [widget.cert] : [...widget.siblings];
+    l.sort((a, b) => a.lang == 'en' ? -1 : (b.lang == 'en' ? 1 : 0));
+    return l;
+  }
+
+  Widget _card(Certificate c) {
+    final card = AspectRatio(
+      aspectRatio: 960 / 680,
+      child: ClipRect(
+        child: FittedBox(
+          fit: BoxFit.contain,
+          child: SizedBox(
+            width: 960,
+            height: 680,
+            child: CertificateCard(
+                cert: c,
+                lang: c.lang,
+                verifyUrl: '${AppConfig.supabaseUrl}/rest/v1/rpc/verify_certificate'
+                    '?apikey=${AppConfig.supabaseAnonKey}'
+                    '&p_number=${c.certificateNumber}',
+                settings: _settings),
+          ),
+        ),
+      ),
+    );
+    return c.id == _cert.id
+        ? RepaintBoundary(key: _captureKey, child: card)
+        : card;
+  }
 
   /// Public verification link encoded in the PDF's QR code.
   String get _verifyUrl =>
@@ -186,44 +218,32 @@ class _CertificateViewScreenState extends State<CertificateViewScreen> {
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          if (widget.siblings.length > 1)
+          for (final c in _variants)
             Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: Center(
-                child: SegmentedButton<String>(
-                  showSelectedIcon: false,
-                  segments: [
-                    for (final c in widget.siblings)
-                      ButtonSegment(
-                          value: c.lang,
-                          label: Text(c.lang == 'ar' ? 'العربية' : 'English')),
-                  ],
-                  selected: {_cert.lang},
-                  onSelectionChanged: (v) => setState(() => _cert =
-                      widget.siblings.firstWhere((c) => c.lang == v.first)),
-                ),
-              ),
-            ),
-          RepaintBoundary(
-            key: _captureKey,
-            child: AspectRatio(
-              aspectRatio: 960 / 680,
-              child: ClipRect(
-                child: FittedBox(
-                  fit: BoxFit.contain,
-                  child: SizedBox(
-                    width: 960,
-                    height: 680,
-                    child: CertificateCard(
-                        cert: cert,
-                        lang: _lang,
-                        verifyUrl: _verifyUrl,
-                        settings: _settings),
+              padding: const EdgeInsets.only(bottom: 16),
+              child: GestureDetector(
+                onTap: () => setState(() => _cert = c),
+                child: Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                        color: (_variants.length > 1 && c.id == _cert.id)
+                            ? Theme.of(context).colorScheme.primary
+                            : Colors.transparent,
+                        width: 2),
                   ),
+                  child: _card(c),
                 ),
               ),
             ),
-          ),
+          if (_variants.length > 1)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Text(
+                'PDF / share: ${_cert.lang == 'ar' ? 'العربية' : 'English'} (tap a certificate to choose)',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ),
           if (!cert.isValid)
             Padding(
               padding: const EdgeInsets.only(top: 12),
