@@ -15,6 +15,10 @@ class RemoteUi {
   static Map<String, Map<String, dynamic>> layout = {};
   static List<Map<String, dynamic>> faq = [];
   static String? primaryHex;
+  static Map<String, num> limits = {};
+
+  /// Admin-set number (ui_limits) or the built-in default.
+  static num limit(String key, num def) => limits[key] ?? def;
 
   static Color? get primaryColor {
     final h = primaryHex?.replaceAll('#', '').trim();
@@ -29,7 +33,7 @@ class RemoteUi {
           .from('tenant_settings')
           .select('setting_key, setting_value')
           .eq('tenant_id', TenantContext.id)
-          .inFilter('setting_key', ['ui_texts', 'ui_layout', 'ui_faq', 'ui_look']);
+          .inFilter('setting_key', ['ui_texts', 'ui_layout', 'ui_faq', 'ui_look', 'ui_limits']);
       for (final r in rows) {
         final v = r['setting_value'];
         if (v is! Map) continue;
@@ -38,6 +42,15 @@ class RemoteUi {
             for (final e in (v['items'] as List? ?? const []))
               Map<String, dynamic>.from(e as Map),
           ];
+          version.value++;
+          continue;
+        }
+        if (r['setting_key'] == 'ui_limits') {
+          limits = {
+            for (final e in v.entries)
+              if (num.tryParse(e.value.toString()) != null)
+                e.key.toString(): num.parse(e.value.toString()),
+          };
           version.value++;
           continue;
         }

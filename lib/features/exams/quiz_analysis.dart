@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/l10n.dart';
+import '../../core/remote_ui.dart';
 import 'data/exam_models.dart';
 
-Color levelColor(double pct) => pct >= 80
+Color levelColor(double pct) => pct >= RemoteUi.limit('lvl_excellent', 80)
     ? const Color(0xFF2E9E5B)
-    : pct >= 60
+    : pct >= RemoteUi.limit('lvl_good', 60)
         ? const Color(0xFF2563EB)
-        : pct >= 40
+        : pct >= RemoteUi.limit('lvl_average', 40)
             ? const Color(0xFFF29900)
             : const Color(0xFFE53935);
 
@@ -161,10 +162,10 @@ class _QuizAnalysisState extends State<QuizAnalysis> {
                 ),
                 const SizedBox(height: 12),
                 Wrap(spacing: 12, runSpacing: 4, children: [
-                  legend(const Color(0xFF2E9E5B), '${s.t('lvl_excellent')} (≥80%)'),
-                  legend(const Color(0xFF2563EB), '${s.t('lvl_good')} (≥60%)'),
-                  legend(const Color(0xFFF29900), '${s.t('lvl_average')} (≥40%)'),
-                  legend(const Color(0xFFE53935), '${s.t('lvl_weak')} (<40%)'),
+                  legend(const Color(0xFF2E9E5B), '${s.t('lvl_excellent')} (≥${RemoteUi.limit('lvl_excellent', 80).round()}%)'),
+                  legend(const Color(0xFF2563EB), '${s.t('lvl_good')} (≥${RemoteUi.limit('lvl_good', 60).round()}%)'),
+                  legend(const Color(0xFFF29900), '${s.t('lvl_average')} (≥${RemoteUi.limit('lvl_average', 40).round()}%)'),
+                  legend(const Color(0xFFE53935), '${s.t('lvl_weak')} (<${RemoteUi.limit('lvl_average', 40).round()}%)'),
                 ]),
               ],
             ),
@@ -194,11 +195,11 @@ class _ChapterCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final s = S.of(context);
     final col = levelColor(g.pct);
-    final label = g.pct >= 80
+    final label = g.pct >= RemoteUi.limit('lvl_excellent', 80)
         ? 'lvl_excellent'
-        : g.pct >= 60
+        : g.pct >= RemoteUi.limit('lvl_good', 60)
             ? 'lvl_good'
-            : g.pct >= 40
+            : g.pct >= RemoteUi.limit('lvl_average', 40)
                 ? 'lvl_average'
                 : 'lvl_needs';
     Widget stat(IconData i, Color c, int v, String t) => Expanded(
@@ -249,7 +250,7 @@ class _ChapterCard extends StatelessWidget {
             stat(Icons.cancel, const Color(0xFFE53935), g.wrong, s.t('incorrect_count')),
             stat(Icons.quiz_outlined, const Color(0xFF2563EB), g.total, s.t('quiz_total')),
           ]),
-          if (g.pct < 80) ...[
+          if (g.pct < RemoteUi.limit('lvl_excellent', 80)) ...[
             const SizedBox(height: 10),
             Container(
               padding: const EdgeInsets.all(10),

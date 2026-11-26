@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/l10n.dart';
+import '../../core/remote_ui.dart';
 import '../../core/tenant.dart';
 
 class _Row {
@@ -64,10 +65,10 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
   }
 
   static (String, Color) _badge(int pts) {
-    if (pts >= 1500) return ('🏆', const Color(0xFFC9A227));
-    if (pts >= 700) return ('🥇', const Color(0xFFF29900));
-    if (pts >= 300) return ('🥈', const Color(0xFF607D8B));
-    if (pts >= 100) return ('🥉', const Color(0xFF8D6E63));
+    if (pts >= RemoteUi.limit('lb_trophy', 1500)) return ('🏆', const Color(0xFFC9A227));
+    if (pts >= RemoteUi.limit('lb_gold', 700)) return ('🥇', const Color(0xFFF29900));
+    if (pts >= RemoteUi.limit('lb_silver', 300)) return ('🥈', const Color(0xFF607D8B));
+    if (pts >= RemoteUi.limit('lb_bronze', 100)) return ('🥉', const Color(0xFF8D6E63));
     return ('🌱', const Color(0xFF2E9E5B));
   }
 
