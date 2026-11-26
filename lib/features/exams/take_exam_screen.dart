@@ -187,7 +187,7 @@ class _TakeExamScreenState extends State<TakeExamScreen> {
                 final col = pct >= 80
                     ? const Color(0xFF2E9E5B)
                     : pct >= 60
-                        ? const Color(0xFF2563EB)
+                        ? const Color(0xFFE8805A)
                         : pct >= 40
                             ? const Color(0xFFF29900)
                             : const Color(0xFFE53935);

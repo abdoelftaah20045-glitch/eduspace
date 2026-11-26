@@ -72,7 +72,7 @@ class _ProfileStatsState extends State<ProfileStats> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(children: [
-          stat(Icons.menu_book_outlined, const Color(0xFF2563EB), _courses, s.t('stat_courses')),
+          stat(Icons.menu_book_outlined, const Color(0xFFE8805A), _courses, s.t('stat_courses')),
           stat(Icons.check_circle_outline, const Color(0xFF2E9E5B), _lessons, s.t('stat_lessons')),
           stat(Icons.workspace_premium_outlined, const Color(0xFFF29900), _certs, s.t('pref_certificates')),
         ]),

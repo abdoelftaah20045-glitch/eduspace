@@ -131,6 +131,12 @@ class _LessonScreenState extends State<LessonScreen> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          Text(lesson.title,
+              style: Theme.of(context)
+                  .textTheme
+                  .titleLarge
+                  ?.copyWith(fontWeight: FontWeight.w800)),
+          const SizedBox(height: 12),
           _buildBody(s),
           if (lesson.content.isNotEmpty && lesson.type != 'text') ...[
             const SizedBox(height: 16),
@@ -210,7 +216,7 @@ class _LessonScreenState extends State<LessonScreen> {
           },
         );
       case 'text':
-        return Text(lesson.content);
+        return Text(lesson.content.trim().isEmpty ? s.t('no_content') : lesson.content);
       case 'pdf':
       case 'document':
       case 'presentation':

@@ -118,7 +118,7 @@ class _SplashScreenState extends State<SplashScreen>
                       shown,
                       textAlign: TextAlign.center,
                       style: const TextStyle(
-                        color: Color(0xFF1D4ED8),
+                        color: Color(0xFFD96A43),
                         fontFamily: 'Marhey',
                         fontSize: 22,
                       ),

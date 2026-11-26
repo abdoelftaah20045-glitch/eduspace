@@ -159,7 +159,7 @@ class _StudyPlannerScreenState extends State<StudyPlannerScreen> {
                   padding: const EdgeInsets.all(18),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
-                        colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)]),
+                        colors: [Color(0xFFE8805A), Color(0xFFD96A43)]),
                     borderRadius: BorderRadius.circular(22),
                   ),
                   child: Row(children: [

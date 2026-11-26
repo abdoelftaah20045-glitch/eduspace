@@ -81,7 +81,7 @@ class _AdminInsightsState extends State<AdminInsights> {
                 borderRadius: BorderRadius.circular(18),
                 boxShadow: const [
                   BoxShadow(
-                      color: Color(0x142563EB),
+                      color: Color(0x14E8805A),
                       blurRadius: 14,
                       offset: Offset(0, 8)),
                 ],
@@ -109,7 +109,7 @@ class _AdminInsightsState extends State<AdminInsights> {
                               value: v,
                               minHeight: 10,
                               backgroundColor: const Color(0xFFE8F0FF),
-                              color: const Color(0xFF2563EB),
+                              color: const Color(0xFFE8805A),
                             ),
                           ),
                         ),

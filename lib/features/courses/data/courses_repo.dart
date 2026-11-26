@@ -115,6 +115,36 @@ class CoursesRepository {
 
   /// One course with its sections and lessons, merged with the current
   /// user's enrollment and progress state.
+  /// Members count + a few avatars (needs SQL part 23; zeros otherwise).
+  static Future<({int n, List<String> avatars})> fetchMembers(
+      String courseId) async {
+    try {
+      final r = await _c.rpc('course_members', params: {'p_course': courseId});
+      final m = Map<String, dynamic>.from(r as Map);
+      return (
+        n: (m['n'] as num?)?.toInt() ?? 0,
+        avatars: [for (final a in (m['avatars'] as List? ?? const [])) '$a'],
+      );
+    } catch (_) {
+      return (n: 0, avatars: <String>[]);
+    }
+  }
+
+  /// Live sessions linked to the course, soonest first (weekly calendar).
+  static Future<List<Map<String, dynamic>>> fetchCourseLives(
+      String courseId) async {
+    try {
+      final rows = await _c
+          .from('live_sessions')
+          .select('id, title, starts_at, duration_minutes, status')
+          .eq('course_id', courseId)
+          .order('starts_at');
+      return List<Map<String, dynamic>>.from(rows);
+    } catch (_) {
+      return [];
+    }
+  }
+
   static Future<CourseDetails> fetchCourseDetails(String courseId) async {
     final courseMap = await _c
         .from('courses')

@@ -27,6 +27,16 @@ class _CourseEditScreenState extends State<CourseEditScreen> {
       text: widget.course?['instructor_name'] as String? ?? '');
   late final _cover = TextEditingController(
       text: widget.course?['cover_url'] as String? ?? '');
+  late final _skills = TextEditingController(
+      text: ((widget.course?['skills'] as List?) ?? const []).join(', '));
+  late final _effort = TextEditingController(
+      text: widget.course?['effort'] as String? ?? '');
+  late final _goals = TextEditingController(
+      text: widget.course?['goals'] as String? ?? '');
+  late final _maxStudents = TextEditingController(
+      text: '${widget.course?['max_students'] ?? ''}');
+  late final _instPhoto = TextEditingController(
+      text: widget.course?['instructor_photo_url'] as String? ?? '');
   late final _hours = TextEditingController(
       text: (widget.course?['hours'] as num?)?.toString() ?? '');
   late final _price = TextEditingController(
@@ -99,6 +109,11 @@ class _CourseEditScreenState extends State<CourseEditScreen> {
     _instructor.dispose();
     _cover.dispose();
     _hours.dispose();
+    _effort.dispose();
+    _skills.dispose();
+    _goals.dispose();
+    _maxStudents.dispose();
+    _instPhoto.dispose();
     _price.dispose();
     _prerequisites.dispose();
     super.dispose();
@@ -122,6 +137,17 @@ class _CourseEditScreenState extends State<CourseEditScreen> {
       'available_until': _until?.toUtc().toIso8601String(),
       'status': _status,
       'prerequisites': _prerequisites.text.trim(),
+      if (_skills.text.trim().isNotEmpty)
+        'skills': [
+          for (final x in _skills.text.split(RegExp(r'[,،]')))
+            if (x.trim().isNotEmpty) x.trim()
+        ],
+      if (_effort.text.trim().isNotEmpty) 'effort': _effort.text.trim(),
+      if (_goals.text.trim().isNotEmpty) 'goals': _goals.text.trim(),
+      if (int.tryParse(_maxStudents.text.trim()) != null)
+        'max_students': int.parse(_maxStudents.text.trim()),
+      if (_instPhoto.text.trim().isNotEmpty)
+        'instructor_photo_url': _instPhoto.text.trim(),
     };
     try {
       if (widget.course == null) {
@@ -283,6 +309,33 @@ class _CourseEditScreenState extends State<CourseEditScreen> {
               controller: _prerequisites,
               decoration: InputDecoration(labelText: s.t('prerequisites')),
               maxLines: 2,
+            ),
+            const SizedBox(height: 12),
+            TextFormField(
+              controller: _goals,
+              decoration: InputDecoration(labelText: s.t('cd_goals')),
+              maxLines: 3,
+            ),
+            const SizedBox(height: 12),
+            TextFormField(
+              controller: _skills,
+              decoration: InputDecoration(labelText: s.t('cd_skills')),
+            ),
+            const SizedBox(height: 12),
+            TextFormField(
+              controller: _effort,
+              decoration: InputDecoration(labelText: s.t('cd_effort')),
+            ),
+            const SizedBox(height: 12),
+            TextFormField(
+              controller: _maxStudents,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(labelText: s.t('cd_max_students')),
+            ),
+            const SizedBox(height: 12),
+            TextFormField(
+              controller: _instPhoto,
+              decoration: InputDecoration(labelText: s.t('host_photo')),
             ),
             const SizedBox(height: 24),
             FilledButton.icon(

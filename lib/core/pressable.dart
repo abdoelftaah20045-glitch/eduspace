@@ -11,7 +11,7 @@ class Pressable extends StatefulWidget {
     this.color = Colors.white,
     this.radius = 18,
     this.padding,
-    this.shadowColor = const Color(0xFF2563EB),
+    this.shadowColor = const Color(0xFFE8805A),
     this.haptic = true,
   });
 

@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'remote_ui.dart';
 
 // Primary blue taken from the owner's mockups (#2563EB). Light, calm surfaces.
-const _seed = Color(0xFF2563EB);
-const _lightBg = Color(0xFFF5F7FB);
+const _seed = Color(0xFFE8805A);
+const _lightBg = Color(0xFFFAF6F3);
 
 ThemeData _base(ColorScheme scheme) {
   return ThemeData(
@@ -70,7 +70,7 @@ ThemeData buildLightTheme() {
     primary: RemoteUi.primaryColor ?? _seed,
     onPrimary: Colors.white,
     surface: Colors.white,
-    surfaceContainerHighest: const Color(0xFFE8EEF9),
+    surfaceContainerHighest: const Color(0xFFFBEBE3),
   );
   return _base(scheme).copyWith(
     scaffoldBackgroundColor: _lightBg,
@@ -93,8 +93,10 @@ ThemeData buildDarkTheme() {
     seedColor: RemoteUi.primaryColor ?? _seed,
     brightness: Brightness.dark,
   ).copyWith(
-    primary: const Color(0xFF7E9FF2),
-    onPrimary: const Color(0xFF10203F),
+    primary: RemoteUi.primaryColor != null
+        ? Color.lerp(RemoteUi.primaryColor!, Colors.white, .25)!
+        : const Color(0xFFF2A07E),
+    onPrimary: const Color(0xFF3A1C0E),
     surface: surf,
     onSurface: text,
     surfaceContainerHighest: const Color(0xFF323D58),

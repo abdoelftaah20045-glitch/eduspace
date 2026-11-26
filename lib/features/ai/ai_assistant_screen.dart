@@ -48,7 +48,7 @@ class AiChatSheet extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
           decoration: const BoxDecoration(
             gradient: LinearGradient(
-                colors: [Color(0xFF2563EB), Color(0xFF7C3AED)]),
+                colors: [Color(0xFFE8805A), Color(0xFF7C3AED)]),
           ),
           child: Row(children: [
             Container(
@@ -187,7 +187,7 @@ class _AiChatPanelState extends State<AiChatPanel> {
                         decoration: const BoxDecoration(
                           shape: BoxShape.circle,
                           gradient: LinearGradient(colors: [
-                            Color(0xFF2563EB),
+                            Color(0xFFE8805A),
                             Color(0xFF7C3AED)
                           ]),
                         ),
@@ -247,7 +247,7 @@ class _AiChatPanelState extends State<AiChatPanel> {
                           decoration: BoxDecoration(
                             gradient: mine
                                 ? const LinearGradient(colors: [
-                                    Color(0xFF2563EB),
+                                    Color(0xFFE8805A),
                                     Color(0xFF4F46E5)
                                   ])
                                 : null,
@@ -255,7 +255,7 @@ class _AiChatPanelState extends State<AiChatPanel> {
                             borderRadius: BorderRadius.circular(18),
                             boxShadow: const [
                               BoxShadow(
-                                  color: Color(0x142563EB),
+                                  color: Color(0x14E8805A),
                                   blurRadius: 10,
                                   offset: Offset(0, 4)),
                             ],
@@ -307,7 +307,7 @@ class _AiChatPanelState extends State<AiChatPanel> {
                 decoration: const BoxDecoration(
                   shape: BoxShape.circle,
                   gradient: LinearGradient(
-                      colors: [Color(0xFF2563EB), Color(0xFF7C3AED)]),
+                      colors: [Color(0xFFE8805A), Color(0xFF7C3AED)]),
                 ),
                 child: IconButton(
                   onPressed: _busy ? null : _send,
@@ -359,7 +359,7 @@ class _TypingState extends State<_Typing> with SingleTickerProviderStateMixin {
                 height: 8,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: const Color(0xFF2563EB).withValues(
+                  color: const Color(0xFFE8805A).withValues(
                       alpha: .25 +
                           .75 *
                               (((_a.value * 3 - i) % 3).clamp(0.0, 1.0) < .5

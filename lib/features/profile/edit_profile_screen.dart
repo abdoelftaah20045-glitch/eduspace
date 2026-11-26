@@ -25,6 +25,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   final _level = TextEditingController();
   final _group = TextEditingController();
   final _bio = TextEditingController();
+  final _interests = TextEditingController();
   DateTime? _birthDate;
   bool _busy = false;
 
@@ -49,6 +50,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _level.dispose();
     _group.dispose();
     _bio.dispose();
+    _interests.dispose();
     super.dispose();
   }
 
@@ -71,6 +73,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       _level.text = row['level'] as String? ?? '';
       _group.text = row['group_name'] as String? ?? '';
       _bio.text = row['bio'] as String? ?? '';
+      _interests.text = ((row['interests'] as List?) ?? const []).join(', ');
       _birthDate = row['birth_date'] != null
           ? DateTime.tryParse(row['birth_date'] as String)
           : null;
@@ -85,6 +88,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     setState(() => _busy = true);
     try {
       final uid = _c.auth.currentUser!.id;
+      final tags = [
+        for (final x in _interests.text.split(RegExp(r'[,،]')))
+          if (x.trim().isNotEmpty) x.trim()
+      ];
+      if (tags.isNotEmpty) {
+        // needs SQL part 25; ignored if the column does not exist yet
+        try {
+          await _c.from('profiles').update({'interests': tags}).eq('id', uid);
+        } catch (_) {}
+      }
       await _c.from('profiles').update({
         'full_name': _name.text.trim(),
         'phone': _opt(_phone),
@@ -193,6 +206,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             controller: _bio,
             maxLines: 3,
             decoration: InputDecoration(labelText: s.t('bio')),
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _interests,
+            decoration: InputDecoration(labelText: s.t('pf_interests_hint')),
           ),
           const SizedBox(height: 24),
           FilledButton(

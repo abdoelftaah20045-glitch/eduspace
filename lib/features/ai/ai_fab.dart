@@ -105,7 +105,7 @@ class _AiOverlayState extends State<AiOverlay>
                     gradient: const LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
-                      colors: [Color(0xFF2563EB), Color(0xFF7C3AED)],
+                      colors: [Color(0xFFE8805A), Color(0xFF7C3AED)],
                     ),
                     boxShadow: [
                       BoxShadow(

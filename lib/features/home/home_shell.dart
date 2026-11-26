@@ -28,6 +28,7 @@ import '../qbank/question_bank_screen.dart';
 import '../schedule/schedule_screen.dart';
 import '../support/support_screen.dart';
 import '../../core/remote_ui.dart';
+import '../courses/my_courses_screen.dart';
 import 'app_drawer.dart';
 
 /// Bottom navigation shell: Home / Courses / Exams / Account.
@@ -55,6 +56,7 @@ class _HomeShellState extends State<HomeShell> {
     final s = S.of(context);
     final pages = [
       const _HomeTab(),
+      const MyCoursesScreen(),
       const CoursesScreen(),
       const ExamsScreen(),
       const ProfileScreen(),
@@ -68,6 +70,10 @@ class _HomeShellState extends State<HomeShell> {
           NavigationDestination(
             icon: const Icon(Icons.home_outlined),
             label: s.t('tab_home'),
+          ),
+          NavigationDestination(
+            icon: const Icon(Icons.school_outlined),
+            label: s.t('my_courses'),
           ),
           NavigationDestination(
             icon: const Icon(Icons.menu_book_outlined),
@@ -315,74 +321,113 @@ class _HomeTabState extends State<_HomeTab> {
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
           children: [
             SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: Row(
-                  children: [
+              bottom: false,
+              child: Container(
+                padding: const EdgeInsets.fromLTRB(14, 14, 14, 16),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        scheme.primary,
+                        Color.lerp(scheme.primary, Colors.black, .12)!
+                      ]),
+                  borderRadius: BorderRadius.circular(28),
+                  boxShadow: [
+                    BoxShadow(
+                        color: scheme.primary.withValues(alpha: .35),
+                        blurRadius: 18,
+                        offset: const Offset(0, 8)),
+                  ],
+                ),
+                child: Column(children: [
+                  Row(children: [
                     Builder(
-                      builder: (ctx) => _sqBtn(
-                          context, Icons.menu, () => Scaffold.of(ctx).openDrawer()),
-                    ),
-                    Expanded(
-                      child: Center(
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.play_lesson_rounded,
-                                color: scheme.primary, size: 26),
-                            const SizedBox(width: 6),
-                            Text(RemoteUi.brandName.isNotEmpty ? RemoteUi.brandName : s.t('app_name'),
-                                style: TextStyle(
-                                    color: scheme.primary,
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.w800)),
-                          ],
+                      builder: (ctx) => GestureDetector(
+                        onTap: () => Scaffold.of(ctx).openDrawer(),
+                        child: Container(
+                          width: 42,
+                          height: 42,
+                          decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: .22),
+                              shape: BoxShape.circle),
+                          child: const Icon(Icons.menu, color: Colors.white),
                         ),
                       ),
                     ),
-                    _sqBtn(
-                      context,
-                      Icons.notifications_outlined,
-                      () => Navigator.of(context)
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                              RemoteUi.brandName.isNotEmpty
+                                  ? RemoteUi.brandName
+                                  : s.t('app_name'),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                  color: Colors.white70, fontSize: 12)),
+                          Text(
+                              '${s.t('welcome')}${_name.isNotEmpty ? ' ${_name.split(' ').first}' : ''}',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 19,
+                                  fontWeight: FontWeight.w800)),
+                        ],
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () => Navigator.of(context)
                           .push(MaterialPageRoute(
                               builder: (_) => const NotificationsScreen()))
                           .then((_) => _load()),
-                      badge: _unread,
+                      child: Container(
+                        width: 42,
+                        height: 42,
+                        decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: .22),
+                            shape: BoxShape.circle),
+                        child: Badge(
+                          label: Text('$_unread'),
+                          isLabelVisible: _unread > 0,
+                          child: const Icon(Icons.notifications_outlined,
+                              color: Colors.white),
+                        ),
+                      ),
                     ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 14),
-            Text(
-              '${s.t('welcome')}${_name.isNotEmpty ? ' يا ${_name.split(' ').first}' : ''}',
-              style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w800,
-                  color: Theme.of(context).colorScheme.onSurface),
-            ),
-            const SizedBox(height: 4),
-            Text(RemoteUi.welcomeText.isNotEmpty ? RemoteUi.welcomeText : s.t('home_sub'),
-                style: TextStyle(color: scheme.onSurfaceVariant)),
-            const SizedBox(height: 14),
-            // Search bar (reference: "Search here" on the student dashboard).
-            InkWell(
-              borderRadius: BorderRadius.circular(16),
-              onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const CoursesScreen())),
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                decoration: BoxDecoration(
-                  color: scheme.surface,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: scheme.outlineVariant),
-                ),
-                child: Row(children: [
-                  Icon(Icons.search, color: scheme.onSurfaceVariant),
-                  const SizedBox(width: 10),
-                  Text(s.t('home_search'),
-                      style: TextStyle(color: scheme.onSurfaceVariant)),
+                  ]),
+                  const SizedBox(height: 14),
+                  InkWell(
+                    borderRadius: BorderRadius.circular(18),
+                    onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                        builder: (_) => const CoursesScreen())),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 13),
+                      decoration: BoxDecoration(
+                        color: scheme.surface,
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                      child: Row(children: [
+                        Icon(Icons.search, color: scheme.onSurfaceVariant),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                              RemoteUi.welcomeText.isNotEmpty
+                                  ? RemoteUi.welcomeText
+                                  : s.t('home_search'),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style:
+                                  TextStyle(color: scheme.onSurfaceVariant)),
+                        ),
+                        Icon(Icons.tune, color: scheme.primary),
+                      ]),
+                    ),
+                  ),
                 ]),
               ),
             ),
@@ -398,7 +443,7 @@ class _HomeTabState extends State<_HomeTab> {
                 child: Container(
                   padding: const EdgeInsets.all(18),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF2563EB),
+                    color: const Color(0xFFE8805A),
                     borderRadius: BorderRadius.circular(22),
                   ),
                   child: Column(
@@ -436,7 +481,7 @@ class _HomeTabState extends State<_HomeTab> {
                           FilledButton.icon(
                             style: FilledButton.styleFrom(
                                 backgroundColor: Colors.white,
-                                foregroundColor: const Color(0xFF2563EB)),
+                                foregroundColor: const Color(0xFFE8805A)),
                             onPressed: () => Navigator.of(context)
                                 .push(MaterialPageRoute(
                                     builder: (_) =>
@@ -776,7 +821,7 @@ class _AnnouncementBannerState extends State<_AnnouncementBanner> {
                 height: 7,
                 decoration: BoxDecoration(
                   color: i == _index
-                      ? const Color(0xFF2563EB)
+                      ? const Color(0xFFE8805A)
                       : const Color(0xFFB8C4DD),
                   borderRadius: BorderRadius.circular(4),
                 ),

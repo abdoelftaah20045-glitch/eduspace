@@ -113,7 +113,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(
                                   color: mine
-                                      ? const Color(0xFF2563EB)
+                                      ? const Color(0xFFE8805A)
                                       : Colors.transparent),
                               boxShadow: [
                                 BoxShadow(

@@ -58,7 +58,7 @@ class _HelpScreenState extends State<HelpScreen> {
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: const [
                   BoxShadow(
-                      color: Color(0x142563EB),
+                      color: Color(0x14E8805A),
                       blurRadius: 12,
                       offset: Offset(0, 6)),
                 ],

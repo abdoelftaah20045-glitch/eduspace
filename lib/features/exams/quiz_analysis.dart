@@ -8,7 +8,7 @@ import 'data/exam_models.dart';
 Color levelColor(double pct) => pct >= RemoteUi.limit('lvl_excellent', 80)
     ? const Color(0xFF2E9E5B)
     : pct >= RemoteUi.limit('lvl_good', 60)
-        ? const Color(0xFF2563EB)
+        ? const Color(0xFFE8805A)
         : pct >= RemoteUi.limit('lvl_average', 40)
             ? const Color(0xFFF29900)
             : const Color(0xFFE53935);
@@ -107,7 +107,7 @@ class _QuizAnalysisState extends State<QuizAnalysis> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(children: [
-                  const Icon(Icons.bar_chart, color: Color(0xFF2563EB)),
+                  const Icon(Icons.bar_chart, color: Color(0xFFE8805A)),
                   const SizedBox(width: 8),
                   Text(s.t('quiz_chapter_perf'),
                       style: theme.textTheme.titleMedium
@@ -163,7 +163,7 @@ class _QuizAnalysisState extends State<QuizAnalysis> {
                 const SizedBox(height: 12),
                 Wrap(spacing: 12, runSpacing: 4, children: [
                   legend(const Color(0xFF2E9E5B), '${s.t('lvl_excellent')} (≥${RemoteUi.limit('lvl_excellent', 80).round()}%)'),
-                  legend(const Color(0xFF2563EB), '${s.t('lvl_good')} (≥${RemoteUi.limit('lvl_good', 60).round()}%)'),
+                  legend(const Color(0xFFE8805A), '${s.t('lvl_good')} (≥${RemoteUi.limit('lvl_good', 60).round()}%)'),
                   legend(const Color(0xFFF29900), '${s.t('lvl_average')} (≥${RemoteUi.limit('lvl_average', 40).round()}%)'),
                   legend(const Color(0xFFE53935), '${s.t('lvl_weak')} (<${RemoteUi.limit('lvl_average', 40).round()}%)'),
                 ]),
@@ -173,7 +173,7 @@ class _QuizAnalysisState extends State<QuizAnalysis> {
         ),
         const SizedBox(height: 14),
         Row(children: [
-          const Icon(Icons.list_alt, color: Color(0xFF2563EB)),
+          const Icon(Icons.list_alt, color: Color(0xFFE8805A)),
           const SizedBox(width: 8),
           Text(s.t('quiz_detail'),
               style: theme.textTheme.titleMedium
@@ -248,7 +248,7 @@ class _ChapterCard extends StatelessWidget {
           Row(children: [
             stat(Icons.check_circle, const Color(0xFF2E9E5B), g.correct, s.t('correct_count')),
             stat(Icons.cancel, const Color(0xFFE53935), g.wrong, s.t('incorrect_count')),
-            stat(Icons.quiz_outlined, const Color(0xFF2563EB), g.total, s.t('quiz_total')),
+            stat(Icons.quiz_outlined, const Color(0xFFE8805A), g.total, s.t('quiz_total')),
           ]),
           if (g.pct < RemoteUi.limit('lvl_excellent', 80)) ...[
             const SizedBox(height: 10),

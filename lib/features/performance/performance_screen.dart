@@ -111,7 +111,7 @@ class _PerformanceScreenState extends State<PerformanceScreen> {
                           _stat(
                               s.t('perf_avg'),
                               '${(rows.fold<double>(0, (a, b) => a + b.pct) / rows.length).round()}%',
-                              const Color(0xFF2563EB)),
+                              const Color(0xFFE8805A)),
                           const SizedBox(width: 10),
                           _stat(
                               s.t('perf_best'),

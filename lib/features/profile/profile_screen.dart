@@ -21,11 +21,21 @@ class ProfileScreen extends StatelessWidget {
 
   Future<Map<String, dynamic>?> _load() async {
     final uid = Supabase.instance.client.auth.currentUser!.id;
-    final profile = await Supabase.instance.client
-        .from('profiles')
-        .select('full_name, email, avatar_url')
-        .eq('id', uid)
-        .maybeSingle();
+    Map<String, dynamic>? profile;
+    try {
+      profile = await Supabase.instance.client
+          .from('profiles')
+          .select('full_name, email, avatar_url, bio, institution, interests')
+          .eq('id', uid)
+          .maybeSingle();
+    } catch (_) {
+      // interests column missing (SQL part 25 not run yet)
+      profile = await Supabase.instance.client
+          .from('profiles')
+          .select('full_name, email, avatar_url, bio, institution')
+          .eq('id', uid)
+          .maybeSingle();
+    }
     final admin = await AdminRepository.hasAdminAccess();
     return {...?profile, '_is_admin': admin};
   }
@@ -67,7 +77,7 @@ class ProfileScreen extends StatelessWidget {
                   gradient: LinearGradient(
                     begin: AlignmentDirectional.topStart,
                     end: AlignmentDirectional.bottomEnd,
-                    colors: [scheme.primary, const Color(0xFF1565C0)],
+                    colors: [scheme.primary, Color.lerp(scheme.primary, Colors.black, .2)!],
                   ),
                   borderRadius: BorderRadius.circular(24),
                   boxShadow: [
@@ -99,6 +109,15 @@ class ProfileScreen extends StatelessWidget {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
+                    if ((profile?['institution'] as String? ?? '').isNotEmpty)
+                      Text(
+                        profile!['institution'] as String,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: .85),
+                          fontSize: 13,
+                        ),
+                      ),
                     if (email.isNotEmpty)
                       Text(
                         email,
@@ -113,6 +132,54 @@ class ProfileScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               const ProfileStats(),
+              if ((profile?['bio'] as String? ?? '').isNotEmpty) ...[
+                const SizedBox(height: 8),
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(s.t('cd_about'),
+                            style: const TextStyle(
+                                fontWeight: FontWeight.w800, fontSize: 15)),
+                        const SizedBox(height: 6),
+                        Text(profile!['bio'] as String),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+              if (((profile?['interests'] as List?) ?? const []).isNotEmpty) ...[
+                const SizedBox(height: 8),
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(s.t('pf_interests'),
+                            style: const TextStyle(
+                                fontWeight: FontWeight.w800, fontSize: 15)),
+                        const SizedBox(height: 8),
+                        Wrap(spacing: 8, runSpacing: 8, children: [
+                          for (final k in (profile!['interests'] as List))
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 6),
+                              decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(18),
+                                  border: Border.all(
+                                      color: scheme.outlineVariant)),
+                              child: Text('$k',
+                                  style: const TextStyle(fontSize: 12.5)),
+                            ),
+                        ]),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
               const CertsStrip(),
               const SizedBox(height: 8),
               ListTile(

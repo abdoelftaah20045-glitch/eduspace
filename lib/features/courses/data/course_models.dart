@@ -24,6 +24,13 @@ class Course {
     this.isFavorite = false,
     this.ratingAvg,
     this.ratingCount = 0,
+    this.maxStudents,
+    this.effort,
+    this.goals,
+    this.instructorPhotoUrl,
+    this.availableAt,
+    this.availableUntil,
+    this.skills = const [],
   });
 
   final String id;
@@ -50,6 +57,13 @@ class Course {
   final bool isFavorite;
   final double? ratingAvg;
   final int ratingCount;
+  final int? maxStudents;
+  final String? effort;
+  final String? goals;
+  final String? instructorPhotoUrl;
+  final DateTime? availableAt;
+  final DateTime? availableUntil;
+  final List<String> skills;
 
   bool get isFree => price <= 0;
 
@@ -75,6 +89,13 @@ class Course {
       isFavorite: isFavorite ?? this.isFavorite,
       ratingAvg: ratingAvg ?? this.ratingAvg,
       ratingCount: ratingCount ?? this.ratingCount,
+      maxStudents: maxStudents,
+      effort: effort,
+      goals: goals,
+      instructorPhotoUrl: instructorPhotoUrl,
+      availableAt: availableAt,
+      availableUntil: availableUntil,
+      skills: skills,
     );
   }
 
@@ -95,6 +116,14 @@ class Course {
       status: (m['status'] as String?) ?? 'draft',
       visibility: (m['visibility'] as String?) ?? 'everyone',
       lessonsSequential: (m['lessons_sequential'] as bool?) ?? false,
+      maxStudents: (m['max_students'] as num?)?.toInt(),
+      effort: m['effort'] as String?,
+      goals: m['goals'] as String?,
+      instructorPhotoUrl: m['instructor_photo_url'] as String?,
+      availableAt: DateTime.tryParse('${m['available_at'] ?? ''}')?.toLocal(),
+      availableUntil:
+          DateTime.tryParse('${m['available_until'] ?? ''}')?.toLocal(),
+      skills: [for (final x in (m['skills'] as List? ?? const [])) '$x'],
     );
   }
 }

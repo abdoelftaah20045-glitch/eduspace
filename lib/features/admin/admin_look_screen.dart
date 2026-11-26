@@ -5,7 +5,7 @@ import '../../core/remote_ui.dart';
 import 'data/admin_tools_repo.dart';
 
 const _presets = [
-  '2563EB', '1E40AF', '0EA5E9', '0D9488', '16A34A', '65A30D',
+  'E8805A', '2563EB', '1E40AF', '0EA5E9', '0D9488', '16A34A', '65A30D',
   'F59E0B', 'EA580C', 'DC2626', 'DB2777', '7C3AED', '475569',
 ];
 
@@ -18,7 +18,7 @@ class AdminLookScreen extends StatefulWidget {
 }
 
 class _AdminLookScreenState extends State<AdminLookScreen> {
-  final _hex = TextEditingController(text: '2563EB');
+  final _hex = TextEditingController(text: 'E8805A');
   bool _saving = false;
 
   @override
