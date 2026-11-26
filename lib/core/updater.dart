@@ -28,7 +28,8 @@ class Updater {
     if (!Platform.isAndroid || _shown) return;
     try {
       final r = await http
-          .get(Uri.parse('$_base/version.json'))
+          .get(Uri.parse('$_base/version.json?t=${DateTime.now().millisecondsSinceEpoch}'),
+              headers: const {'Cache-Control': 'no-cache'})
           .timeout(const Duration(seconds: 12));
       if (r.statusCode != 200) return;
       final m = jsonDecode(utf8.decode(r.bodyBytes)) as Map<String, dynamic>;
@@ -46,7 +47,7 @@ class Updater {
         build: latest,
         version: '${m['version'] ?? ''}',
         notes: '${m['notes'] ?? ''}',
-        apkUrl: '$_base/${m['apk'] ?? 'deki.apk'}',
+        apkUrl: '$_base/${m['apk'] ?? 'deki.apk'}?b=$latest',
         force: force,
       );
       if (force) {
@@ -108,13 +109,18 @@ class _UpdateDialogState extends State<_UpdateDialog> {
         if (total > 0 && mounted) setState(() => _progress = got / total);
       }
       await sink.close();
+      if (total > 0 && got != total) {
+        throw Exception('incomplete download ($got/$total)');
+      }
       if (mounted) setState(() => _progress = 1);
       final result = await OpenFilex.open(file.path,
           type: 'application/vnd.android.package-archive');
-      if (result.type != ResultType.done && mounted) {
+      if (mounted) {
+        // The installer is now on screen. If the user cancels it, the button
+        // must work again.
         setState(() {
           _busy = false;
-          _error = result.message;
+          _error = result.type == ResultType.done ? null : result.message;
         });
       }
     } catch (e) {
