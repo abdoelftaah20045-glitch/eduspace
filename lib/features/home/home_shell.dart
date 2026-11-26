@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/l10n.dart';
+import '../../core/paid_courses.dart';
 import '../../core/tenant.dart';
 import '../../core/widgets.dart';
 import '../courses/course_details_screen.dart';
@@ -29,6 +30,12 @@ class HomeShell extends StatefulWidget {
 
 class _HomeShellState extends State<HomeShell> {
   int _index = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    PaidCourses.load();
+  }
 
   @override
   Widget build(BuildContext context) {

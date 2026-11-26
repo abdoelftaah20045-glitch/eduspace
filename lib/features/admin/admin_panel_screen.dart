@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'data/admin_repo.dart';
 import '../../core/l10n.dart';
+import '../../core/paid_courses.dart';
 import 'admin_announcements_screen.dart';
 import 'admin_assignments_screen.dart';
 import 'admin_certificates_screen.dart';
@@ -41,6 +42,9 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
   @override
   void initState() {
     super.initState();
+    PaidCourses.load().then((_) {
+      if (mounted) setState(() {});
+    });
     _load();
   }
 
@@ -154,6 +158,9 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
       'library_label': 'library',
       'tenant_members': 'students',
     };
+    if (!PaidCourses.enabled.value) {
+      sections.removeWhere((sec) => sec.$1 == 'admin_payments');
+    }
     if (!_fullAdmin) {
       sections.removeWhere(
           (sec) => !_scopes.contains(scopeOf[sec.$1] ?? '_none_'));

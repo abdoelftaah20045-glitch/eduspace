@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../payments/payment_screen.dart';
 import '../discussion/discussion_screen.dart';
 import '../../core/l10n.dart';
+import '../../core/paid_courses.dart';
 import '../assignments/assignments_screen.dart';
 import '../certificates/data/certificates_repo.dart';
 import 'course_reviews.dart';
@@ -294,7 +295,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
         ],
       );
     }
-    if (details.course.isFree) {
+    if (details.course.isFree || !PaidCourses.enabled.value) {
       return SizedBox(
         width: double.infinity,
         child: FilledButton.icon(

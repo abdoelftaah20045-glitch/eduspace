@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/l10n.dart';
+import '../../core/paid_courses.dart';
 import 'data/admin_tools_repo.dart';
 
 /// Organization settings (A32): display name, welcome message and
@@ -18,6 +19,7 @@ class _AdminOrgSettingsScreenState extends State<AdminOrgSettingsScreen> {
   final _welcome = TextEditingController();
   String _policy = 'manual';
   bool _loading = true;
+  bool _paid = false;
   bool _saving = false;
 
   @override
@@ -41,6 +43,7 @@ class _AdminOrgSettingsScreenState extends State<AdminOrgSettingsScreen> {
       _name.text = (b['display_name'] as String?) ?? '';
       _welcome.text = (b['welcome'] as String?) ?? '';
       _policy = (reg['policy'] as String?) ?? 'manual';
+      _paid = ((all['paid_courses'] as Map?)?['enabled']) == true;
     } catch (_) {}
     if (mounted) setState(() => _loading = false);
   }
@@ -55,6 +58,8 @@ class _AdminOrgSettingsScreenState extends State<AdminOrgSettingsScreen> {
         'welcome': _welcome.text.trim(),
       });
       await AdminToolsRepository.saveSetting('registration', {'policy': _policy});
+      await AdminToolsRepository.saveSetting('paid_courses', {'enabled': _paid});
+      PaidCourses.enabled.value = _paid;
       messenger.showSnackBar(SnackBar(content: Text(s.t('saved_ok'))));
     } catch (_) {
       messenger.showSnackBar(SnackBar(content: Text(s.t('generic_error'))));
@@ -99,6 +104,13 @@ class _AdminOrgSettingsScreenState extends State<AdminOrgSettingsScreen> {
                 ),
                 Text(s.t('reg_policy_note'),
                     style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                const Divider(height: 32),
+                SwitchListTile(
+                  value: _paid,
+                  onChanged: (v) => setState(() => _paid = v),
+                  title: Text(s.t('paid_courses_toggle')),
+                  subtitle: Text(s.t('paid_courses_hint')),
+                ),
                 const SizedBox(height: 20),
                 FilledButton(
                   onPressed: _saving ? null : _save,

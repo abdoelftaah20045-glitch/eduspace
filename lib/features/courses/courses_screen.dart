@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/l10n.dart';
+import '../../core/paid_courses.dart';
 import '../../core/widgets.dart';
 import 'course_details_screen.dart';
 import 'data/course_models.dart';
@@ -195,13 +196,19 @@ class CourseCard extends StatelessWidget {
                       spacing: 10,
                       runSpacing: 6,
                       children: [
-                        _MetaChip(
-                          icon: course.isFree
-                              ? Icons.lock_open
-                              : Icons.payments_outlined,
-                          label: course.isFree
-                              ? s.t('free')
-                              : '${course.price.toStringAsFixed(0)} ${course.currency}',
+                        ValueListenableBuilder<bool>(
+                          valueListenable: PaidCourses.enabled,
+                          builder: (_, paid, __) {
+                            final showPrice = paid && !course.isFree;
+                            return _MetaChip(
+                              icon: showPrice
+                                  ? Icons.payments_outlined
+                                  : Icons.lock_open,
+                              label: showPrice
+                                  ? '${course.price.toStringAsFixed(0)} ${course.currency}'
+                                  : s.t('free'),
+                            );
+                          },
                         ),
                         if (course.level != null)
                           _MetaChip(

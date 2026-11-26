@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../core/l10n.dart';
+import '../../core/paid_courses.dart';
 import 'data/admin_repo.dart';
 
 /// Admin: create or edit a course's main data.
@@ -206,6 +207,21 @@ class _CourseEditScreenState extends State<CourseEditScreen> {
                   ),
                 ),
               ],
+            ),
+            ValueListenableBuilder<bool>(
+              valueListenable: PaidCourses.enabled,
+              builder: (_, on, __) => on
+                  ? Padding(
+                      padding: const EdgeInsets.only(top: 12),
+                      child: TextFormField(
+                        controller: _price,
+                        decoration: InputDecoration(
+                            labelText: s.t('price_label'),
+                            helperText: s.t('price_hint')),
+                        keyboardType: TextInputType.number,
+                      ),
+                    )
+                  : const SizedBox.shrink(),
             ),
             const SizedBox(height: 12),
             DropdownButtonFormField<String>(
