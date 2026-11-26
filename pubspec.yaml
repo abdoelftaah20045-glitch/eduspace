@@ -24,6 +24,7 @@ dependencies:
   firebase_messaging: ^15.1.5
   path_provider: ^2.1.4
   pdf: ^3.11.0
+  barcode: ^2.2.0
   printing: ^5.13.0
   intl: any
 
@@ -41,3 +42,8 @@ flutter:
     - family: Marhey
       fonts:
         - asset: assets/fonts/Marhey.ttf
+    - family: NotoNaskhArabic
+      fonts:
+        - asset: assets/fonts/NotoNaskhArabic-Regular.ttf
+        - asset: assets/fonts/NotoNaskhArabic-Bold.ttf
+          weight: 700

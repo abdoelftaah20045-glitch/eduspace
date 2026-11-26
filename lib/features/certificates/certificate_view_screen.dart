@@ -13,6 +13,7 @@ import 'package:share_plus/share_plus.dart';
 
 import '../../core/config.dart';
 import '../../core/l10n.dart';
+import 'certificate_card.dart';
 import 'data/certificates_repo.dart';
 
 const _kGold = Color(0xFFC9A227);
@@ -40,6 +41,7 @@ class _CertificateViewScreenState extends State<CertificateViewScreen> {
   bool _sharing = false;
   bool _exporting = false;
   Map<String, dynamic>? _settings;
+  String? _langOverride;
 
   @override
   void initState() {
@@ -48,6 +50,10 @@ class _CertificateViewScreenState extends State<CertificateViewScreen> {
       if (mounted) setState(() => _settings = v);
     });
   }
+
+  String get _lang =>
+      _langOverride ??
+      (Localizations.localeOf(context).languageCode == 'ar' ? 'ar' : 'en');
 
   /// Public verification link encoded in the PDF's QR code.
   String get _verifyUrl =>
@@ -149,8 +155,6 @@ class _CertificateViewScreenState extends State<CertificateViewScreen> {
   Widget build(BuildContext context) {
     final s = S.of(context);
     final cert = widget.cert;
-    final date =
-        DateFormat('d MMMM y', s.locale.languageCode).format(cert.issuedAt);
     return Scaffold(
       appBar: AppBar(
         title: Text(s.t('certificate_of_completion')),
@@ -180,6 +184,17 @@ class _CertificateViewScreenState extends State<CertificateViewScreen> {
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
+          Center(
+            child: SegmentedButton<String>(
+              segments: const [
+                ButtonSegment(value: 'ar', label: Text('العربية')),
+                ButtonSegment(value: 'en', label: Text('English')),
+              ],
+              selected: {_lang},
+              onSelectionChanged: (v) => setState(() => _langOverride = v.first),
+            ),
+          ),
+          const SizedBox(height: 12),
           RepaintBoundary(
             key: _captureKey,
             child: AspectRatio(
@@ -190,7 +205,11 @@ class _CertificateViewScreenState extends State<CertificateViewScreen> {
                   child: SizedBox(
                     width: 960,
                     height: 680,
-                    child: _CertCard(cert: cert, date: date, settings: _settings),
+                    child: CertificateCard(
+                        cert: cert,
+                        lang: _lang,
+                        verifyUrl: _verifyUrl,
+                        settings: _settings),
                   ),
                 ),
               ),
@@ -212,280 +231,3 @@ class _CertificateViewScreenState extends State<CertificateViewScreen> {
   }
 }
 
-/// Landscape certificate in the reference style: theme-accent + gold curves
-/// on the edges, gold seal ribbon, signature and date lines.
-/// Laid out on a fixed 960x680 canvas and scaled by FittedBox.
-class _CertCard extends StatelessWidget {
-  const _CertCard({required this.cert, required this.date, this.settings});
-
-  final Certificate cert;
-  final String date;
-  final Map<String, dynamic>? settings;
-
-  @override
-  Widget build(BuildContext context) {
-    final s = S.of(context);
-    final primary = Theme.of(context).colorScheme.primary;
-    final primaryDark = _deepen(primary);
-    final tpl = (settings?['template_url'] as String?) ?? '';
-    if (tpl.isNotEmpty) return _templateCard(s, tpl);
-    return Container(
-      color: Colors.white,
-      child: Stack(
-        children: [
-          Positioned.fill(
-              child: CustomPaint(painter: _CertCurvesPainter(primary: primary))),
-          // Thin double frame like the reference.
-          Positioned.fill(
-            child: Container(
-              margin: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                border: Border.all(color: primary, width: 2),
-              ),
-              child: Container(
-                margin: const EdgeInsets.all(3),
-                decoration: BoxDecoration(
-                  border: Border.all(color: _kGold, width: 1),
-                ),
-              ),
-            ),
-          ),
-          // Content.
-          Positioned.fill(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(150, 34, 40, 26),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.school, size: 30, color: primary),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Deki',
-                        style: TextStyle(
-                          color: primary,
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 1.5,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 14),
-                  Text(
-                    s.t('certificate_of_completion'),
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: primaryDark,
-                      fontSize: 40,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1,
-                    ),
-                  ),
-                  Container(
-                    width: 110,
-                    height: 3,
-                    margin: const EdgeInsets.symmetric(vertical: 14),
-                    color: _kGold,
-                  ),
-                  Text(
-                    s.t('this_certifies'),
-                    style: const TextStyle(
-                        color: Colors.black54, fontSize: 15),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    cert.studentName,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Colors.black87,
-                      fontSize: 32,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    s.t('has_completed'),
-                    style: const TextStyle(
-                        color: Colors.black54, fontSize: 15),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    cert.courseTitle,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: primaryDark,
-                      fontSize: 24,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const Spacer(),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 90, right: 230),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        _SignLine(
-                          top: cert.hours != null && cert.hours! > 0
-                              ? '${cert.hours} ${s.t('hours_label')}'
-                              : '',
-                          label: s.t('signature_label'),
-                        ),
-                        _SignLine(top: date, label: s.t('date_label')),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    '${s.t('cert_number')}: ${cert.certificateNumber}',
-                    style: const TextStyle(
-                        color: Colors.black38, fontSize: 12),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          // Gold seal ribbon, bottom right over the accent corner.
-          const Positioned(
-            right: 44,
-            bottom: 132,
-            child: Icon(Icons.workspace_premium,
-                size: 110, color: _kGold),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-extension on _CertCard {
-  /// Certificate drawn on the admin-uploaded background image: name, course,
-  /// date and serial are laid over it.
-  Widget _templateCard(S s, String url) {
-    final light = settings?['text_color'] == 'light';
-    final fg = light ? Colors.white : const Color(0xFF1B1B1B);
-    final sub = light ? Colors.white70 : Colors.black54;
-    final pos = (settings?['text_position'] as String?) ?? 'center';
-    final top = pos == 'top' ? 90.0 : (pos == 'low' ? 260.0 : 170.0);
-    return Stack(
-      children: [
-        Positioned.fill(
-          child: Image.network(url, fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => Container(color: Colors.white)),
-        ),
-        Positioned.fill(
-          child: Padding(
-            padding: EdgeInsets.fromLTRB(80, top, 80, 40),
-            child: Column(
-              children: [
-                Text(s.t('this_certifies'),
-                    style: TextStyle(color: sub, fontSize: 18)),
-                const SizedBox(height: 10),
-                Text(cert.studentName,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                        color: fg, fontSize: 40, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 12),
-                Text(s.t('has_completed'),
-                    style: TextStyle(color: sub, fontSize: 18)),
-                const SizedBox(height: 8),
-                Text(cert.courseTitle,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                        color: fg, fontSize: 28, fontWeight: FontWeight.w600)),
-                const SizedBox(height: 16),
-                Text(date, style: TextStyle(color: sub, fontSize: 16)),
-                const Spacer(),
-                Text('${s.t('cert_number')}: ${cert.certificateNumber}',
-                    style: TextStyle(color: sub, fontSize: 13)),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _SignLine extends StatelessWidget {
-  const _SignLine({required this.top, required this.label});
-
-  final String top;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Text(top,
-            style: const TextStyle(color: Colors.black87, fontSize: 14)),
-        Container(
-          width: 150,
-          height: 1.5,
-          margin: const EdgeInsets.only(top: 4, bottom: 4),
-          color: Colors.black54,
-        ),
-        Text(label,
-            style: const TextStyle(color: Colors.black45, fontSize: 13)),
-      ],
-    );
-  }
-}
-
-/// Accent filled curves with a gold offset edge, top-left sweep and
-/// bottom-right corner, matching the reference certificate.
-class _CertCurvesPainter extends CustomPainter {
-  const _CertCurvesPainter({required this.primary});
-
-  final Color primary;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final w = size.width;
-    final h = size.height;
-
-    Path leftShape(double topX, double midX, double bottomY) {
-      return Path()
-        ..moveTo(0, 0)
-        ..lineTo(topX, 0)
-        ..quadraticBezierTo(midX, h * 0.30, midX * 0.55, h * 0.55)
-        ..quadraticBezierTo(midX * 0.2, h * 0.72, 0, bottomY)
-        ..close();
-    }
-
-    // Gold edge behind the accent sweep (top-left).
-    canvas.drawPath(
-      leftShape(w * 0.27, w * 0.16, h * 0.92),
-      Paint()..color = _kGold,
-    );
-    // Accent sweep.
-    canvas.drawPath(
-      leftShape(w * 0.24, w * 0.13, h * 0.86),
-      Paint()..color = primary,
-    );
-
-    Path cornerShape(double startY, double ctrlX, double endX) {
-      return Path()
-        ..moveTo(w, startY)
-        ..quadraticBezierTo(ctrlX, h * 0.62, endX, h)
-        ..lineTo(w, h)
-        ..close();
-    }
-
-    // Gold edge behind the accent corner (bottom-right).
-    canvas.drawPath(
-      cornerShape(h * 0.55, w * 0.90, w * 0.76),
-      Paint()..color = _kGold,
-    );
-    // Accent corner.
-    canvas.drawPath(
-      cornerShape(h * 0.63, w * 0.93, w * 0.82),
-      Paint()..color = primary,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant _CertCurvesPainter oldDelegate) =>
-      oldDelegate.primary != primary;
-}
