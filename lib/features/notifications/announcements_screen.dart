@@ -7,7 +7,9 @@ import '../../core/l10n.dart';
 import '../../core/tenant.dart';
 
 class _Ann {
-  _Ann(this.id, this.title, this.body, this.at, [this.images = const []]);
+  _Ann(this.id, this.title, this.body, this.at,
+      [this.images = const [], this.slideSeconds = 4]);
+  final int slideSeconds;
   final List<String> images;
   final String id;
   final String title;
@@ -57,6 +59,7 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
             if (m['images'] is List)
               for (final u in m['images'] as List) u.toString(),
           ],
+          ((m['slide_seconds'] as num?)?.toInt() ?? 4).clamp(2, 30),
         ));
       }
       if (mounted) setState(() => _items = out);
@@ -125,7 +128,8 @@ class _AnnDetail extends StatelessWidget {
         padding: const EdgeInsets.all(20),
         children: [
           if (a.images.isNotEmpty) ...[
-            ImageCarousel(urls: a.images),
+            ImageCarousel(
+                urls: a.images, interval: Duration(seconds: a.slideSeconds)),
             const SizedBox(height: 16),
           ],
           Text(a.title,

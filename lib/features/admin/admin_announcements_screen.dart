@@ -182,12 +182,14 @@ class _AnnouncementSheetState extends State<_AnnouncementSheet> {
   DateTime? _endsAt;
   bool _saving = false;
   final List<String> _images = [];
+  final _slide = TextEditingController(text: '4');
   bool _uploading = false;
 
   @override
   void dispose() {
     _title.dispose();
     _body.dispose();
+    _slide.dispose();
     super.dispose();
   }
 
@@ -222,6 +224,8 @@ class _AnnouncementSheetState extends State<_AnnouncementSheet> {
         'tenant_id': TenantContext.id,
         'ends_at': _endsAt?.toIso8601String(),
         if (_images.isNotEmpty) 'images': _images,
+        if (_images.length > 1)
+          'slide_seconds': (int.tryParse(_slide.text.trim()) ?? 4).clamp(2, 30),
         'created_by': Supabase.instance.client.auth.currentUser?.id,
       });
       if (!mounted) return;
@@ -349,6 +353,12 @@ class _AnnouncementSheetState extends State<_AnnouncementSheet> {
                       ]),
                   ],
                 ),
+              ),
+            if (_images.length > 1)
+              TextField(
+                controller: _slide,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(labelText: s.t('ann_slide_seconds')),
               ),
             const SizedBox(height: 12),
             FilledButton.icon(

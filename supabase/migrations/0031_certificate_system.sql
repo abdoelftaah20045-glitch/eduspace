@@ -121,3 +121,4 @@ drop policy if exists certificates_insert_self_completed on public.certificates;
 
 -- Announcements: several images per announcement (public URLs).
 alter table public.announcements add column if not exists images jsonb not null default '[]'::jsonb;
+alter table public.announcements add column if not exists slide_seconds int not null default 4;
