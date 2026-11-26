@@ -30,6 +30,7 @@ import '../support/support_screen.dart';
 import '../../core/remote_ui.dart';
 import '../courses/my_courses_screen.dart';
 import 'app_drawer.dart';
+import 'home_widgets.dart';
 
 /// Bottom navigation shell: Home / Courses / Exams / Account.
 class HomeShell extends StatefulWidget {
@@ -63,7 +64,17 @@ class _HomeShellState extends State<HomeShell> {
     ];
     return Scaffold(
       body: pages[_index],
-      bottomNavigationBar: NavigationBar(
+      extendBody: true,
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+          child: Material(
+            elevation: 10,
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: BorderRadius.circular(30),
+            clipBehavior: Clip.antiAlias,
+            child: NavigationBar(
+        height: 64,
         selectedIndex: _index,
         onDestinationSelected: (i) => setState(() => _index = i),
         destinations: [
@@ -88,6 +99,9 @@ class _HomeShellState extends State<HomeShell> {
             label: s.t('tab_account'),
           ),
         ],
+      ),
+          ),
+        ),
       ),
     );
   }
@@ -553,44 +567,35 @@ class _HomeTabState extends State<_HomeTab> {
               ),
             ]),
             const SizedBox(height: 10),
-              SizedBox(
-                height: 38,
-                child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  children: [
-                    for (final f in <String?>[
-                      null,
-                      ..._trending
-                          .map((c) => c.field)
-                          .whereType<String>()
-                          .where((x) => x.trim().isNotEmpty)
-                          .toSet()
-                    ])
-                      Padding(
-                        padding: const EdgeInsetsDirectional.only(end: 8),
-                        child: ChoiceChip(
-                          label: Text(f ?? s.t('all_label')),
-                          selected: _discoverField == f,
-                          onSelected: (_) => setState(() => _discoverField = f),
-                        ),
-                      ),
-                  ],
-                ),
+              CategoryChips(
+                fields: _trending
+                    .map((c) => c.field)
+                    .whereType<String>()
+                    .where((x) => x.trim().isNotEmpty)
+                    .toSet()
+                    .toList(),
+                selected: _discoverField,
+                onSelect: (f) => setState(() => _discoverField = f),
               ),
               const SizedBox(height: 10),
               SizedBox(
-                height: 168,
+                height: 250,
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   itemCount: _discoverList.length,
                   separatorBuilder: (_, __) => const SizedBox(width: 12),
-                  itemBuilder: (_, i) => _courseCard(
-                      context, _discoverList[i], i + 2,
-                      _discoverList[i].price <= 0
-                          ? s.t('free')
-                          : '${_discoverList[i].price.toStringAsFixed(0)} ${_discoverList[i].currency}'),
+                  itemBuilder: (_, i) =>
+                      FeaturedCourseCard(course: _discoverList[i]),
                 ),
               ),
+              const SizedBox(height: 16),
+              Text(s.t('top_mentors'),
+                  style: TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w800,
+                      color: Theme.of(context).colorScheme.onSurface)),
+              const SizedBox(height: 10),
+              TopMentors(courses: _trending),
               const SizedBox(height: 20),
             ],
             Text(s.t('sections_label'), style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: Theme.of(context).colorScheme.onSurface)),
