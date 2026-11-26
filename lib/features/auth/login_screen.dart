@@ -1,4 +1,5 @@
 import '../../core/app_state.dart';
+import '../../core/app_lockup.dart';
 import '../../core/app_logo.dart';
 import '../../core/password_field.dart';
 import 'package:flutter/material.dart';
@@ -86,18 +87,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Center(
-                    child: const AppLogo(size: 88),
-                  ),
-                  const SizedBox(height: 20),
-                  Text(
-                    s.t('app_name'),
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context)
-                        .textTheme
-                        .headlineMedium
-                        ?.copyWith(fontWeight: FontWeight.bold),
-                  ),
+                  const Center(child: AppLockup(width: 260)),
+                  const SizedBox(height: 10),
                   const SizedBox(height: 6),
                   Text(
                     s.t('promo_subtitle'),

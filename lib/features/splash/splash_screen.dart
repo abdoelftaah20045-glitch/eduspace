@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/app_lockup.dart';
 import '../../core/app_logo.dart';
 import '../../core/l10n.dart';
 import '../auth/auth_gate.dart';
@@ -79,7 +80,7 @@ class _SplashScreenState extends State<SplashScreen>
           gradient: LinearGradient(
             begin: Alignment.topRight,
             end: Alignment.bottomLeft,
-            colors: [scheme.primary, scheme.tertiary],
+            colors: const [Color(0xFFEFF6FF), Color(0xFFDBEAFE)],
           ),
         ),
         child: Center(
@@ -90,7 +91,7 @@ class _SplashScreenState extends State<SplashScreen>
                 scale: _logoScale,
                 child: FadeTransition(
                   opacity: _logoFade,
-                  child: const AppLogo(size: 110),
+                  child: const AppLockup(width: 280),
                 ),
               ),
               const SizedBox(height: 28),
@@ -100,21 +101,13 @@ class _SplashScreenState extends State<SplashScreen>
                   opacity: _textFade,
                   child: Column(
                     children: [
-                      Text(
-                        s.t('app_name'),
-                        style:
-                            Theme.of(context).textTheme.headlineMedium?.copyWith(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                      ),
                       const SizedBox(height: 8),
                       Text(
                         s.t('splash_tagline'),
                         style: Theme.of(context)
                             .textTheme
                             .bodyMedium
-                            ?.copyWith(color: Colors.white70),
+                            ?.copyWith(color: Colors.black54),
                       ),
                     ],
                   ),
