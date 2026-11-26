@@ -329,6 +329,199 @@ class _HomeTabState extends State<_HomeTab> {
     final item = _continueItem;
     final myCourses = _myCourses ?? const <Course>[];
     final scheme = theme.colorScheme;
+    final homeParts = <String, List<Widget>>{
+      'home.continue': [
+            if (item != null && RemoteUi.visible('home.continue')) ...[
+              FadeSlideIn(
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: scheme.surface,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: scheme.outlineVariant),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(s.t('continue_learning').toUpperCase(),
+                          style: TextStyle(
+                              color: scheme.primary,
+                              fontSize: 11,
+                              letterSpacing: .8,
+                              fontWeight: FontWeight.w800)),
+                      const SizedBox(height: 6),
+                      Text(item.course.title,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.w800)),
+                      const SizedBox(height: 4),
+                      Text(item.lesson.title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                              color: scheme.onSurfaceVariant, fontSize: 12.5)),
+                      const SizedBox(height: 12),
+                      Row(children: [
+                        Expanded(
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(6),
+                            child: LinearProgressIndicator(
+                              value: _progressOf(item.course.id) / 100,
+                              minHeight: 7,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Text('${_progressOf(item.course.id)}%',
+                            style:
+                                const TextStyle(fontWeight: FontWeight.w700)),
+                      ]),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: double.infinity,
+                        child: FilledButton(
+                          onPressed: () => Navigator.of(context)
+                              .push(MaterialPageRoute(
+                                  builder: (_) =>
+                                      LessonScreen(lesson: item.lesson)))
+                              .then((_) => _load()),
+                          child: Text(s.t('resume_lesson')),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 14),
+            ],
+      ],
+      'home.banner': [
+            if (_announcements.isNotEmpty && RemoteUi.visible('home.banner')) ...[
+              _AnnouncementBanner(items: _announcements),
+              const SizedBox(height: 16),
+            ],
+      ],
+      'home.my_courses': [
+            const SizedBox(height: 4),
+            if (myCourses.isNotEmpty && RemoteUi.visible('home.my_courses')) ...[
+            Row(children: [
+              Expanded(
+                child: Text(s.t('my_courses'),
+                    style: TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w800,
+                        color: Theme.of(context).colorScheme.onSurface)),
+              ),
+            ]),
+            const SizedBox(height: 10),
+              SizedBox(
+                height: 168,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: myCourses.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 12),
+                  itemBuilder: (_, i) => _courseCard(
+                      context, myCourses[i], i,
+                      '${myCourses[i].progressPercent ?? 0}%'),
+                ),
+              ),
+              const SizedBox(height: 20),
+            ] else if (_loaded)
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Text(s.t('no_my_courses')),
+                ),
+              ),
+      ],
+      'home.lives': [
+            if (_lives.isNotEmpty && RemoteUi.visible('home.lives')) ...[
+              _UpcomingLives(lives: _lives),
+              const SizedBox(height: 24),
+            ],
+      ],
+      'home.discover': [
+            if (_trending.isNotEmpty && RemoteUi.visible('home.discover')) ...[
+            Row(children: [
+              Expanded(
+                child: Text(s.t('discover_label'),
+                    style: TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w800,
+                        color: Theme.of(context).colorScheme.onSurface)),
+              ),
+            ]),
+            const SizedBox(height: 10),
+              CategoryChips(
+                fields: _trending
+                    .map((c) => c.field)
+                    .whereType<String>()
+                    .where((x) => x.trim().isNotEmpty)
+                    .toSet()
+                    .toList(),
+                selected: _discoverField,
+                onSelect: (f) => setState(() => _discoverField = f),
+              ),
+              const SizedBox(height: 10),
+              SizedBox(
+                height: 250,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: _discoverList.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 12),
+                  itemBuilder: (_, i) =>
+                      FeaturedCourseCard(course: _discoverList[i]),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(s.t('top_mentors'),
+                  style: TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w800,
+                      color: Theme.of(context).colorScheme.onSurface)),
+              const SizedBox(height: 10),
+              TopMentors(courses: _trending),
+              const SizedBox(height: 20),
+            ],
+      ],
+      'home.tiles': [
+            Text(s.t('sections_label'), style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: Theme.of(context).colorScheme.onSurface)),
+            const SizedBox(height: 12),
+            // Quick dashboard grid (reference: round icon tiles).
+            GridView.count(
+              crossAxisCount: 4,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              mainAxisSpacing: 12,
+              crossAxisSpacing: 8,
+              childAspectRatio: .8,
+              children: _filterQuick([
+                _quick(context, Icons.menu_book_outlined, s.t('my_courses'),
+                    const Color(0xFF2196F3), const CoursesScreen()),
+                _quick(context, Icons.video_camera_front_outlined,
+                    s.t('lv_title'), const Color(0xFFE53935), const LivesScreen()),
+                _quick(context, Icons.quiz_outlined, s.t('tab_exams'),
+                    const Color(0xFF7C4DFF), const ExamsScreen()),
+                _quick(context, Icons.folder_open, s.t('library_label'),
+                    const Color(0xFF00ACC1), const LibraryScreen()),
+                _quick(context, Icons.fact_check_outlined, s.t('qb_title'),
+                    const Color(0xFFF29900), const QuestionBankScreen()),
+                _quick(context, Icons.event_outlined, s.t('sch_title'),
+                    const Color(0xFF2E9E5B), const ScheduleScreen()),
+                _quick(context, Icons.workspace_premium_outlined,
+                    s.t('my_certificates'), const Color(0xFFC9A227),
+                    const MyCertificatesScreen()),
+                _quick(context, Icons.support_agent, s.t('support'),
+                    const Color(0xFFAB47BC), const SupportScreen()),
+              ]),
+            ),
+      ],
+    };
+    final homeKeys = homeParts.keys.toList();
+    final homeIds = homeKeys.where(RemoteUi.visible).toList()
+      ..sort((a, b) => RemoteUi.order(a, homeKeys.indexOf(a))
+          .compareTo(RemoteUi.order(b, homeKeys.indexOf(b))));
     return Scaffold(
       drawer: AppDrawer(name: _name, avatarUrl: _avatarUrl),
       body: RefreshIndicator(
@@ -434,181 +627,7 @@ class _HomeTabState extends State<_HomeTab> {
                 padding: EdgeInsets.all(32),
                 child: Center(child: CircularProgressIndicator()),
               ),
-            if (item != null && RemoteUi.visible('home.continue')) ...[
-              FadeSlideIn(
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: scheme.surface,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: scheme.outlineVariant),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(s.t('continue_learning').toUpperCase(),
-                          style: TextStyle(
-                              color: scheme.primary,
-                              fontSize: 11,
-                              letterSpacing: .8,
-                              fontWeight: FontWeight.w800)),
-                      const SizedBox(height: 6),
-                      Text(item.course.title,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.w800)),
-                      const SizedBox(height: 4),
-                      Text(item.lesson.title,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                              color: scheme.onSurfaceVariant, fontSize: 12.5)),
-                      const SizedBox(height: 12),
-                      Row(children: [
-                        Expanded(
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(6),
-                            child: LinearProgressIndicator(
-                              value: _progressOf(item.course.id) / 100,
-                              minHeight: 7,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Text('${_progressOf(item.course.id)}%',
-                            style:
-                                const TextStyle(fontWeight: FontWeight.w700)),
-                      ]),
-                      const SizedBox(height: 12),
-                      SizedBox(
-                        width: double.infinity,
-                        child: FilledButton(
-                          onPressed: () => Navigator.of(context)
-                              .push(MaterialPageRoute(
-                                  builder: (_) =>
-                                      LessonScreen(lesson: item.lesson)))
-                              .then((_) => _load()),
-                          child: Text(s.t('resume_lesson')),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 14),
-            ],
-            if (_announcements.isNotEmpty && RemoteUi.visible('home.banner')) ...[
-              _AnnouncementBanner(items: _announcements),
-              const SizedBox(height: 16),
-            ],
-            const SizedBox(height: 4),
-            if (myCourses.isNotEmpty && RemoteUi.visible('home.my_courses')) ...[
-            Row(children: [
-              Expanded(
-                child: Text(s.t('my_courses'),
-                    style: TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.w800,
-                        color: Theme.of(context).colorScheme.onSurface)),
-              ),
-            ]),
-            const SizedBox(height: 10),
-              SizedBox(
-                height: 168,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: myCourses.length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 12),
-                  itemBuilder: (_, i) => _courseCard(
-                      context, myCourses[i], i,
-                      '${myCourses[i].progressPercent ?? 0}%'),
-                ),
-              ),
-              const SizedBox(height: 20),
-            ] else if (_loaded)
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Text(s.t('no_my_courses')),
-                ),
-              ),
-            if (_lives.isNotEmpty && RemoteUi.visible('home.lives')) ...[
-              _UpcomingLives(lives: _lives),
-              const SizedBox(height: 24),
-            ],
-            if (_trending.isNotEmpty && RemoteUi.visible('home.discover')) ...[
-            Row(children: [
-              Expanded(
-                child: Text(s.t('discover_label'),
-                    style: TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.w800,
-                        color: Theme.of(context).colorScheme.onSurface)),
-              ),
-            ]),
-            const SizedBox(height: 10),
-              CategoryChips(
-                fields: _trending
-                    .map((c) => c.field)
-                    .whereType<String>()
-                    .where((x) => x.trim().isNotEmpty)
-                    .toSet()
-                    .toList(),
-                selected: _discoverField,
-                onSelect: (f) => setState(() => _discoverField = f),
-              ),
-              const SizedBox(height: 10),
-              SizedBox(
-                height: 250,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: _discoverList.length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 12),
-                  itemBuilder: (_, i) =>
-                      FeaturedCourseCard(course: _discoverList[i]),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text(s.t('top_mentors'),
-                  style: TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w800,
-                      color: Theme.of(context).colorScheme.onSurface)),
-              const SizedBox(height: 10),
-              TopMentors(courses: _trending),
-              const SizedBox(height: 20),
-            ],
-            Text(s.t('sections_label'), style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: Theme.of(context).colorScheme.onSurface)),
-            const SizedBox(height: 12),
-            // Quick dashboard grid (reference: round icon tiles).
-            GridView.count(
-              crossAxisCount: 4,
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              mainAxisSpacing: 12,
-              crossAxisSpacing: 8,
-              childAspectRatio: .8,
-              children: _filterQuick([
-                _quick(context, Icons.menu_book_outlined, s.t('my_courses'),
-                    const Color(0xFF2196F3), const CoursesScreen()),
-                _quick(context, Icons.video_camera_front_outlined,
-                    s.t('lv_title'), const Color(0xFFE53935), const LivesScreen()),
-                _quick(context, Icons.quiz_outlined, s.t('tab_exams'),
-                    const Color(0xFF7C4DFF), const ExamsScreen()),
-                _quick(context, Icons.folder_open, s.t('library_label'),
-                    const Color(0xFF00ACC1), const LibraryScreen()),
-                _quick(context, Icons.fact_check_outlined, s.t('qb_title'),
-                    const Color(0xFFF29900), const QuestionBankScreen()),
-                _quick(context, Icons.event_outlined, s.t('sch_title'),
-                    const Color(0xFF2E9E5B), const ScheduleScreen()),
-                _quick(context, Icons.workspace_premium_outlined,
-                    s.t('my_certificates'), const Color(0xFFC9A227),
-                    const MyCertificatesScreen()),
-                _quick(context, Icons.support_agent, s.t('support'),
-                    const Color(0xFFAB47BC), const SupportScreen()),
-              ]),
-            ),
+            for (final id in homeIds) ...homeParts[id]!,
           ],
         ),
       ),

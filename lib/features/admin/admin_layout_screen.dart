@@ -36,6 +36,7 @@ const _home = [
   _Item('home.my_courses', 'my_courses'),
   _Item('home.lives', 'lv_title'),
   _Item('home.discover', 'discover_label'),
+  _Item('home.tiles', 'sections_label'),
 ];
 const _quick = [
   _Item('quick.courses', 'my_courses'),
@@ -77,6 +78,7 @@ class _AdminLayoutScreenState extends State<AdminLayoutScreen> {
   late List<_Item> _quickOrder;
   late List<_Item> _drawerOrder;
   late List<_Item> _cpOrder;
+  late List<_Item> _homeOrder;
 
   @override
   void initState() {
@@ -84,6 +86,7 @@ class _AdminLayoutScreenState extends State<AdminLayoutScreen> {
     _quickOrder = [..._quick];
     _drawerOrder = [..._drawer];
     _cpOrder = [..._coursePage];
+    _homeOrder = [..._home];
     RemoteUi.load().then((_) {
       for (final it in [..._home, ..._quick, ..._drawer, ..._courseItems, ..._coursePage]) {
         _vis[it.id] = RemoteUi.visible(it.id);
@@ -92,6 +95,7 @@ class _AdminLayoutScreenState extends State<AdminLayoutScreen> {
           RemoteUi.order(a.id, base.indexOf(a));
       _quickOrder.sort((a, b) => ord(a, _quick).compareTo(ord(b, _quick)));
       _drawerOrder.sort((a, b) => ord(a, _drawer).compareTo(ord(b, _drawer)));
+      _homeOrder.sort((a, b) => ord(a, _home).compareTo(ord(b, _home)));
       _cpOrder.sort((a, b) => ord(a, _coursePage).compareTo(ord(b, _coursePage)));
       if (mounted) setState(() => _loading = false);
     });
@@ -101,8 +105,9 @@ class _AdminLayoutScreenState extends State<AdminLayoutScreen> {
     final s = S.of(context);
     setState(() => _saving = true);
     final out = <String, Map<String, dynamic>>{};
-    for (final it in _home) {
-      out[it.id] = {'visible': _vis[it.id] ?? true};
+    for (var i = 0; i < _homeOrder.length; i++) {
+      final it = _homeOrder[i];
+      out[it.id] = {'visible': _vis[it.id] ?? true, 'order': i};
     }
     for (var i = 0; i < _quickOrder.length; i++) {
       final it = _quickOrder[i];
@@ -180,7 +185,7 @@ class _AdminLayoutScreenState extends State<AdminLayoutScreen> {
               padding: const EdgeInsets.only(bottom: 90),
               children: [
                 _title(s.t('ui_layout_home')),
-                for (final it in _home) _switch(s, it),
+                _reorder(s, _homeOrder),
                 _title(s.t('tab_courses')),
                 for (final it in _courseItems) _switch(s, it),
                 _title(s.t('cd_about')),
