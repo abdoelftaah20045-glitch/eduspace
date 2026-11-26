@@ -1,5 +1,6 @@
 import '../../core/in_app_player.dart';
 import 'package:flutter/material.dart';
+import '../../core/pressable.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -171,15 +172,13 @@ class _HomeTabState extends State<_HomeTab> {
 
   Widget _sqBtn(BuildContext context, IconData icon, VoidCallback onTap,
       {int badge = 0}) {
-    return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(14),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(14),
+    return SizedBox(
+      width: 46,
+      height: 46,
+      child: Pressable(
+        radius: 14,
         onTap: onTap,
-        child: SizedBox(
-          width: 44,
-          height: 44,
+        child: Center(
           child: Badge(
             label: Text('$badge'),
             isLabelVisible: badge > 0,
@@ -194,50 +193,45 @@ class _HomeTabState extends State<_HomeTab> {
     final pal = _coursePalette[i % _coursePalette.length];
     return SizedBox(
       width: 168,
-      child: Material(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: () => Navigator.of(context)
-              .push(MaterialPageRoute(
-                  builder: (_) => CourseDetailsScreen(courseId: c.id)))
-              .then((_) => _load()),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                height: 86,
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                      colors: [pal.$2.withValues(alpha: .65), pal.$2]),
-                  image: (c.coverUrl != null && c.coverUrl!.isNotEmpty)
-                      ? DecorationImage(
-                          image: NetworkImage(c.coverUrl!), fit: BoxFit.cover)
-                      : null,
-                ),
+      child: Pressable(
+        onTap: () => Navigator.of(context)
+            .push(MaterialPageRoute(
+                builder: (_) => CourseDetailsScreen(courseId: c.id)))
+            .then((_) => _load()),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              height: 86,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                    colors: [pal.$2.withValues(alpha: .65), pal.$2]),
+                image: (c.coverUrl != null && c.coverUrl!.isNotEmpty)
+                    ? DecorationImage(
+                        image: NetworkImage(c.coverUrl!), fit: BoxFit.cover)
+                    : null,
               ),
-              Padding(
-                padding: const EdgeInsets.all(10),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(c.title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                            fontWeight: FontWeight.w800,
-                            color: Color(0xFF14264A))),
-                    const SizedBox(height: 4),
-                    Text(sub,
-                        style: const TextStyle(
-                            fontSize: 12, color: Color(0xFF6B7A99))),
-                  ],
-                ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(c.title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFF14264A))),
+                  const SizedBox(height: 4),
+                  Text(sub,
+                      style: const TextStyle(
+                          fontSize: 12, color: Color(0xFF6B7A99))),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -245,27 +239,31 @@ class _HomeTabState extends State<_HomeTab> {
 
   Widget _quick(BuildContext context, IconData icon, String label,
       Color color, Widget page) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(16),
+    return Pressable(
+      radius: 18,
+      shadowColor: color,
       onTap: () => Navigator.of(context)
           .push(MaterialPageRoute(builder: (_) => page))
           .then((_) => _load()),
-      child: Column(children: [
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
         Container(
-          width: 56,
-          height: 56,
+          width: 44,
+          height: 44,
           decoration: BoxDecoration(
-            color: color.withValues(alpha: .14),
-            borderRadius: BorderRadius.circular(18),
+            gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [color.withValues(alpha: .75), color]),
+            borderRadius: BorderRadius.circular(14),
           ),
-          child: Icon(icon, color: color, size: 26),
+          child: Icon(icon, color: Colors.white, size: 24),
         ),
         const SizedBox(height: 6),
         Text(label,
             maxLines: 2,
             textAlign: TextAlign.center,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontSize: 11.5)),
+            style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600)),
       ]),
     );
   }
@@ -563,7 +561,7 @@ class _HomeTabState extends State<_HomeTab> {
               physics: const NeverScrollableScrollPhysics(),
               mainAxisSpacing: 12,
               crossAxisSpacing: 8,
-              childAspectRatio: .85,
+              childAspectRatio: .8,
               children: [
                 _quick(context, Icons.menu_book_outlined, s.t('my_courses'),
                     const Color(0xFF2196F3), const CoursesScreen()),
