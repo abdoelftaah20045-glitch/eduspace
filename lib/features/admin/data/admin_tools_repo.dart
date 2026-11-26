@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/tenant.dart';
@@ -6,6 +7,9 @@ import '../../../core/tenant.dart';
 /// RLS is the real gate; every query is also scoped to the current tenant.
 class AdminToolsRepository {
   AdminToolsRepository._();
+
+  static final GlobalKey<ScaffoldMessengerState> messengerKey =
+      GlobalKey<ScaffoldMessengerState>();
 
   static SupabaseClient get _c => Supabase.instance.client;
 
@@ -88,13 +92,31 @@ class AdminToolsRepository {
   }
 
   static Future<void> saveSetting(String key, Map<String, dynamic> value) async {
-    await _c.from('tenant_settings').upsert({
-      'tenant_id': TenantContext.id,
-      'setting_key': key,
-      'setting_value': value,
-      'updated_by': _c.auth.currentUser?.id,
-      'updated_at': DateTime.now().toIso8601String(),
-    });
+    try {
+      await _c.from('tenant_settings').upsert({
+        'tenant_id': TenantContext.id,
+        'setting_key': key,
+        'setting_value': value,
+        'updated_by': _c.auth.currentUser?.id,
+        'updated_at': DateTime.now().toIso8601String(),
+      }, onConflict: 'tenant_id,setting_key');
+      // Read back: a silently filtered write (policy) must not look saved.
+      final back = await _c
+          .from('tenant_settings')
+          .select('updated_at')
+          .eq('tenant_id', TenantContext.id)
+          .eq('setting_key', key)
+          .maybeSingle();
+      if (back == null) throw Exception('not saved (no row after write)');
+    } catch (e) {
+      final msg = e.toString().replaceAll('Exception: ', '');
+      messengerKey.currentState?.showSnackBar(SnackBar(
+        backgroundColor: Colors.red.shade700,
+        duration: const Duration(seconds: 8),
+        content: Text('Save failed [$key]: $msg'),
+      ));
+      rethrow;
+    }
     await log('settings.update', entity: 'settings', entityId: key);
   }
 

@@ -30,7 +30,9 @@ class _AdminFaqScreenState extends State<AdminFaqScreen> {
   Future<void> _persist() async {
     RemoteUi.faq = _items;
     RemoteUi.version.value++;
-    await AdminToolsRepository.saveSetting('ui_faq', {'items': _items});
+    try {
+      await AdminToolsRepository.saveSetting('ui_faq', {'items': _items});
+    } catch (_) {}
   }
 
   String _first(dynamic m) {

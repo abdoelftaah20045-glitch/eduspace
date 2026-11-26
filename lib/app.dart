@@ -1,3 +1,4 @@
+import 'features/admin/data/admin_tools_repo.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'core/recovery.dart';
@@ -24,6 +25,7 @@ class EduSpaceApp extends StatelessWidget {
       ]),
       builder: (context, _) {
         return MaterialApp(
+          scaffoldMessengerKey: AdminToolsRepository.messengerKey,
           navigatorKey: rootNavigatorKey,
           title: 'Deki',
           debugShowCheckedModeBanner: false,
