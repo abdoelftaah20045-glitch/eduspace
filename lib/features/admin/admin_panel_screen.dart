@@ -32,6 +32,7 @@ import '../tenancy/data/tenancy_repo.dart';
 import '../tenancy/super_admin_screen.dart';
 import '../tenancy/tenant_members_screen.dart';
 import 'admin_limits_screen.dart';
+import 'admin_moderation_screen.dart';
 import 'data/admin_panel_repo.dart';
 import '../support/data/support_repo.dart';
 
@@ -125,6 +126,8 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
           const Color(0xFFD81B60), const AdminLookScreen()),
       ('ui_limits', 'admin_sub_limits', Icons.tune,
           const Color(0xFF6D4C41), const AdminLimitsScreen()),
+      ('ui_moderation', 'admin_sub_moderation', Icons.rate_review_outlined,
+          const Color(0xFF8E24AA), const AdminModerationScreen()),
       ('org_settings', 'admin_sub_settings', Icons.settings_outlined,
           const Color(0xFF607D8B), const AdminOrgSettingsScreen()),
       ('audit_label', 'admin_sub_audit', Icons.history, 
@@ -191,6 +194,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
       'ui_faq': 'settings',
       'ui_look': 'settings',
       'ui_limits': 'settings',
+      'ui_moderation': 'courses',
       'ui_layout': 'settings',
       'audit_label': 'reports',
       'admin_payments': 'students',
