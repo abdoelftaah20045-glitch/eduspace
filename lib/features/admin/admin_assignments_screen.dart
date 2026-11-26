@@ -21,29 +21,43 @@ class _AdminAssignmentsScreenState extends State<AdminAssignmentsScreen> {
   List<Map<String, dynamic>> _courses = const [];
   String? _courseId;
   List<Assignment>? _items;
+  bool _error = false;
 
   @override
   void initState() {
     super.initState();
-    AdminRepository.fetchAllCourses().then((rows) {
-      if (mounted) {
-        setState(() {
-          _courses = rows;
-          if (rows.isNotEmpty) _courseId = rows.first['id'] as String;
-        });
-        _load();
-      }
-    }).catchError((_) {});
+    _init();
+  }
+
+  Future<void> _init() async {
+    setState(() {
+      _error = false;
+      _items = null;
+    });
+    try {
+      final rows = await AdminRepository.fetchAllCourses()
+          .timeout(const Duration(seconds: 20));
+      if (!mounted) return;
+      setState(() {
+        _courses = rows;
+        if (rows.isNotEmpty) _courseId = rows.first['id'] as String;
+        if (rows.isEmpty) _items = const [];
+      });
+      _load();
+    } catch (_) {
+      if (mounted) setState(() => _error = true);
+    }
   }
 
   Future<void> _load() async {
     final courseId = _courseId;
     if (courseId == null) return;
     try {
-      final items = await AssignmentsRepository.fetchForCourse(courseId);
+      final items = await AssignmentsRepository.fetchForCourse(courseId)
+          .timeout(const Duration(seconds: 20));
       if (mounted) setState(() => _items = items);
     } catch (_) {
-      if (mounted) setState(() => _items = const []);
+      if (mounted) setState(() => _error = true);
     }
   }
 
@@ -106,10 +120,16 @@ class _AdminAssignmentsScreenState extends State<AdminAssignmentsScreen> {
             ),
           ),
           Expanded(
-            child: _items == null
+            child: _error
+                ? Center(
+                    child: Column(mainAxisSize: MainAxisSize.min, children: [
+                    Text(s.t('generic_error')),
+                    TextButton(onPressed: _init, child: Text(s.t('retry'))),
+                  ]))
+                : _items == null
                 ? const Center(child: CircularProgressIndicator())
                 : _items!.isEmpty
-                    ? Center(child: Text(s.t('no_assignments')))
+                    ? Center(child: Text(_courses.isEmpty ? s.t('no_courses_yet') : s.t('no_assignments')))
                     : ListView.builder(
                         padding: const EdgeInsets.fromLTRB(16, 0, 16, 96),
                         itemCount: _items!.length,

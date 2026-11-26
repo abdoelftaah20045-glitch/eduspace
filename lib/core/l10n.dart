@@ -314,6 +314,8 @@ class S {
     'cd_overview': {'ar': 'نظرة عامة', 'en': 'Overview', 'fr': 'Aperçu', 'es': 'Resumen', 'de': 'Überblick'},
     'cd_lessons': {'ar': 'الدروس', 'en': 'Lessons', 'fr': 'Leçons', 'es': 'Lecciones', 'de': 'Lektionen'},
     'cd_reviews': {'ar': 'التقييمات', 'en': 'Reviews', 'fr': 'Avis', 'es': 'Reseñas', 'de': 'Bewertungen'},
+    'retry': {'ar': 'إعادة المحاولة', 'en': 'Retry', 'fr': 'Réessayer', 'es': 'Reintentar', 'de': 'Erneut versuchen'},
+    'no_courses_yet': {'ar': 'لسه مفيش كورسات. أضف كورس الأول.', 'en': 'No courses yet. Add a course first.', 'fr': 'Aucun cours.', 'es': 'Aún no hay cursos.', 'de': 'Noch keine Kurse.'},
     'audit_label': {'ar': 'سجل العمليات', 'en': 'Audit log', 'fr': 'Audit log', 'es': 'Audit log', 'de': 'Audit log'},
     'no_audit': {'ar': 'لا توجد عمليات مسجلة', 'en': 'No recorded actions', 'fr': 'No recorded actions', 'es': 'No recorded actions', 'de': 'No recorded actions'},
     'org_settings': {'ar': 'إعدادات المؤسسة', 'en': 'Organization settings', 'fr': 'Organization settings', 'es': 'Organization settings', 'de': 'Organization settings'},

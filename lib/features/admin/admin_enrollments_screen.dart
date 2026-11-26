@@ -17,29 +17,43 @@ class _AdminEnrollmentsScreenState extends State<AdminEnrollmentsScreen> {
   List<Map<String, dynamic>> _courses = const [];
   String? _courseId;
   List<Map<String, dynamic>>? _enrollments;
+  bool _error = false;
 
   @override
   void initState() {
     super.initState();
-    AdminRepository.fetchAllCourses().then((rows) {
-      if (mounted) {
-        setState(() {
-          _courses = rows;
-          if (rows.isNotEmpty) _courseId = rows.first['id'] as String;
-        });
-        _load();
-      }
-    }).catchError((_) {});
+    _init();
+  }
+
+  Future<void> _init() async {
+    setState(() {
+      _error = false;
+      _enrollments = null;
+    });
+    try {
+      final rows = await AdminRepository.fetchAllCourses()
+          .timeout(const Duration(seconds: 20));
+      if (!mounted) return;
+      setState(() {
+        _courses = rows;
+        if (rows.isNotEmpty) _courseId = rows.first['id'] as String;
+        if (rows.isEmpty) _enrollments = const [];
+      });
+      _load();
+    } catch (_) {
+      if (mounted) setState(() => _error = true);
+    }
   }
 
   Future<void> _load() async {
     final courseId = _courseId;
     if (courseId == null) return;
     try {
-      final rows = await AdminPanelRepository.fetchEnrollments(courseId);
+      final rows = await AdminPanelRepository.fetchEnrollments(courseId)
+          .timeout(const Duration(seconds: 20));
       if (mounted) setState(() => _enrollments = rows);
     } catch (_) {
-      if (mounted) setState(() => _enrollments = const []);
+      if (mounted) setState(() => _error = true);
     }
   }
 
@@ -107,10 +121,16 @@ class _AdminEnrollmentsScreenState extends State<AdminEnrollmentsScreen> {
             ),
           ),
           Expanded(
-            child: _enrollments == null
+            child: _error
+                ? Center(
+                    child: Column(mainAxisSize: MainAxisSize.min, children: [
+                    Text(s.t('generic_error')),
+                    TextButton(onPressed: _init, child: Text(s.t('retry'))),
+                  ]))
+                : _enrollments == null
                 ? const Center(child: CircularProgressIndicator())
                 : _enrollments!.isEmpty
-                    ? Center(child: Text(s.t('empty_questions')))
+                    ? Center(child: Text(_courses.isEmpty ? s.t('no_courses_yet') : s.t('empty_questions')))
                     : ListView.builder(
                         padding: const EdgeInsets.fromLTRB(16, 0, 16, 96),
                         itemCount: _enrollments!.length,

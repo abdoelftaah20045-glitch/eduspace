@@ -45,6 +45,7 @@ class _RequestsTabState extends State<_RequestsTab> {
   List<Map<String, dynamic>> _rows = [];
   bool _loading = true;
   bool _error = false;
+  String _errText = '';
 
   @override
   void initState() {
@@ -64,7 +65,8 @@ class _RequestsTabState extends State<_RequestsTab> {
               'id, amount, coupon_code, receipt_path, note, status, admin_note, created_at, user_id, courses(title)')
           .eq('tenant_id', TenantContext.id)
           .order('created_at', ascending: false)
-          .limit(100);
+          .limit(100)
+          .timeout(const Duration(seconds: 20));
       final ids = rows.map((r) => r['user_id']).toSet().toList();
       final names = <String, String>{};
       if (ids.isNotEmpty) {
@@ -81,8 +83,10 @@ class _RequestsTabState extends State<_RequestsTab> {
         for (final r in rows)
           {...Map<String, dynamic>.from(r), 'who': names[r['user_id']] ?? ''}
       ];
-    } catch (_) {
+    } catch (e) {
       _error = true;
+      _errText = e.toString();
+      if (_errText.length > 200) _errText = _errText.substring(0, 200);
     }
     if (mounted) setState(() => _loading = false);
   }
@@ -136,7 +140,16 @@ class _RequestsTabState extends State<_RequestsTab> {
     if (_loading) return const Center(child: CircularProgressIndicator());
     if (_error) {
       return Center(
-          child: TextButton(onPressed: _load, child: Text(s.t('pay_sql_needed'))));
+          child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          Text(_errText.isEmpty ? s.t('generic_error') : _errText,
+              textAlign: TextAlign.center),
+          const SizedBox(height: 8),
+          Text(s.t('pay_sql_needed'), textAlign: TextAlign.center),
+          TextButton(onPressed: _load, child: Text(s.t('retry'))),
+        ]),
+      ));
     }
     if (_rows.isEmpty) return Center(child: Text(s.t('admin_pay_none')));
     return RefreshIndicator(
