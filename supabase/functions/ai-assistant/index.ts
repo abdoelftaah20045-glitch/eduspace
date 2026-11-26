@@ -20,7 +20,9 @@ async function pickModels(key: string): Promise<string[]> {
       .map((m: any) => String(m.name).replace("models/", ""))
       .filter((n: string) => /flash/.test(n) && !/(image|tts|live|audio|embed|robotics|computer|preview|exp)/.test(n))
       .sort((a: string, b: string) => ver(b) - ver(a) || a.length - b.length);
-    return [...new Set([...listed.slice(0, 2), ...fixed])];
+    const lite = listed.filter((n) => /lite/.test(n)).slice(0, 1);
+    const full = listed.filter((n) => !/lite/.test(n)).slice(0, 1);
+    return [...new Set([...lite, ...full, ...fixed])];
   } catch (_) {
     return fixed;
   }
@@ -41,8 +43,11 @@ Deno.serve(async (req: Request) => {
     const errs: string[] = [];
     const started = Date.now();
     for (const model of (await pickModels(key)).slice(0, 4)) {
+      const v = parseFloat((model.match(/gemini-(\d+(?:\.\d+)?)/) ?? [])[1] ?? "0");
+      // fastest thinking setting per generation; second try without it
+      const thinking = v >= 3 ? { thinkingLevel: "low" } : { thinkingBudget: 0 };
       for (let attempt = 0; attempt < 2; attempt++) {
-        if (Date.now() - started > 30000) break;
+        if (Date.now() - started > 25000) break;
         let r: Response;
         try {
           r = await fetch(`${BASE}/models/${model}:generateContent?key=${key}`, {
@@ -51,9 +56,11 @@ Deno.serve(async (req: Request) => {
             body: JSON.stringify({
               systemInstruction: { parts: [{ text: system }] },
               contents,
-              generationConfig: { maxOutputTokens: 1500 },
+              generationConfig: attempt === 0
+                ? { maxOutputTokens: 600, thinkingConfig: thinking }
+                : { maxOutputTokens: 600 },
             }),
-            signal: AbortSignal.timeout(18000),
+            signal: AbortSignal.timeout(24000),
           });
         } catch (e) {
           errs.push(`${model}: ${String(e).slice(0, 60)}`);
@@ -61,11 +68,12 @@ Deno.serve(async (req: Request) => {
         }
         const j = await r.json();
         const parts = j?.candidates?.[0]?.content?.parts ?? [];
-        const text = parts.map((p: any) => p.text ?? "").join("").trim();
+        const text = parts.filter((p: any) => !p.thought).map((p: any) => p.text ?? "").join("").trim();
         if (text) return json({ text });
         errs.push(`${model}: ${r.status} ${String(j?.error?.message ?? "empty").slice(0, 80)}`);
+        if (r.status === 400 && attempt === 0) continue; // thinking setting not accepted
         if (r.status === 503 && attempt === 0) {
-          await sleep(1500);
+          await sleep(1200);
           continue;
         }
         break;
