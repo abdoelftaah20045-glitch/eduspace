@@ -73,7 +73,8 @@ class _RequestsTabState extends State<_RequestsTab> {
         final ps = await _c
             .from('profiles')
             .select('id, full_name, email')
-            .inFilter('id', ids);
+            .inFilter('id', ids)
+            .timeout(const Duration(seconds: 20));
         for (final p in ps) {
           names[p['id'] as String] =
               (p['full_name'] ?? p['email'] ?? '').toString();
@@ -225,7 +226,8 @@ class _CouponsTabState extends State<_CouponsTab> {
           .from('coupons')
           .select()
           .eq('tenant_id', TenantContext.id)
-          .order('created_at', ascending: false);
+          .order('created_at', ascending: false)
+          .timeout(const Duration(seconds: 20));
       _rows = [for (final r in rows) Map<String, dynamic>.from(r)];
     } catch (_) {}
     if (mounted) setState(() => _loading = false);
