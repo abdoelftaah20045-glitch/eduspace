@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../planner/study_planner_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/l10n.dart';
@@ -78,6 +79,7 @@ class AppDrawer extends StatelessWidget {
             ),
             item(Icons.quiz_outlined, 'qb_title', const QuestionBankScreen()),
             item(Icons.event_outlined, 'sch_title', const ScheduleScreen()),
+            item(Icons.checklist_rounded, 'planner_title', const StudyPlannerScreen()),
             item(Icons.videocam_outlined, 'lv_title', const LivesScreen()),
             item(Icons.campaign_outlined, 'ann_title', const AnnouncementsScreen()),
             item(Icons.notifications_outlined, 'notifications',
