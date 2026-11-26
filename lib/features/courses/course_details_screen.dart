@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../payments/payment_screen.dart';
 import '../discussion/discussion_screen.dart';
 import '../../core/l10n.dart';
 import '../assignments/assignments_screen.dart';
@@ -309,17 +310,22 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
         ),
       );
     }
-    return Card(
-      color: theme.colorScheme.secondaryContainer,
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Row(
-          children: [
-            const Icon(Icons.payments_outlined),
-            const SizedBox(width: 12),
-            Expanded(child: Text(s.t('paid_contact_admin'))),
-          ],
-        ),
+    return SizedBox(
+      width: double.infinity,
+      child: FilledButton.icon(
+        onPressed: () async {
+          await Navigator.of(context).push(MaterialPageRoute(
+            builder: (_) => PaymentScreen(
+              courseId: widget.courseId,
+              title: details.course.title,
+              price: details.course.price,
+            ),
+          ));
+          _load();
+        },
+        icon: const Icon(Icons.payments_outlined),
+        label: Text(
+            '${s.t('pay_title')} · ${details.course.price.toStringAsFixed(2)}'),
       ),
     );
   }

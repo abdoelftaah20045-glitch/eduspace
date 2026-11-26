@@ -16,6 +16,7 @@ import 'admin_users_screen.dart';
 import 'admin_reports_screen.dart';
 import 'admin_categories_screen.dart';
 import 'admin_audit_screen.dart';
+import 'admin_payments_screen.dart';
 import 'admin_notify_screen.dart';
 import 'admin_org_settings_screen.dart';
 import '../tenancy/data/tenancy_repo.dart';
@@ -73,6 +74,8 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
           const Color(0xFFE53935), const AdminNotifyScreen()),
       ('team_roles', 'admin_sub_team', Icons.admin_panel_settings_outlined,
           const Color(0xFF6A1B9A), const AdminTeamScreen()),
+      ('admin_payments', 'admin_sub_payments', Icons.payments_outlined,
+          const Color(0xFF2E9E5B), const AdminPaymentsScreen()),
       ('categories_label', 'admin_sub_categories', Icons.category_outlined,
           const Color(0xFF00897B), const AdminCategoriesScreen()),
       ('org_settings', 'admin_sub_settings', Icons.settings_outlined,
@@ -138,6 +141,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
       'categories_label': 'courses',
       'org_settings': 'settings',
       'audit_label': 'reports',
+      'admin_payments': 'students',
       'users_label': 'students',
       'tab_courses': 'courses',
       'tab_exams': 'exams',
