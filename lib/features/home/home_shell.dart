@@ -93,6 +93,7 @@ class _HomeTabState extends State<_HomeTab> {
   Announcement? _announcement;
   List<LiveSession> _lives = const [];
   int _unread = 0;
+  List<Course> _trending = [];
   bool _loaded = false;
   String _name = '';
   String? _avatarUrl;
@@ -121,6 +122,10 @@ class _HomeTabState extends State<_HomeTab> {
       try {
         lives = await LivesRepository.fetchUpcoming();
       } catch (_) {}
+      var trending = <Course>[];
+      try {
+        trending = (await CoursesRepository.fetchCourses()).take(8).toList();
+      } catch (_) {}
       try {
         final uid = Supabase.instance.client.auth.currentUser?.id;
         if (uid != null) {
@@ -142,6 +147,7 @@ class _HomeTabState extends State<_HomeTab> {
         _unread = unread;
         _announcement = announcement;
         _lives = lives;
+        _trending = trending;
         _loaded = true;
       });
     } catch (_) {
@@ -499,6 +505,62 @@ class _HomeTabState extends State<_HomeTab> {
             ],
             if (_lives.isNotEmpty) ...[
               _UpcomingLives(lives: _lives),
+              const SizedBox(height: 24),
+            ],
+            if (_trending.isNotEmpty) ...[
+              Text(s.t('trending_now'),
+                  style: theme.textTheme.titleMedium
+                      ?.copyWith(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
+              SizedBox(
+                height: 150,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: _trending.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 10),
+                  itemBuilder: (_, i) {
+                    final c = _trending[i];
+                    final pal = _coursePalette[i % _coursePalette.length];
+                    return SizedBox(
+                      width: 160,
+                      child: Material(
+                        color: pal.$1,
+                        borderRadius: BorderRadius.circular(18),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(18),
+                          onTap: () => Navigator.of(context).push(
+                              MaterialPageRoute(
+                                  builder: (_) =>
+                                      CourseDetailsScreen(courseId: c.id))),
+                          child: Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  width: 40,
+                                  height: 40,
+                                  decoration: BoxDecoration(
+                                      color: pal.$2,
+                                      borderRadius: BorderRadius.circular(12)),
+                                  child: const Icon(Icons.trending_up,
+                                      color: Colors.white),
+                                ),
+                                const Spacer(),
+                                Text(c.title,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold)),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
               const SizedBox(height: 24),
             ],
             Row(
