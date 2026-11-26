@@ -15,6 +15,8 @@ class LiveSession {
     this.durationMinutes = 60,
     this.status = 'scheduled',
     this.recordingUrl,
+    this.hostPhotoUrl,
+    this.maxAttendees,
   });
 
   final String id;
@@ -28,6 +30,8 @@ class LiveSession {
   final int durationMinutes;
   final String status;
   final String? recordingUrl;
+  final String? hostPhotoUrl;
+  final int? maxAttendees;
 
   DateTime get endsAt => startsAt.add(Duration(minutes: durationMinutes));
 
@@ -56,6 +60,8 @@ class LiveSession {
         durationMinutes: (m['duration_minutes'] as num?)?.toInt() ?? 60,
         status: (m['status'] as String?) ?? 'scheduled',
         recordingUrl: m['recording_url'] as String?,
+        hostPhotoUrl: m['host_photo_url'] as String?,
+        maxAttendees: (m['max_attendees'] as num?)?.toInt(),
       );
 }
 
@@ -78,6 +84,40 @@ class LivesRepository {
         .map(LiveSession.fromMap)
         .where((l) => l.isUpcoming)
         .toList();
+  }
+
+  /// Attendee counts per session (needs SQL part 22; empty map otherwise).
+  static Future<Map<String, int>> counts(List<String> ids) async {
+    if (ids.isEmpty) return {};
+    try {
+      final rows = await _c.rpc('live_counts', params: {'p_ids': ids});
+      return {
+        for (final r in (rows as List))
+          r['live_id'].toString(): (r['n'] as num).toInt(),
+      };
+    } catch (_) {
+      return {};
+    }
+  }
+
+  static Future<Set<String>> myReservations() async {
+    try {
+      final uid = _c.auth.currentUser?.id;
+      if (uid == null) return {};
+      final rows =
+          await _c.from('live_attendance').select('live_id').eq('user_id', uid);
+      return {for (final r in rows) r['live_id'].toString()};
+    } catch (_) {
+      return {};
+    }
+  }
+
+  static Future<void> reserve(String liveId) async {
+    final uid = _c.auth.currentUser?.id;
+    if (uid == null) return;
+    await _c
+        .from('live_attendance')
+        .upsert({'live_id': liveId, 'user_id': uid}, onConflict: 'live_id,user_id');
   }
 
   /// Admin: every session, newest first.

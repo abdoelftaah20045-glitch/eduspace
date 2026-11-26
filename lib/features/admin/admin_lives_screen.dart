@@ -197,6 +197,8 @@ class _LiveSheetState extends State<_LiveSheet> {
   late final _duration = TextEditingController(
       text: (widget.session?.durationMinutes ?? 60).toString());
   String? _courseId;
+  late final _photo = TextEditingController(
+      text: widget.session?.hostPhotoUrl ?? '');
   late String _platform = widget.session?.platform ?? 'zoom';
   DateTime? _startsAt;
   List<Map<String, dynamic>> _courses = const [];
@@ -217,6 +219,7 @@ class _LiveSheetState extends State<_LiveSheet> {
     _title.dispose();
     _description.dispose();
     _host.dispose();
+    _photo.dispose();
     _joinUrl.dispose();
     _recording.dispose();
     _duration.dispose();
@@ -239,6 +242,7 @@ class _LiveSheetState extends State<_LiveSheet> {
       'join_url': _joinUrl.text.trim(),
       'recording_url':
           _recording.text.trim().isEmpty ? null : _recording.text.trim(),
+      if (_photo.text.trim().isNotEmpty) 'host_photo_url': _photo.text.trim(),
       'platform': _platform,
       'course_id': _courseId,
       'starts_at': _startsAt!.toUtc().toIso8601String(),
@@ -331,6 +335,11 @@ class _LiveSheetState extends State<_LiveSheet> {
                 ],
               ),
               const SizedBox(height: 12),
+              TextFormField(
+                controller: _photo,
+                decoration: InputDecoration(labelText: s.t('host_photo')),
+              ),
+              const SizedBox(height: 12),
               DropdownButtonFormField<String>(
                 initialValue: _platform,
                 decoration:
@@ -339,6 +348,8 @@ class _LiveSheetState extends State<_LiveSheet> {
                   DropdownMenuItem(value: 'zoom', child: Text('Zoom')),
                   DropdownMenuItem(
                       value: 'google_meet', child: Text('Google Meet')),
+                  DropdownMenuItem(value: 'youtube', child: Text('YouTube Live')),
+                  DropdownMenuItem(value: 'jitsi', child: Text('Jitsi Meet')),
                   DropdownMenuItem(value: 'other', child: Text('Other')),
                 ],
                 onChanged: (v) => setState(() => _platform = v ?? 'other'),

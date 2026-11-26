@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import '../../core/in_app_player.dart';
 import '../../core/l10n.dart';
 import 'data/lives_repo.dart';
+import 'live_room.dart';
 
 /// Student: live sessions list (upcoming / past) and session detail with
 /// countdown, in-app join and recording playback (screens 43-45).
@@ -21,6 +22,8 @@ class LivesScreen extends StatefulWidget {
 class _LivesScreenState extends State<LivesScreen> {
   List<LiveSession>? _all;
   bool _failed = false;
+  Map<String, int> _counts = {};
+  Set<String> _mine = {};
 
   @override
   void initState() {
@@ -32,6 +35,12 @@ class _LivesScreenState extends State<LivesScreen> {
     try {
       final r = await LivesRepository.fetchAll();
       if (mounted) setState(() => _all = r);
+      final c = await LivesRepository.counts([for (final l in r) l.id]);
+      final mine = await LivesRepository.myReservations();
+      if (mounted) setState(() {
+        _counts = c;
+        _mine = mine;
+      });
     } catch (_) {
       if (mounted) setState(() => _failed = true);
     }
@@ -84,29 +93,129 @@ class _LivesScreenState extends State<LivesScreen> {
               itemCount: items.length,
               itemBuilder: (context, i) {
                 final l = items[i];
-                final fmt = DateFormat('EEE d MMM, h:mm a', s.locale.languageCode);
-                return PressScale(child: Card(
-                  child: ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: l.status == 'cancelled'
-                          ? Colors.grey.shade300
-                          : Theme.of(context).colorScheme.primaryContainer,
-                      child: Icon(l.recordingUrl != null && !l.isUpcoming
-                          ? Icons.play_circle_outline
-                          : Icons.videocam_outlined),
+                final scheme = Theme.of(context).colorScheme;
+                final lang = s.locale.languageCode;
+                final day = DateFormat('d MMMM', lang).format(l.startsAt);
+                final showHeader = i == 0 ||
+                    DateFormat('yMd').format(items[i - 1].startsAt) !=
+                        DateFormat('yMd').format(l.startsAt);
+                final n = _counts[l.id] ?? 0;
+                final reserved = _mine.contains(l.id);
+                final cancelled = l.status == 'cancelled';
+                final canEnter = l.canJoinNow;
+                final time =
+                    '${DateFormat('h:mm a', lang).format(l.startsAt)} - ${DateFormat('h:mm a', lang).format(l.endsAt)}';
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (showHeader)
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(4, 10, 4, 6),
+                        child: Text(day,
+                            style: TextStyle(
+                                color: scheme.onSurfaceVariant,
+                                fontWeight: FontWeight.w600)),
+                      ),
+                    PressScale(
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(16),
+                        onTap: () => Navigator.of(context)
+                            .push(MaterialPageRoute(
+                                builder: (_) => LiveDetailScreen(session: l)))
+                            .then((_) => _load()),
+                        child: Container(
+                          margin: const EdgeInsets.only(bottom: 10),
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: scheme.surface,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: scheme.outlineVariant),
+                            boxShadow: [
+                              BoxShadow(
+                                  color: Colors.black.withValues(alpha: .06),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4)),
+                            ],
+                          ),
+                          child: Row(children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: SizedBox(
+                                width: 64,
+                                height: 72,
+                                child: (l.hostPhotoUrl ?? '').isNotEmpty
+                                    ? Image.network(l.hostPhotoUrl!,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (_, __, ___) => Container(
+                                            color: scheme.primaryContainer,
+                                            child: const Icon(Icons.person)))
+                                    : Container(
+                                        color: scheme.primaryContainer,
+                                        child: Icon(
+                                            l.recordingUrl != null &&
+                                                    !l.isUpcoming
+                                                ? Icons.play_circle_outline
+                                                : Icons.person,
+                                            size: 32)),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(l.title,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.w700)),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                      '$time  |  $n ${s.t('lv_attendees')}'
+                                      '${cancelled ? '  |  ${s.t('status_cancelled')}' : ''}',
+                                      style: TextStyle(
+                                          fontSize: 11,
+                                          color: scheme.onSurfaceVariant)),
+                                ],
+                              ),
+                            ),
+                            if (l.isUpcoming && !cancelled)
+                              FilledButton(
+                                style: FilledButton.styleFrom(
+                                    backgroundColor: const Color(0xFFE0A877),
+                                    foregroundColor: Colors.white,
+                                    minimumSize: const Size(64, 32),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 14)),
+                                onPressed: canEnter
+                                    ? () {
+                                        LivesRepository.reserve(l.id)
+                                            .catchError((_) {});
+                                        Navigator.of(context).push(
+                                            MaterialPageRoute(
+                                                builder: (_) =>
+                                                    LiveRoomScreen(session: l)));
+                                      }
+                                    : reserved
+                                        ? null
+                                        : () async {
+                                            try {
+                                              await LivesRepository.reserve(l.id);
+                                            } catch (_) {}
+                                            _load();
+                                          },
+                                child: Text(canEnter
+                                    ? s.t('lv_enter')
+                                    : reserved
+                                        ? s.t('lv_reserved')
+                                        : s.t('lv_reserve')),
+                              ),
+                          ]),
+                        ),
+                      ),
                     ),
-                    title: Text(l.title,
-                        maxLines: 1, overflow: TextOverflow.ellipsis),
-                    subtitle: Text(
-                        '${fmt.format(l.startsAt)} · ${l.durationMinutes} ${s.t('minutes_unit')}'
-                        '${l.status == 'cancelled' ? ' · ${s.t('status_cancelled')}' : ''}'),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () => Navigator.of(context)
-                        .push(MaterialPageRoute(
-                            builder: (_) => LiveDetailScreen(session: l)))
-                        .then((_) => _load()),
-                  ),
-                ));
+                  ],
+                );
               },
             ),
     );
@@ -223,8 +332,7 @@ class _LiveDetailScreenState extends State<LiveDetailScreen> {
                             .then((_) {}, onError: (_) {});
                       }
                       Navigator.of(context).push(MaterialPageRoute(
-                          builder: (_) => InAppPlayerScreen(
-                              url: l.joinUrl, title: l.title)));
+                          builder: (_) => LiveRoomScreen(session: l)));
                     }
                   : null,
               icon: const Icon(Icons.play_arrow),
