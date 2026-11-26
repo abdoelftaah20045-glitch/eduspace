@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/pressable.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/tenant.dart';
 
@@ -287,7 +288,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                 crossAxisCount: 2,
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                childAspectRatio: 2.3,
+                childAspectRatio: 1.7,
                 mainAxisSpacing: 10,
                 crossAxisSpacing: 10,
                 children: [
@@ -336,50 +337,78 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
             Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
-                children: sections
-                    .map((sec) => Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
-                          child: Card(
-                            elevation: 1.5,
-                            margin: EdgeInsets.zero,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20)),
-                            child: ListTile(
-                              contentPadding:
-                                  const EdgeInsets.symmetric(
-                                      horizontal: 16, vertical: 8),
-                              leading: Container(
-                                width: 46,
-                                height: 46,
-                                decoration: BoxDecoration(
-                                  color: sec.$4.withValues(alpha: .15),
-                                  borderRadius:
-                                      BorderRadius.circular(14),
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Text(s.t('sections_label'),
+                        style: const TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w800,
+                            color: Color(0xFF14264A))),
+                  ),
+                  GridView.count(
+                    crossAxisCount: 2,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    childAspectRatio: 1.45,
+                    mainAxisSpacing: 12,
+                    crossAxisSpacing: 12,
+                    children: [
+                      for (final sec in sections)
+                        Pressable(
+                          radius: 18,
+                          shadowColor: sec.$4,
+                          padding: const EdgeInsets.all(12),
+                          onTap: () => Navigator.of(context)
+                              .push(MaterialPageRoute(builder: (_) => sec.$5))
+                              .then((_) => _load()),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(children: [
+                                Container(
+                                  width: 38,
+                                  height: 38,
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(colors: [
+                                      sec.$4.withValues(alpha: .7),
+                                      sec.$4
+                                    ]),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Icon(sec.$3,
+                                      color: Colors.white, size: 21),
                                 ),
-                                child: Icon(sec.$3, color: sec.$4),
-                              ),
-                              title: Text(
-                                s.t(sec.$1),
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold),
-                              ),
-                              subtitle: Text(s.t(sec.$2)),
-                              trailing: (sec.$1 == 'support' && _supportWaiting > 0)
-                                  ? CircleAvatar(
-                                      radius: 12,
+                                const Spacer(),
+                                if (sec.$1 == 'support' && _supportWaiting > 0)
+                                  CircleAvatar(
+                                      radius: 11,
                                       backgroundColor: const Color(0xFFE53935),
                                       child: Text('$_supportWaiting',
                                           style: const TextStyle(
-                                              color: Colors.white, fontSize: 12)))
-                                  : const Icon(Icons.chevron_right),
-                              onTap: () => Navigator.of(context).push(
-                                MaterialPageRoute(
-                                    builder: (_) => sec.$5),
-                              ),
-                            ),
+                                              color: Colors.white,
+                                              fontSize: 11))),
+                              ]),
+                              const Spacer(),
+                              Text(s.t(sec.$1),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.w800,
+                                      color: Color(0xFF14264A))),
+                              const SizedBox(height: 2),
+                              Text(s.t(sec.$2),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                      fontSize: 11, color: Color(0xFF6B7A99))),
+                            ],
                           ),
-                        ))
-                    .toList(),
+                        ),
+                    ],
+                  ),
+                ],
               ),
             ),
           ],
@@ -389,43 +418,37 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
   }
 
   Widget _statCard(String label, int? value, IconData icon, Color color) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-            color: Theme.of(context).colorScheme.outlineVariant),
-      ),
-      child: Row(
+    return Pressable(
+      radius: 18,
+      shadowColor: color,
+      padding: const EdgeInsets.all(14),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: .15),
-              borderRadius: BorderRadius.circular(12),
+          Row(children: [
+            Container(
+              width: 34,
+              height: 34,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: .15),
+                borderRadius: BorderRadius.circular(11),
+              ),
+              child: Icon(icon, color: color, size: 20),
             ),
-            child: Icon(icon, color: color, size: 22),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(label,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.bodySmall),
-                Text('${value ?? '-'}',
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleLarge
-                        ?.copyWith(fontWeight: FontWeight.bold)),
-              ],
-            ),
-          ),
+            const Spacer(),
+            Text('${value ?? '-'}',
+                style: const TextStyle(
+                    fontSize: 26,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF14264A))),
+          ]),
+          const SizedBox(height: 8),
+          Text(label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                  fontSize: 13, color: Color(0xFF6B7A99))),
         ],
       ),
     );
