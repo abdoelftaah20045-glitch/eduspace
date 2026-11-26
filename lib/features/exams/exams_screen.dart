@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/pressable.dart';
 
 import '../../core/l10n.dart';
 import '../../core/widgets.dart';
@@ -97,7 +98,7 @@ class _ExamCard extends StatelessWidget {
     final s = S.of(context);
     final theme = Theme.of(context);
     final canStart = exam.isOpen && !exam.attemptsExhausted;
-    return Card(
+    return PressScale(child: Card(
       elevation: 2,
       margin: const EdgeInsets.only(bottom: 14),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -213,7 +214,7 @@ class _ExamCard extends StatelessWidget {
           ],
         ),
       ),
-    );
+    ));
   }
 }
 

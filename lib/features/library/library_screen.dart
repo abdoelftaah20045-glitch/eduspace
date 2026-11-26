@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/pressable.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/l10n.dart';
@@ -233,7 +234,7 @@ class _FileCard extends StatelessWidget {
     final d = item.createdAt;
     final date =
         '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
-    return Card(
+    return PressScale(child: Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(18),
@@ -290,6 +291,6 @@ class _FileCard extends StatelessWidget {
           ],
         ),
       ),
-    );
+    ));
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/pressable.dart';
 
 import '../../core/l10n.dart';
 import '../../core/paid_courses.dart';
@@ -126,7 +127,7 @@ class CourseCard extends StatelessWidget {
     final theme = Theme.of(context);
     final palette =
         _catalogPalette[course.title.hashCode.abs() % _catalogPalette.length];
-    return Card(
+    retPressScale(child: urn Card(
       clipBehavior: Clip.antiAlias,
       margin: const EdgeInsets.only(bottom: 12),
       elevation: 2,
@@ -256,7 +257,7 @@ class CourseCard extends StatelessWidget {
           ),
         ),
       ),
-    );
+    ));
   }
 }
 

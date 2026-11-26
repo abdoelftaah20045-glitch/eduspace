@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import '../../core/pressable.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/in_app_player.dart';
@@ -83,7 +84,7 @@ class _LivesScreenState extends State<LivesScreen> {
               itemBuilder: (context, i) {
                 final l = items[i];
                 final fmt = DateFormat('EEE d MMM, h:mm a', s.locale.languageCode);
-                return Card(
+                return PressScale(child: Card(
                   child: ListTile(
                     leading: CircleAvatar(
                       backgroundColor: l.status == 'cancelled'
@@ -104,7 +105,7 @@ class _LivesScreenState extends State<LivesScreen> {
                             builder: (_) => LiveDetailScreen(session: l)))
                         .then((_) => _load()),
                   ),
-                );
+                ));
               },
             ),
     );
