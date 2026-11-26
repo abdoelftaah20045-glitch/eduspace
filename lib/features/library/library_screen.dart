@@ -51,6 +51,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
   List<LibraryItem>? _items;
   Set<String> _categories = const {};
   String? _category;
+  bool _grid = true;
 
   @override
   void initState() {
@@ -92,6 +93,12 @@ class _LibraryScreenState extends State<LibraryScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(s.t('library_label')),
+        actions: [
+          IconButton(
+            icon: Icon(_grid ? Icons.view_list_outlined : Icons.grid_view),
+            onPressed: () => setState(() => _grid = !_grid),
+          ),
+        ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(56),
           child: Padding(
@@ -159,59 +166,129 @@ class _LibraryScreenState extends State<LibraryScreen> {
                             Center(child: Text(s.t('no_library_items'))),
                           ],
                         )
-                      : ListView.builder(
-                          padding: const EdgeInsets.all(16),
-                          itemCount: items.length,
-                          itemBuilder: (context, i) {
-                            final item = items[i];
-                            final size = _sizeLabel(item.sizeBytes);
-                            final color = _colorFor(item.fileType);
-                            return Card(
-                              elevation: 1.5,
-                              margin: const EdgeInsets.only(bottom: 10),
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16)),
-                              clipBehavior: Clip.antiAlias,
-                              child: ListTile(
-                                contentPadding:
-                                    const EdgeInsets.symmetric(
-                                        horizontal: 14, vertical: 6),
-                                leading: Container(
-                                  width: 46,
-                                  height: 46,
-                                  decoration: BoxDecoration(
-                                    color: color.withValues(alpha: .12),
-                                    borderRadius:
-                                        BorderRadius.circular(12),
-                                  ),
-                                  child: Icon(_iconFor(item.fileType),
-                                      color: color),
-                                ),
-                                title: Text(item.title,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.w600)),
-                                subtitle: Text(
-                                  [
-                                    s.t('file_type_${item.fileType}'),
-                                    if (size.isNotEmpty) size,
-                                    if (item.courseTitle != null)
-                                      item.courseTitle!,
-                                  ].join(' · '),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                trailing: Icon(Icons.open_in_new,
-                                    color: color),
-                                onTap: () => _open(item),
+                      : (_grid
+                          ? GridView.builder(
+                              padding: const EdgeInsets.all(16),
+                              gridDelegate:
+                                  const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 2,
+                                mainAxisSpacing: 12,
+                                crossAxisSpacing: 12,
+                                childAspectRatio: .9,
                               ),
-                            );
-                          },
-                        ),
+                              itemCount: items.length,
+                              itemBuilder: (context, i) =>
+                                  _FileCard(item: items[i], onOpen: _open),
+                            )
+                          : ListView.builder(
+                              padding: const EdgeInsets.all(16),
+                              itemCount: items.length,
+                              itemBuilder: (context, i) {
+                                final item = items[i];
+                                final size = _sizeLabel(item.sizeBytes);
+                                final color = _colorFor(item.fileType);
+                                return Card(
+                                  margin: const EdgeInsets.only(bottom: 10),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16)),
+                                  clipBehavior: Clip.antiAlias,
+                                  child: ListTile(
+                                    leading: Icon(_iconFor(item.fileType),
+                                        color: color),
+                                    title: Text(item.title,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis),
+                                    subtitle: Text(
+                                      [
+                                        s.t('file_type_${item.fileType}'),
+                                        if (size.isNotEmpty) size,
+                                      ].join(' · '),
+                                    ),
+                                    onTap: () => _open(item),
+                                  ),
+                                );
+                              },
+                            )),
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// File card in the reference style: tinted header with the type icon and a
+/// kebab menu, then title, size and date.
+class _FileCard extends StatelessWidget {
+  const _FileCard({required this.item, required this.onOpen});
+
+  final LibraryItem item;
+  final Future<void> Function(LibraryItem) onOpen;
+
+  @override
+  Widget build(BuildContext context) {
+    final s = S.of(context);
+    final color = _colorFor(item.fileType);
+    final size = _sizeLabel(item.sizeBytes);
+    final d = item.createdAt;
+    final date =
+        '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(18),
+        side: BorderSide(color: Theme.of(context).dividerColor),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: () => onOpen(item),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Container(
+                width: double.infinity,
+                color: color.withValues(alpha: .12),
+                child: Stack(
+                  children: [
+                    Center(
+                        child: Icon(_iconFor(item.fileType),
+                            size: 48, color: color)),
+                    PositionedDirectional(
+                      top: 0,
+                      end: 0,
+                      child: PopupMenuButton<String>(
+                        icon: const Icon(Icons.more_vert, size: 20),
+                        onSelected: (_) => onOpen(item),
+                        itemBuilder: (_) => [
+                          PopupMenuItem(
+                              value: 'open', child: Text(s.t('open_file'))),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(item.title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 4),
+                  Text(
+                    [if (size.isNotEmpty) size, date].join(' · '),
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
