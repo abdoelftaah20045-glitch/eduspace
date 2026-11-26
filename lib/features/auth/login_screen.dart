@@ -37,7 +37,12 @@ class _LoginScreenState extends State<LoginScreen> {
       // to the gate so the signed-in home shows.
       if (mounted) Navigator.of(context).popUntil((r) => r.isFirst);
     } on AuthException catch (e) {
-      setState(() => _error = e.message);
+      final m = e.message.toLowerCase();
+      setState(() => _error = m.contains('not confirmed')
+          ? S.of(context).t('login_unconfirmed')
+          : (m.contains('invalid') || m.contains('credentials'))
+              ? S.of(context).t('login_invalid')
+              : e.message);
     } catch (_) {
       setState(() => _error = S.of(context).t('generic_error'));
     } finally {

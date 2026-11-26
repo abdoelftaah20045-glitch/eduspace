@@ -194,6 +194,8 @@ class S {
     'reset_send_again': {'ar': 'ابعت لينك جديد', 'en': 'Send a new link', 'fr': 'Envoyer un nouveau lien', 'es': 'Enviar un enlace nuevo', 'de': 'Neuen Link senden'},
     'ann_title': {'ar': 'الإعلانات', 'en': 'Announcements', 'fr': 'Annonces', 'es': 'Anuncios', 'de': 'Ankündigungen'},
     'ann_empty': {'ar': 'مفيش إعلانات', 'en': 'No announcements', 'fr': 'Aucune annonce', 'es': 'Sin anuncios', 'de': 'Keine Ankündigungen'},
+    'login_invalid': {'ar': 'البيانات غير صحيحة', 'en': 'The details are incorrect', 'fr': 'Les informations sont incorrectes', 'es': 'Los datos son incorrectos', 'de': 'Die Angaben sind falsch'},
+    'login_unconfirmed': {'ar': 'لازم تفعّل الإيميل الأول. راجع بريدك.', 'en': 'Please verify your email first. Check your inbox.', 'fr': 'Vérifiez d abord votre e-mail.', 'es': 'Verifica primero tu correo.', 'de': 'Bitte bestätigen Sie zuerst Ihre E-Mail.'},
     'audit_label': {'ar': 'سجل العمليات', 'en': 'Audit log', 'fr': 'Audit log', 'es': 'Audit log', 'de': 'Audit log'},
     'no_audit': {'ar': 'لا توجد عمليات مسجلة', 'en': 'No recorded actions', 'fr': 'No recorded actions', 'es': 'No recorded actions', 'de': 'No recorded actions'},
     'org_settings': {'ar': 'إعدادات المؤسسة', 'en': 'Organization settings', 'fr': 'Organization settings', 'es': 'Organization settings', 'de': 'Organization settings'},
