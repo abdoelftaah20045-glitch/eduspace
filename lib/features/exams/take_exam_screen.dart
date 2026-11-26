@@ -177,6 +177,52 @@ class _TakeExamScreenState extends State<TakeExamScreen> {
             children: [
               _ScoreBox(score: result.score, maxScore: result.maxScore),
               const SizedBox(height: 14),
+              Builder(builder: (_) {
+                final pct = result.maxScore > 0
+                    ? (result.score / result.maxScore * 100).clamp(0, 100).toDouble()
+                    : 0.0;
+                final col = pct >= 80
+                    ? const Color(0xFF2E9E5B)
+                    : pct >= 60
+                        ? const Color(0xFF2563EB)
+                        : pct >= 40
+                            ? const Color(0xFFF29900)
+                            : const Color(0xFFE53935);
+                final tip = pct >= 80
+                    ? 'tip_excellent'
+                    : pct >= 60
+                        ? 'tip_good'
+                        : pct >= 40
+                            ? 'tip_fair'
+                            : 'tip_weak';
+                return Column(children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: LinearProgressIndicator(
+                        value: pct / 100,
+                        minHeight: 10,
+                        color: col,
+                        backgroundColor: col.withValues(alpha: .15)),
+                  ),
+                  const SizedBox(height: 4),
+                  Text('${pct.toStringAsFixed(0)}%',
+                      style: TextStyle(color: col, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: col.withValues(alpha: .1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(children: [
+                      Icon(Icons.lightbulb_outline, color: col, size: 20),
+                      const SizedBox(width: 8),
+                      Expanded(child: Text(s.t(tip), style: const TextStyle(fontSize: 13))),
+                    ]),
+                  ),
+                  const SizedBox(height: 14),
+                ]);
+              }),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
