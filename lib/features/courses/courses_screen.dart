@@ -18,6 +18,7 @@ class _CoursesScreenState extends State<CoursesScreen> {
   final _searchController = TextEditingController();
   List<Course>? _courses;
   String? _error;
+  bool _searching = false;
 
   @override
   void initState() {
@@ -50,29 +51,37 @@ class _CoursesScreenState extends State<CoursesScreen> {
   Widget build(BuildContext context) {
     final s = S.of(context);
     return Scaffold(
-      appBar: AppBar(title: Text(s.t('tab_courses'))),
+      appBar: AppBar(
+        title: _searching
+            ? TextField(
+                controller: _searchController,
+                autofocus: true,
+                textInputAction: TextInputAction.search,
+                onSubmitted: (_) => _load(),
+                decoration: InputDecoration(
+                  hintText: s.t('search_courses'),
+                  border: InputBorder.none,
+                ),
+              )
+            : Text(s.t('tab_courses')),
+        actions: [
+          IconButton(
+            icon: Icon(_searching ? Icons.close : Icons.search),
+            onPressed: () {
+              if (_searching) {
+                final had = _searchController.text.isNotEmpty;
+                _searchController.clear();
+                setState(() => _searching = false);
+                if (had) _load();
+              } else {
+                setState(() => _searching = true);
+              }
+            },
+          ),
+        ],
+      ),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-            child: TextField(
-              controller: _searchController,
-              textInputAction: TextInputAction.search,
-              onSubmitted: (_) => _load(),
-              decoration: InputDecoration(
-                hintText: s.t('search_courses'),
-                prefixIcon: const Icon(Icons.search),
-                suffixIcon: IconButton(
-                  icon: const Icon(Icons.clear),
-                  onPressed: () {
-                    _searchController.clear();
-                    _load();
-                  },
-                ),
-                border: const OutlineInputBorder(),
-              ),
-            ),
-          ),
           Expanded(child: _buildBody(s)),
         ],
       ),
