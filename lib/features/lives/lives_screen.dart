@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/pressable.dart';
 import 'package:intl/intl.dart';
 
@@ -212,9 +213,19 @@ class _LiveDetailScreenState extends State<LiveDetailScreen> {
           if (!cancelled && !ended)
             FilledButton.icon(
               onPressed: l.canJoinNow
-                  ? () => Navigator.of(context).push(MaterialPageRoute(
-                      builder: (_) =>
-                          InAppPlayerScreen(url: l.joinUrl, title: l.title)))
+                  ? () {
+                      final uid = Supabase.instance.client.auth.currentUser?.id;
+                      if (uid != null) {
+                        Supabase.instance.client
+                            .from('live_attendance')
+                            .upsert({'live_id': l.id, 'user_id': uid},
+                                onConflict: 'live_id,user_id')
+                            .then((_) {}, onError: (_) {});
+                      }
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (_) => InAppPlayerScreen(
+                              url: l.joinUrl, title: l.title)));
+                    }
                   : null,
               icon: const Icon(Icons.play_arrow),
               label: Text(s.t('join_live')),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/l10n.dart';
@@ -47,6 +48,54 @@ class _AdminLivesScreenState extends State<AdminLivesScreen> {
     } catch (_) {}
   }
 
+  Future<void> _showAttendance(LiveSession l) async {
+    final s = S.of(context);
+    List<Map<String, dynamic>> rows = [];
+    var failed = false;
+    try {
+      final res = await Supabase.instance.client
+          .from('live_attendance')
+          .select('joined_at, profiles(full_name, email)')
+          .eq('live_id', l.id)
+          .order('joined_at')
+          .timeout(const Duration(seconds: 15));
+      rows = [for (final r in res) Map<String, dynamic>.from(r)];
+    } catch (_) {
+      failed = true;
+    }
+    if (!mounted) return;
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('${s.t('att_title')} (${rows.length})'),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: failed
+              ? Text(s.t('att_sql_needed'))
+              : rows.isEmpty
+                  ? Text(s.t('att_empty'))
+                  : ListView(
+                      shrinkWrap: true,
+                      children: [
+                        for (final r in rows)
+                          ListTile(
+                            dense: true,
+                            leading: const Icon(Icons.check_circle,
+                                color: Color(0xFF16A34A)),
+                            title: Text(
+                                '${(r['profiles'] as Map?)?['full_name'] ?? (r['profiles'] as Map?)?['email'] ?? '-'}'),
+                          ),
+                      ],
+                    ),
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx), child: Text(s.t('done'))),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final s = S.of(context);
@@ -89,6 +138,8 @@ class _AdminLivesScreenState extends State<AdminLivesScreen> {
                             onSelected: (v) {
                               if (v == 'edit') {
                                 _edit(l);
+                              } else if (v == 'attendance') {
+                                _showAttendance(l);
                               } else {
                                 _setStatus(l, v);
                               }
@@ -96,6 +147,9 @@ class _AdminLivesScreenState extends State<AdminLivesScreen> {
                             itemBuilder: (_) => [
                               PopupMenuItem(
                                   value: 'edit', child: Text(s.t('edit'))),
+                              PopupMenuItem(
+                                  value: 'attendance',
+                                  child: Text(s.t('att_title'))),
                               if (l.status == 'scheduled')
                                 PopupMenuItem(
                                     value: 'live',
