@@ -62,9 +62,15 @@ class _LessonScreenState extends State<LessonScreen> {
 
   Future<void> _openExternal(String url) async {
     final resolved = await resolveStorageUrl(url);
-    final uri = Uri.tryParse(resolved);
-    if (uri == null) return;
-    await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (!mounted) return;
+    // Everything opens inside the app (PDF/docs through the viewer page).
+    var target = resolved;
+    final low = resolved.toLowerCase();
+    if (low.contains('.pdf') || low.contains('.doc') || low.contains('.ppt')) {
+      target = 'https://docs.google.com/gview?embedded=1&url=${Uri.encodeComponent(resolved)}';
+    }
+    await Navigator.of(context).push(MaterialPageRoute(
+        builder: (_) => InAppPlayerScreen(url: target, title: lesson.title)));
   }
 
   @override

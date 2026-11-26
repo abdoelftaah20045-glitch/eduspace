@@ -63,6 +63,7 @@ class InAppWebPlayer extends StatefulWidget {
 class _InAppWebPlayerState extends State<InAppWebPlayer> {
   late final WebViewController _c;
   bool _loading = true;
+  bool _failed = false;
 
   @override
   void initState() {
@@ -73,6 +74,14 @@ class _InAppWebPlayerState extends State<InAppWebPlayer> {
       ..setNavigationDelegate(NavigationDelegate(
         onPageFinished: (_) {
           if (mounted) setState(() => _loading = false);
+        },
+        onWebResourceError: (e) {
+          if (e.isForMainFrame == true && mounted) {
+            setState(() {
+              _failed = true;
+              _loading = false;
+            });
+          }
         },
       ));
     final yt = _youtubeId(widget.url);
@@ -105,6 +114,29 @@ class _InAppWebPlayerState extends State<InAppWebPlayer> {
       children: [
         WebViewWidget(controller: _c),
         if (_loading) const Center(child: CircularProgressIndicator()),
+        if (_failed)
+          Container(
+            color: Colors.black87,
+            alignment: Alignment.center,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.error_outline, color: Colors.white, size: 40),
+                const SizedBox(height: 8),
+                FilledButton.icon(
+                  onPressed: () {
+                    setState(() {
+                      _failed = false;
+                      _loading = true;
+                    });
+                    _c.reload();
+                  },
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Retry'),
+                ),
+              ],
+            ),
+          ),
       ],
     );
   }
