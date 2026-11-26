@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/pressable.dart';
+import 'admin_insights.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/tenant.dart';
 
@@ -334,6 +335,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                 ],
               ),
             ),
+            const AdminInsights(),
             Padding(
               padding: const EdgeInsets.all(16),
               child: Column(

@@ -358,6 +358,8 @@ class S {
     'help_search': {'ar': 'ابحث في الأسئلة', 'en': 'Search questions', 'fr': 'Search questions', 'es': 'Search questions', 'de': 'Search questions'},
     'help_none': {'ar': 'مفيش نتائج', 'en': 'No results', 'fr': 'No results', 'es': 'No results', 'de': 'No results'},
     'help_contact': {'ar': 'تواصل مع الدعم', 'en': 'Contact support', 'fr': 'Contact support', 'es': 'Contact support', 'de': 'Contact support'},
+    'ins_top_courses': {'ar': 'الأكثر تسجيلاً', 'en': 'Top courses', 'fr': 'Top courses', 'es': 'Top courses', 'de': 'Top courses'},
+    'ins_recent': {'ar': 'آخر الأنشطة', 'en': 'Recent activity', 'fr': 'Recent activity', 'es': 'Recent activity', 'de': 'Recent activity'},
     'audit_label': {'ar': 'سجل العمليات', 'en': 'Audit log', 'fr': 'Audit log', 'es': 'Audit log', 'de': 'Audit log'},
     'no_audit': {'ar': 'لا توجد عمليات مسجلة', 'en': 'No recorded actions', 'fr': 'No recorded actions', 'es': 'No recorded actions', 'de': 'No recorded actions'},
     'org_settings': {'ar': 'إعدادات المؤسسة', 'en': 'Organization settings', 'fr': 'Organization settings', 'es': 'Organization settings', 'de': 'Organization settings'},
