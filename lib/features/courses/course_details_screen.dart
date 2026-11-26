@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import '../payments/payment_screen.dart';
 import '../discussion/discussion_screen.dart';
 import '../../core/l10n.dart';
+import '../../core/remote_ui.dart';
 import '../../core/paid_courses.dart';
 import '../assignments/assignments_screen.dart';
 import '../certificates/data/certificates_repo.dart';
@@ -334,9 +335,12 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                         fontWeight: FontWeight.w600, fontSize: 13))),
           ]),
         );
-    return ListView(
-      padding: const EdgeInsets.only(bottom: 24),
-      children: [
+    final parts = <String, List<Widget>>{};
+    List<Widget> _part(String id, List<Widget> w) {
+      parts[id] = w;
+      return const [];
+    }
+    final head = <Widget>[
         // Hero: cover then dark info block, like a Coursera course page.
         AspectRatio(
           aspectRatio: 16 / 9,
@@ -417,6 +421,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
             ],
           ),
         ),
+        ..._part('course.progress', [
         if (details.enrolled)
           Container(
             margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
@@ -448,6 +453,8 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
               ],
             ),
           ),
+        ]),
+        ..._part('course.stats', [
         Container(
           margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
           padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 6),
@@ -472,6 +479,8 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
             stat(Icons.workspace_premium_outlined, s.t('cd_certificate'), ' '),
           ]),
         ),
+        ]),
+        ..._part('course.learn', [
         if (learn.isNotEmpty) ...[
           h(s.t('cd_learn')),
           Container(
@@ -499,6 +508,8 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
             ]),
           ),
         ],
+        ]),
+        ..._part('course.skills', [
         if (course.skills.isNotEmpty) ...[
           h(s.t('cd_skills').split(' (').first),
           Padding(
@@ -520,6 +531,8 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
             ]),
           ),
         ],
+        ]),
+        ..._part('course.about', [
         if (course.description.isNotEmpty) ...[
           h(s.t('cd_about')),
           Padding(
@@ -528,6 +541,8 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                 ExpandableText(course.description, style: theme.textTheme.bodyMedium),
           ),
         ],
+        ]),
+        ..._part('course.syllabus', [
         h(s.t('cd_syllabus')),
         Padding(
           padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
@@ -553,6 +568,8 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
             onLessonTap: _openLesson,
           );
         }),
+        ]),
+        ..._part('course.schedule', [
         if (_lives.isNotEmpty) ...[
           h(s.t('cd_weekly')),
           for (var i = 0; i < _lives.length; i++)
@@ -584,6 +601,8 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
               );
             }),
         ],
+        ]),
+        ..._part('course.instructor', [
         if ((course.instructorName ?? '').isNotEmpty) ...[
           h(s.t('cd_instructor')),
           Card(
@@ -603,6 +622,8 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
             ),
           ),
         ],
+        ]),
+        ..._part('course.details', [
         h(s.t('cd_details')),
         Card(
           margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -629,11 +650,24 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
             ),
           ),
         ),
+        ]),
+        ..._part('course.reviews', [
         h(s.t('cd_reviews')),
         ReviewsSection(
           courseId: widget.courseId,
           enrolled: details.enrolled,
         ),
+        ]),
+    ];
+    final keys = parts.keys.toList();
+    final ids = keys.where(RemoteUi.visible).toList()
+      ..sort((a, b) => RemoteUi.order(a, keys.indexOf(a))
+          .compareTo(RemoteUi.order(b, keys.indexOf(b))));
+    return ListView(
+      padding: const EdgeInsets.only(bottom: 24),
+      children: [
+        ...head,
+        for (final id in ids) ...parts[id]!,
       ],
     );
   }

@@ -11,6 +11,25 @@ class _Item {
   final String label;
 }
 
+const _courseItems = [
+  _Item('courses.search', 'search_courses'),
+  _Item('courses.categories', 'cat_all'),
+  _Item('courses.filters', 'cat_in_progress'),
+  _Item('courses.continue', 'continue_learning'),
+];
+const _coursePage = [
+  _Item('course.progress', 'cd_complete'),
+  _Item('course.stats', 'level_label'),
+  _Item('course.learn', 'cd_learn'),
+  _Item('course.skills', 'cd_skills'),
+  _Item('course.about', 'cd_about'),
+  _Item('course.syllabus', 'cd_syllabus'),
+  _Item('course.schedule', 'cd_weekly'),
+  _Item('course.instructor', 'cd_instructor'),
+  _Item('course.details', 'cd_details'),
+  _Item('course.reviews', 'cd_reviews'),
+];
+
 const _home = [
   _Item('home.continue', 'continue_learning'),
   _Item('home.banner', 'ann_title'),
@@ -57,20 +76,23 @@ class _AdminLayoutScreenState extends State<AdminLayoutScreen> {
   final Map<String, bool> _vis = {};
   late List<_Item> _quickOrder;
   late List<_Item> _drawerOrder;
+  late List<_Item> _cpOrder;
 
   @override
   void initState() {
     super.initState();
     _quickOrder = [..._quick];
     _drawerOrder = [..._drawer];
+    _cpOrder = [..._coursePage];
     RemoteUi.load().then((_) {
-      for (final it in [..._home, ..._quick, ..._drawer]) {
+      for (final it in [..._home, ..._quick, ..._drawer, ..._courseItems, ..._coursePage]) {
         _vis[it.id] = RemoteUi.visible(it.id);
       }
       int ord(_Item a, List<_Item> base) =>
           RemoteUi.order(a.id, base.indexOf(a));
       _quickOrder.sort((a, b) => ord(a, _quick).compareTo(ord(b, _quick)));
       _drawerOrder.sort((a, b) => ord(a, _drawer).compareTo(ord(b, _drawer)));
+      _cpOrder.sort((a, b) => ord(a, _coursePage).compareTo(ord(b, _coursePage)));
       if (mounted) setState(() => _loading = false);
     });
   }
@@ -84,6 +106,13 @@ class _AdminLayoutScreenState extends State<AdminLayoutScreen> {
     }
     for (var i = 0; i < _quickOrder.length; i++) {
       final it = _quickOrder[i];
+      out[it.id] = {'visible': _vis[it.id] ?? true, 'order': i};
+    }
+    for (final it in _courseItems) {
+      out[it.id] = {'visible': _vis[it.id] ?? true};
+    }
+    for (var i = 0; i < _cpOrder.length; i++) {
+      final it = _cpOrder[i];
       out[it.id] = {'visible': _vis[it.id] ?? true, 'order': i};
     }
     for (var i = 0; i < _drawerOrder.length; i++) {
@@ -152,6 +181,10 @@ class _AdminLayoutScreenState extends State<AdminLayoutScreen> {
               children: [
                 _title(s.t('ui_layout_home')),
                 for (final it in _home) _switch(s, it),
+                _title(s.t('tab_courses')),
+                for (final it in _courseItems) _switch(s, it),
+                _title(s.t('cd_about')),
+                _reorder(s, _cpOrder),
                 _title(s.t('ui_layout_tiles')),
                 _reorder(s, _quickOrder),
                 _title(s.t('ui_layout_menu')),

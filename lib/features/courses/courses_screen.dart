@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../core/pressable.dart';
 
 import '../../core/l10n.dart';
+import '../../core/remote_ui.dart';
 import '../../core/paid_courses.dart';
 import '../../core/widgets.dart';
 import 'course_details_screen.dart';
@@ -149,6 +150,7 @@ class _CoursesScreenState extends State<CoursesScreen> {
       child: ListView(
         padding: const EdgeInsets.only(bottom: 24),
         children: [
+          if (RemoteUi.visible('courses.search'))
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
             child: TextField(
@@ -178,7 +180,7 @@ class _CoursesScreenState extends State<CoursesScreen> {
               onChanged: (_) => setState(() {}),
             ),
           ),
-          if (cats.isNotEmpty)
+          if (cats.isNotEmpty && RemoteUi.visible('courses.categories'))
             SizedBox(
               height: 44,
               child: ListView(
@@ -192,6 +194,7 @@ class _CoursesScreenState extends State<CoursesScreen> {
                 ],
               ),
             ),
+          if (RemoteUi.visible('courses.filters'))
           SizedBox(
             height: 44,
             child: ListView(
@@ -207,7 +210,7 @@ class _CoursesScreenState extends State<CoursesScreen> {
               ],
             ),
           ),
-          if (cont.isNotEmpty && _filter == 'all' && _category.isEmpty) ...[
+          if (cont.isNotEmpty && RemoteUi.visible('courses.continue') && _filter == 'all' && _category.isEmpty) ...[
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
               child: Text(s.t('continue_learning'),
