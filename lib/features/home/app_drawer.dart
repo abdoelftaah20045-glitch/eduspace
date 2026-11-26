@@ -6,6 +6,7 @@ import '../admin/admin_panel_screen.dart';
 import '../admin/data/admin_repo.dart';
 import '../courses/favorites_screen.dart';
 import '../library/library_screen.dart';
+import '../qbank/question_bank_screen.dart';
 import '../lives/lives_screen.dart';
 import '../notifications/announcements_screen.dart';
 import '../notifications/notifications_screen.dart';
@@ -75,6 +76,7 @@ class AppDrawer extends StatelessWidget {
                 ),
               ]),
             ),
+            item(Icons.quiz_outlined, 'qb_title', const QuestionBankScreen()),
             item(Icons.event_outlined, 'sch_title', const ScheduleScreen()),
             item(Icons.videocam_outlined, 'lv_title', const LivesScreen()),
             item(Icons.campaign_outlined, 'ann_title', const AnnouncementsScreen()),
