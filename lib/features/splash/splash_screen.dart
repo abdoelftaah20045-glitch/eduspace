@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../../core/app_lockup.dart';
-import '../../core/app_logo.dart';
 import '../../core/l10n.dart';
 import '../auth/auth_gate.dart';
 
@@ -17,39 +16,15 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
-  late final Animation<double> _logoScale;
-  late final Animation<double> _logoFade;
-  late final Animation<Offset> _textSlide;
-  late final Animation<double> _textFade;
 
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1400),
-    );
-    _logoScale = CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0.0, 0.6, curve: Curves.easeOutBack),
-    );
-    _logoFade = CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0.0, 0.4, curve: Curves.easeIn),
-    );
-    _textSlide = Tween<Offset>(
-      begin: const Offset(0, 0.4),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0.4, 0.9, curve: Curves.easeOut),
-    ));
-    _textFade = CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0.4, 0.9, curve: Curves.easeIn),
-    );
-    _controller.forward();
-    Future.delayed(const Duration(milliseconds: 2100), _goNext);
+      duration: const Duration(milliseconds: 2800),
+    )..forward();
+    Future.delayed(const Duration(milliseconds: 3200), _goNext);
   }
 
   void _goNext() {
@@ -72,49 +47,80 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
     final s = S.of(context);
+    final slogan = s.t('splash_tagline');
+    final h = MediaQuery.of(context).size.height;
+    // Logo: falls from above and lands with a bounce and a small squash.
+    final drop = CurvedAnimation(
+      parent: _controller,
+      curve: const Interval(0.0, 0.42, curve: Curves.bounceOut),
+    );
+    final squash = TweenSequence<double>([
+      TweenSequenceItem(tween: ConstantTween(0.0), weight: 22),
+      TweenSequenceItem(
+          tween: Tween(begin: 0.0, end: 1.0)
+              .chain(CurveTween(curve: Curves.easeOut)),
+          weight: 4),
+      TweenSequenceItem(
+          tween: Tween(begin: 1.0, end: 0.0)
+              .chain(CurveTween(curve: Curves.easeOutBack)),
+          weight: 10),
+      TweenSequenceItem(tween: ConstantTween(0.0), weight: 64),
+    ]).animate(_controller);
+    // Slogan: written live, letter by letter.
+    final write = CurvedAnimation(
+      parent: _controller,
+      curve: const Interval(0.5, 0.95, curve: Curves.easeInOut),
+    );
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topRight,
             end: Alignment.bottomLeft,
-            colors: const [Color(0xFFEFF6FF), Color(0xFFDBEAFE)],
+            colors: [Color(0xFFEFF6FF), Color(0xFFDBEAFE)],
           ),
         ),
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              ScaleTransition(
-                scale: _logoScale,
-                child: FadeTransition(
-                  opacity: _logoFade,
-                  child: const AppLockup(width: 280),
-                ),
+              AnimatedBuilder(
+                animation: _controller,
+                builder: (_, child) {
+                  final y = (1 - drop.value) * -(h * 0.6);
+                  final q = squash.value;
+                  return Transform.translate(
+                    offset: Offset(0, y),
+                    child: Transform(
+                      alignment: Alignment.bottomCenter,
+                      transform: Matrix4.diagonal3Values(
+                          1 + 0.10 * q, 1 - 0.14 * q, 1),
+                      child: child,
+                    ),
+                  );
+                },
+                child: const AppLockup(width: 280),
               ),
               const SizedBox(height: 28),
-              SlideTransition(
-                position: _textSlide,
-                child: FadeTransition(
-                  opacity: _textFade,
-                  child: Column(
-                    children: [
-                      const SizedBox(height: 8),
-                      Text(
-                        s.t('splash_tagline'),
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleMedium
-                            ?.copyWith(
-                                color: const Color(0xFF1D4ED8),
-                                fontFamily: 'Marhey',
-                                fontSize: 22),
+              AnimatedBuilder(
+                animation: write,
+                builder: (_, __) {
+                  final n = (slogan.characters.length * write.value).ceil();
+                  final shown = slogan.characters.take(n).toString();
+                  return SizedBox(
+                    height: 36,
+                    child: Text(
+                      shown,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: Color(0xFF1D4ED8),
+                        fontFamily: 'Marhey',
+                        fontSize: 22,
                       ),
-                    ],
-                  ),
-                ),
+                    ),
+                  );
+                },
               ),
             ],
           ),
