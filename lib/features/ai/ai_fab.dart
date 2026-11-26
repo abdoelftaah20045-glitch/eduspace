@@ -74,7 +74,7 @@ class _AiOverlayState extends State<AiOverlay>
     return Stack(
       children: [
         widget.child,
-        if (_signedIn && !_open)
+        if (!_open)
           Positioned(
             left: clamped.dx,
             top: clamped.dy,
