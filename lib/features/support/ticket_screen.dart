@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 
 import '../../core/l10n.dart';
 import 'data/support_repo.dart';
+import 'ticket_student_card.dart';
 
 /// One ticket thread with a reply box. Used by students and admins.
 class TicketScreen extends StatefulWidget {
@@ -111,6 +112,7 @@ class _TicketScreenState extends State<TicketScreen> {
       ),
       body: Column(
         children: [
+          if (widget.asAdmin) TicketStudentCard(userId: widget.ticket.userId),
           Expanded(
             child: _messages == null
                 ? const Center(child: CircularProgressIndicator())

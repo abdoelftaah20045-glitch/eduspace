@@ -24,6 +24,7 @@ import '../tenancy/data/tenancy_repo.dart';
 import '../tenancy/super_admin_screen.dart';
 import '../tenancy/tenant_members_screen.dart';
 import 'data/admin_panel_repo.dart';
+import '../support/data/support_repo.dart';
 
 /// Admin hub: dashboard counts + entry to every admin section.
 class AdminPanelScreen extends StatefulWidget {
@@ -38,6 +39,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
   bool _isSuper = false;
   bool _fullAdmin = true;
   List<String> _scopes = const [];
+  int _supportWaiting = 0;
 
   @override
   void initState() {
@@ -49,6 +51,9 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
   }
 
   Future<void> _load() async {
+    SupportRepository.awaitingAdminCount().then((n) {
+      if (mounted) setState(() => _supportWaiting = n);
+    }).catchError((_) {});
     try {
       final counts = await AdminPanelRepository.fetchCounts();
       final isSuper = await TenancyRepository.isSuperAdmin();
@@ -255,6 +260,37 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                       Icons.quiz_outlined, const Color(0xFFF29900)),
                   _statCard(s.t('pending_students'), c?['pending'],
                       Icons.hourglass_bottom, const Color(0xFFE53935)),
+                  if (_fullAdmin || _scopes.contains('support'))
+                    GestureDetector(
+                      onTap: () => Navigator.of(context)
+                          .push(MaterialPageRoute(
+                              builder: (_) => const AdminSupportScreen()))
+                          .then((_) => _load()),
+                      child: Stack(clipBehavior: Clip.none, children: [
+                        Positioned.fill(
+                          child: _statCard(s.t('support'), _supportWaiting,
+                              Icons.support_agent, const Color(0xFFAB47BC)),
+                        ),
+                        if (_supportWaiting > 0)
+                          PositionedDirectional(
+                            top: -6,
+                            end: -4,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 7, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFE53935),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text('$_supportWaiting',
+                                  style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold)),
+                            ),
+                          ),
+                      ]),
+                    ),
                 ],
               ),
             ),
@@ -289,8 +325,14 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                                     fontWeight: FontWeight.bold),
                               ),
                               subtitle: Text(s.t(sec.$2)),
-                              trailing:
-                                  const Icon(Icons.chevron_right),
+                              trailing: (sec.$1 == 'support' && _supportWaiting > 0)
+                                  ? CircleAvatar(
+                                      radius: 12,
+                                      backgroundColor: const Color(0xFFE53935),
+                                      child: Text('$_supportWaiting',
+                                          style: const TextStyle(
+                                              color: Colors.white, fontSize: 12)))
+                                  : const Icon(Icons.chevron_right),
                               onTap: () => Navigator.of(context).push(
                                 MaterialPageRoute(
                                     builder: (_) => sec.$5),

@@ -71,6 +71,33 @@ class SupportRepository {
   static SupabaseClient get _c => Supabase.instance.client;
 
   /// My tickets (student) or every ticket (admin).
+  /// Admin badge: number of distinct people whose open ticket is waiting
+  /// for an admin reply (no messages yet, or the last message is theirs).
+  static Future<int> awaitingAdminCount() async {
+    final tickets = await _c
+        .from('support_tickets')
+        .select('id, user_id, status')
+        .eq('tenant_id', TenantContext.id)
+        .inFilter('status', ['new', 'in_progress', 'waiting_user']);
+    if (tickets.isEmpty) return 0;
+    final ids = [for (final t in tickets) t['id'] as String];
+    final msgs = await _c
+        .from('support_messages')
+        .select('ticket_id, is_admin, created_at')
+        .inFilter('ticket_id', ids)
+        .order('created_at', ascending: false)
+        .limit(1000);
+    final lastAdmin = <String, bool>{};
+    for (final m in msgs) {
+      lastAdmin.putIfAbsent(m['ticket_id'] as String, () => m['is_admin'] == true);
+    }
+    final people = <String>{};
+    for (final t in tickets) {
+      if (lastAdmin[t['id']] != true) people.add(t['user_id'] as String);
+    }
+    return people.length;
+  }
+
   static Future<List<SupportTicket>> fetchTickets({bool admin = false}) async {
     if (admin) {
       final rows = await _c
