@@ -164,6 +164,112 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
     );
   }
 
+  Widget _introCard(BuildContext context, S s, CourseDetails details) {
+    final course = details.course;
+    final scheme = Theme.of(context).colorScheme;
+    final price = course.isFree || !PaidCourses.enabled.value
+        ? s.t('free')
+        : '${course.price.toStringAsFixed(0)} ${course.currency}';
+    final contents = <String>[
+      for (final sec in details.sections)
+        for (final l in sec.lessons) l.title,
+    ].take(4).toList();
+    Widget stat(String v, String label) => Expanded(
+          child: Column(children: [
+            Text(v,
+                style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800)),
+            Text(label,
+                style: const TextStyle(color: Colors.white70, fontSize: 11)),
+          ]),
+        );
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              scheme.primary,
+              Color.lerp(scheme.primary, const Color(0xFF6C5CE7), .55)!
+            ]),
+        borderRadius: BorderRadius.circular(22),
+        boxShadow: [
+          BoxShadow(
+              color: scheme.primary.withValues(alpha: .3),
+              blurRadius: 16,
+              offset: const Offset(0, 8))
+        ],
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          Expanded(
+            child: Text(course.title,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 17,
+                    fontWeight: FontWeight.w800)),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+                color: Colors.white, borderRadius: BorderRadius.circular(12)),
+            child: Text(price,
+                style: TextStyle(
+                    color: scheme.primary, fontWeight: FontWeight.w800)),
+          ),
+        ]),
+        const SizedBox(height: 14),
+        Row(children: [
+          stat('$_members', s.t('cd_students')),
+          stat(
+              course.ratingCount > 0
+                  ? course.ratingAvg!.toStringAsFixed(1)
+                  : '-',
+              s.t('cd_reviews')),
+          stat('${details.totalLessons}', s.t('lessons')),
+        ]),
+        if (contents.isNotEmpty) ...[
+          const SizedBox(height: 14),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: .16),
+                borderRadius: BorderRadius.circular(16)),
+            child: Column(children: [
+              for (var i = 0; i < contents.length; i++)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Row(children: [
+                    CircleAvatar(
+                        radius: 11,
+                        backgroundColor: Colors.white,
+                        child: Text('${i + 1}',
+                            style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w800,
+                                color: scheme.primary))),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(contents[i],
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                              color: Colors.white, fontSize: 13)),
+                    ),
+                  ]),
+                ),
+            ]),
+          ),
+        ],
+      ]),
+    );
+  }
+
   Widget _buildContent(BuildContext context, S s, CourseDetails details) {
     final course = details.course;
     final theme = Theme.of(context);
@@ -215,7 +321,76 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                   Center(
                       child: Icon(Icons.menu_book_rounded,
                           size: 72, color: onNavy.withValues(alpha: .6))),
-                if (course.level != null)
+                Positioned.fill(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.transparent,
+                          Colors.black.withValues(alpha: .15),
+                          Colors.black.withValues(alpha: .78),
+                        ],
+                        stops: const [0.35, 0.6, 1],
+                      ),
+                    ),
+                  ),
+                ),
+                PositionedDirectional(
+                  start: 14,
+                  end: 14,
+                  bottom: 12,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (course.level != null)
+                        Container(
+                          margin: const EdgeInsets.only(bottom: 6),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 3),
+                          decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(14)),
+                          child: Row(mainAxisSize: MainAxisSize.min, children: [
+                            Text(s.t('level_${course.level}'),
+                                style: const TextStyle(
+                                    color: Color(0xFF14264A),
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700)),
+                            const SizedBox(width: 4),
+                            const Icon(Icons.signal_cellular_alt,
+                                size: 13, color: Color(0xFFE53935)),
+                          ]),
+                        ),
+                      Text(course.title,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 20,
+                              fontWeight: FontWeight.w800)),
+                      if ((course.instructorName ?? '').isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4),
+                          child: Row(children: [
+                            const Icon(Icons.person_outline,
+                                size: 14, color: Colors.white70),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(course.instructorName!,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                      color: Colors.white70, fontSize: 12.5)),
+                            ),
+                          ]),
+                        ),
+                    ],
+                  ),
+                ),
+                if (false)
                   PositionedDirectional(
                     start: 10,
                     bottom: 10,
@@ -241,36 +416,6 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
             ),
           ),
         ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 6),
-          child: Text(course.title,
-              style: theme.textTheme.headlineSmall
-                  ?.copyWith(fontWeight: FontWeight.w800)),
-        ),
-        if (course.instructorName != null && course.instructorName!.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Row(children: [
-              CircleAvatar(
-                radius: 12,
-                backgroundColor: scheme.primaryContainer,
-                backgroundImage: (course.instructorPhotoUrl ?? '').isNotEmpty
-                    ? NetworkImage(course.instructorPhotoUrl!)
-                    : null,
-                child: (course.instructorPhotoUrl ?? '').isEmpty
-                    ? const Icon(Icons.person, size: 14)
-                    : null,
-              ),
-              const SizedBox(width: 8),
-              Text(course.instructorName!,
-                  style: const TextStyle(fontWeight: FontWeight.w600)),
-              if (course.field != null && course.field!.isNotEmpty) ...[
-                const SizedBox(width: 10),
-                Text(course.field!,
-                    style: TextStyle(color: scheme.onSurfaceVariant)),
-              ],
-            ]),
-          ),
         Padding(
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 4),
           child: Wrap(spacing: 16, runSpacing: 6, children: [
@@ -330,6 +475,8 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                _introCard(context, s, details),
+                const SizedBox(height: 16),
                 if (course.description.isNotEmpty) ...[
                   Text(s.t('cd_about'),
                       style: theme.textTheme.titleMedium
