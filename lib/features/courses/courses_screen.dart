@@ -127,7 +127,7 @@ class CourseCard extends StatelessWidget {
     final theme = Theme.of(context);
     final palette =
         _catalogPalette[course.title.hashCode.abs() % _catalogPalette.length];
-    retPressScale(child: urn Card(
+    return PressScale(child: Card(
       clipBehavior: Clip.antiAlias,
       margin: const EdgeInsets.only(bottom: 12),
       elevation: 2,

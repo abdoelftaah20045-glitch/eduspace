@@ -594,6 +594,70 @@ class _ScoreBox extends StatelessWidget {
 
 /// Big colored number + label for the result dialog (reference: results
 /// screen's correct/incorrect/unanswered row).
+class _OptionButton extends StatelessWidget {
+  const _OptionButton({
+    required this.label,
+    required this.selected,
+    required this.multi,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final bool multi;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Material(
+        color: selected
+            ? scheme.primary
+            : scheme.primary.withValues(alpha: .08),
+        borderRadius: BorderRadius.circular(14),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(14),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+                horizontal: 14, vertical: 13),
+            child: Row(
+              children: [
+                Icon(
+                  selected
+                      ? (multi
+                          ? Icons.check_box
+                          : Icons.radio_button_checked)
+                      : (multi
+                          ? Icons.check_box_outline_blank
+                          : Icons.radio_button_off),
+                  size: 20,
+                  color: selected ? Colors.white : scheme.primary,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    label,
+                    style: TextStyle(
+                      color: selected ? Colors.white : null,
+                      fontWeight:
+                          selected ? FontWeight.w600 : FontWeight.normal,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Big colored number + label for the result dialog (reference: results
+/// screen's correct/incorrect/unanswered row).
 class _ResultCount extends StatelessWidget {
   const _ResultCount({
     required this.value,
