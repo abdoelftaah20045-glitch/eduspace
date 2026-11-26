@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../discussion/discussion_screen.dart';
 import '../../core/l10n.dart';
 import '../assignments/assignments_screen.dart';
 import '../certificates/data/certificates_repo.dart';
@@ -104,6 +105,16 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
               }
             },
           ),
+          if (details?.enrolled == true)
+            IconButton(
+              tooltip: s.t('disc_title_screen'),
+              icon: const Icon(Icons.forum_outlined),
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => DiscussionScreen(courseId: widget.courseId),
+                ),
+              ),
+            ),
           if (details?.enrolled == true)
             IconButton(
               tooltip: s.t('assignments_label'),
