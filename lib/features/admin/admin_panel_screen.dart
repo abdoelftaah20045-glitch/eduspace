@@ -198,6 +198,27 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
               ),
             ),
             Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+              child: GridView.count(
+                crossAxisCount: 2,
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                childAspectRatio: 2.3,
+                mainAxisSpacing: 10,
+                crossAxisSpacing: 10,
+                children: [
+                  _statCard(s.t('tab_courses'), c?['courses'],
+                      Icons.menu_book_outlined, const Color(0xFF2196F3)),
+                  _statCard(s.t('enrollments_label'), c?['enrollments'],
+                      Icons.how_to_reg_outlined, const Color(0xFF2E9E5B)),
+                  _statCard(s.t('tab_exams'), c?['exams'],
+                      Icons.quiz_outlined, const Color(0xFFF29900)),
+                  _statCard(s.t('pending_students'), c?['pending'],
+                      Icons.hourglass_bottom, const Color(0xFFE53935)),
+                ],
+              ),
+            ),
+            Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
                 children: sections
@@ -242,6 +263,49 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _statCard(String label, int? value, IconData icon, Color color) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+            color: Theme.of(context).colorScheme.outlineVariant),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: .15),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: color, size: 22),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.bodySmall),
+                Text('${value ?? '-'}',
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleLarge
+                        ?.copyWith(fontWeight: FontWeight.bold)),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
