@@ -36,6 +36,15 @@ jobs:
               d = f'android/app/src/main/res/mipmap-{k}'
               os.makedirs(d, exist_ok=True)
               src.resize((v, v), Image.LANCZOS).save(f'{d}/ic_launcher.png')
+          # Adaptive icon (Android 8+): foreground + background layers
+          d = 'android/app/src/main/res/drawable-xxxhdpi'
+          os.makedirs(d, exist_ok=True)
+          for n, p in (('ic_fg', 'adaptive_foreground_1024'), ('ic_bg', 'adaptive_background_1024')):
+              Image.open(f'assets/brand_v3/{p}.png').convert('RGBA').resize((432, 432), Image.LANCZOS).save(f'{d}/{n}.png')
+          d = 'android/app/src/main/res/mipmap-anydpi-v26'
+          os.makedirs(d, exist_ok=True)
+          xml = '<?xml version="1.0" encoding="utf-8"?><adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android"><background android:drawable="@drawable/ic_bg"/><foreground android:drawable="@drawable/ic_fg"/></adaptive-icon>'
+          open(f'{d}/ic_launcher.xml', 'w').write(xml)
           PY
 
       - name: Patch Android config (permissions + signing)
