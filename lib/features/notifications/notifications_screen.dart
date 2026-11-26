@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../../core/image_carousel.dart';
 import '../../core/l10n.dart';
 import 'data/notifications_repo.dart';
 
@@ -113,6 +114,16 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           children: [
             if (n.body.isNotEmpty)
               Text(n.body, maxLines: 2, overflow: TextOverflow.ellipsis),
+            if (n.images.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 6),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.network(n.images.first,
+                      height: 90, width: 160, fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => const SizedBox.shrink()),
+                ),
+              ),
             Text(
               DateFormat('h:mm a', s.locale.languageCode).format(n.createdAt),
               style: const TextStyle(fontSize: 12, color: Colors.grey),
@@ -128,12 +139,35 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     color: theme.colorScheme.primary,
                     shape: BoxShape.circle),
               ),
-        onTap: n.isRead
-            ? null
-            : () async {
-                await NotificationsRepository.markRead(n.id);
-                await _load();
-              },
+        onTap: () async {
+          if (!n.isRead) {
+            await NotificationsRepository.markRead(n.id);
+            _load();
+          }
+          if (!mounted) return;
+          showModalBottomSheet<void>(
+            context: context,
+            isScrollControlled: true,
+            builder: (ctx) => SafeArea(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(n.title, style: theme.textTheme.titleLarge),
+                    const SizedBox(height: 8),
+                    if (n.images.isNotEmpty) ...[
+                      ImageCarousel(urls: n.images),
+                      const SizedBox(height: 12),
+                    ],
+                    Text(n.body),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }

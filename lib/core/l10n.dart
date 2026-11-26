@@ -308,6 +308,8 @@ class S {
     'qb_note': {'ar': 'ملاحظتي على السؤال', 'en': 'My note on this question', 'fr': 'My note on this question', 'es': 'My note on this question', 'de': 'My note on this question'},
     'qb_empty': {'ar': 'هتلاقي هنا أسئلتك بعد ما تحل امتحان.', 'en': 'Your questions appear here after you take an exam.', 'fr': 'Your questions appear here after you take an exam.', 'es': 'Your questions appear here after you take an exam.', 'de': 'Your questions appear here after you take an exam.'},
     'qb_sql': {'ar': 'لازم تشغل SQL الجزء 14 الأول.', 'en': 'Run SQL part 14 first.', 'fr': 'Exécutez la partie SQL 14.', 'es': 'Ejecuta la parte SQL 14.', 'de': 'SQL Teil 14 ausführen.'},
+    'notif_add_images': {'ar': 'إضافة صور', 'en': 'Add images', 'fr': 'Add images', 'es': 'Add images', 'de': 'Add images'},
+    'notif_img_sql': {'ar': 'لازم تشغل SQL الجزء 14 الأول عشان الصور.', 'en': 'Run SQL part 14 first for images.', 'fr': 'Run SQL part 14 first for images.', 'es': 'Run SQL part 14 first for images.', 'de': 'Run SQL part 14 first for images.'},
     'audit_label': {'ar': 'سجل العمليات', 'en': 'Audit log', 'fr': 'Audit log', 'es': 'Audit log', 'de': 'Audit log'},
     'no_audit': {'ar': 'لا توجد عمليات مسجلة', 'en': 'No recorded actions', 'fr': 'No recorded actions', 'es': 'No recorded actions', 'de': 'No recorded actions'},
     'org_settings': {'ar': 'إعدادات المؤسسة', 'en': 'Organization settings', 'fr': 'Organization settings', 'es': 'Organization settings', 'de': 'Organization settings'},

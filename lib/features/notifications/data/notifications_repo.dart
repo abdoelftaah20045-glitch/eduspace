@@ -10,8 +10,10 @@ class AppNotification {
     required this.type,
     required this.isRead,
     required this.createdAt,
+    this.images = const [],
   });
 
+  final List<String> images;
   final String id;
   final String title;
   final String body;
@@ -28,6 +30,9 @@ class AppNotification {
         createdAt:
             DateTime.tryParse((m['created_at'] ?? '').toString())?.toLocal() ??
                 DateTime.now(),
+        images: (m['data'] is Map && (m['data'] as Map)['images'] is List)
+            ? [for (final u in (m['data'] as Map)['images'] as List) u.toString()]
+            : const [],
       );
 }
 

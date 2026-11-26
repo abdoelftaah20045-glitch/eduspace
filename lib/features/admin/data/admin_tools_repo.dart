@@ -209,7 +209,20 @@ class AdminToolsRepository {
     required String body,
     String? courseId,
     String? userId,
+    List<String> images = const [],
   }) async {
+    if (images.isNotEmpty) {
+      final n = await _c.rpc('admin_notify_audience_img', params: {
+        'p_title': title,
+        'p_body': body,
+        'p_type': 'general',
+        'p_tenant_id': TenantContext.id,
+        'p_course_id': courseId,
+        'p_user_id': userId,
+        'p_data': {'images': images},
+      });
+      return (n as num?)?.toInt() ?? 0;
+    }
     final n = await _c.rpc('admin_notify_audience', params: {
       'p_title': title,
       'p_body': body,

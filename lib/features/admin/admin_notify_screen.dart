@@ -1,3 +1,4 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/l10n.dart';
@@ -22,6 +23,27 @@ class _AdminNotifyScreenState extends State<AdminNotifyScreen> {
   String? _courseId;
   List<Map<String, dynamic>> _courses = const [];
   bool _sending = false;
+  final List<String> _images = [];
+  bool _uploading = false;
+
+  Future<void> _addImages() async {
+    final picked = await FilePicker.pickFiles(type: FileType.image);
+    if (picked.isEmpty || !mounted) return;
+    setState(() => _uploading = true);
+    try {
+      for (final f in picked) {
+        final url = await AdminRepository.uploadCourseCover(
+            fileName: f.name, bytes: await f.readAsBytes());
+        _images.add(url);
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(S.of(context).t('generic_error'))));
+      }
+    }
+    if (mounted) setState(() => _uploading = false);
+  }
 
   @override
   void initState() {
@@ -64,13 +86,16 @@ class _AdminNotifyScreenState extends State<AdminNotifyScreen> {
         body: _body.text.trim(),
         courseId: _audience == 'course' ? _courseId : null,
         userId: userId,
+        images: List<String>.of(_images),
       );
       messenger.showSnackBar(SnackBar(
           content: Text(s.t('notify_sent').replaceAll('{count}', '$n'))));
       _title.clear();
       _body.clear();
+      setState(_images.clear);
     } catch (_) {
-      messenger.showSnackBar(SnackBar(content: Text(s.t('generic_error'))));
+      messenger.showSnackBar(SnackBar(
+          content: Text(_images.isNotEmpty ? s.t('notif_img_sql') : s.t('generic_error'))));
     }
     if (mounted) setState(() => _sending = false);
   }
@@ -121,6 +146,31 @@ class _AdminNotifyScreenState extends State<AdminNotifyScreen> {
             maxLines: 4,
             decoration: InputDecoration(labelText: s.t('notif_body_label')),
           ),
+          const SizedBox(height: 12),
+          Wrap(spacing: 8, runSpacing: 8, children: [
+            for (final u in _images)
+              Stack(children: [
+                ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.network(u, width: 80, height: 80, fit: BoxFit.cover)),
+                PositionedDirectional(
+                  top: 0,
+                  end: 0,
+                  child: InkWell(
+                    onTap: () => setState(() => _images.remove(u)),
+                    child: const CircleAvatar(
+                        radius: 10, child: Icon(Icons.close, size: 14)),
+                  ),
+                ),
+              ]),
+            OutlinedButton.icon(
+              icon: _uploading
+                  ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                  : const Icon(Icons.add_photo_alternate_outlined),
+              label: Text(s.t('notif_add_images')),
+              onPressed: _uploading ? null : _addImages,
+            ),
+          ]),
           const SizedBox(height: 16),
           FilledButton.icon(
             icon: const Icon(Icons.send),
