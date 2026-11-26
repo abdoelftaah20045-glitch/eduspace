@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -25,6 +26,13 @@ Future<void> main() async {
       ),
     );
     await initRecoveryListener();
+    // "Remember me" unticked at the last login: do not keep the session
+    // across app restarts.
+    final prefs = await SharedPreferences.getInstance();
+    if (prefs.getBool('remember_me') == false &&
+        Supabase.instance.client.auth.currentSession != null) {
+      await Supabase.instance.client.auth.signOut();
+    }
   }
   // Push notifications: no-op unless built with FCM_ENABLED=true and the
   // Firebase config files (exec guide section 17, Push).

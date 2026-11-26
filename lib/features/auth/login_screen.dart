@@ -2,6 +2,7 @@ import '../../core/app_state.dart';
 import '../../core/app_logo.dart';
 import '../../core/password_field.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/l10n.dart';
@@ -20,6 +21,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _email = TextEditingController();
   final _password = TextEditingController();
   bool _busy = false;
+  bool _remember = true;
   String? _error;
 
   Future<void> _login() async {
@@ -33,6 +35,8 @@ class _LoginScreenState extends State<LoginScreen> {
         email: _email.text.trim(),
         password: _password.text,
       );
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('remember_me', _remember);
       // Safety: if the login page sits on top of the auth gate, drop back
       // to the gate so the signed-in home shows.
       if (mounted) Navigator.of(context).popUntil((r) => r.isFirst);
@@ -127,6 +131,15 @@ class _LoginScreenState extends State<LoginScreen> {
                     onSubmitted: (_) => _login(),
                     validator: (v) =>
                         (v == null || v.isEmpty) ? s.t('required_field') : null,
+                  ),
+                  Row(
+                    children: [
+                      Checkbox(
+                        value: _remember,
+                        onChanged: (v) => setState(() => _remember = v ?? true),
+                      ),
+                      Expanded(child: Text(s.t('remember_me'))),
+                    ],
                   ),
                   Align(
                     alignment: AlignmentDirectional.centerEnd,

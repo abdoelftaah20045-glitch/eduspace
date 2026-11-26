@@ -212,6 +212,7 @@ class S {
     'scope_reports': {'ar': 'التقارير', 'en': 'Reports', 'fr': 'Rapports', 'es': 'Informes', 'de': 'Berichte'},
     'scope_settings': {'ar': 'الإعدادات', 'en': 'Settings', 'fr': 'Paramètres', 'es': 'Ajustes', 'de': 'Einstellungen'},
     'role_support_agent': {'ar': 'خدمة العملاء', 'en': 'Support agent', 'fr': 'Agent support', 'es': 'Agente de soporte', 'de': 'Support-Mitarbeiter'},
+    'remember_me': {'ar': 'تذكرني', 'en': 'Remember me', 'fr': 'Se souvenir de moi', 'es': 'Recordarme', 'de': 'Angemeldet bleiben'},
     'audit_label': {'ar': 'سجل العمليات', 'en': 'Audit log', 'fr': 'Audit log', 'es': 'Audit log', 'de': 'Audit log'},
     'no_audit': {'ar': 'لا توجد عمليات مسجلة', 'en': 'No recorded actions', 'fr': 'No recorded actions', 'es': 'No recorded actions', 'de': 'No recorded actions'},
     'org_settings': {'ar': 'إعدادات المؤسسة', 'en': 'Organization settings', 'fr': 'Organization settings', 'es': 'Organization settings', 'de': 'Organization settings'},
