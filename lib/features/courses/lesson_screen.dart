@@ -10,6 +10,7 @@ import '../../core/storage_urls.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../core/l10n.dart';
+import '../../core/remote_ui.dart';
 import 'data/course_models.dart';
 import 'data/courses_repo.dart';
 
@@ -27,11 +28,48 @@ class LessonScreen extends StatefulWidget {
 class _LessonScreenState extends State<LessonScreen> {
   bool _completed = false;
   bool _saving = false;
+  final Set<int> _seen = {};
+  int _dur = 0;
+  int _sinceSave = 0;
+  Timer? _fallback;
+  bool _noTracking = false;
+
+  int get _pct => RemoteUi.limit('lesson_watch_percent', 90).round().clamp(1, 100);
+  int get _required => (_dur * _pct / 100).ceil();
+  bool get _isVideo => lesson.type == 'video';
+  bool get _canComplete =>
+      !_isVideo || (_dur > 0 && _seen.length >= _required);
+  int get _shownPct => _dur <= 0 ? 0 : (_seen.length * 100 ~/ _dur).clamp(0, 100);
+
+  void _onTick(int pos, int dur) {
+    if (dur > 0) _dur = dur;
+    if (_seen.add(pos) && mounted) {
+      _sinceSave++;
+      if (_sinceSave >= 5) {
+        _sinceSave = 0;
+        CoursesRepository.saveProgress(lesson.id,
+                positionSeconds: pos, watchedSeconds: _seen.length)
+            .catchError((_) {});
+      }
+      setState(() {});
+    }
+  }
+
+  /// Players that cannot report play time: count seconds on screen against
+  /// the lesson duration (or 2 minutes when none is set).
+  void _startFallback() {
+    if (_noTracking || !_isVideo) return;
+    _noTracking = true;
+    _dur = (lesson.durationSeconds ?? 0) > 0 ? lesson.durationSeconds! : 120;
+    var n = 0;
+    _fallback = Timer.periodic(const Duration(seconds: 1), (_) => _onTick(n++, _dur));
+  }
 
   Lesson get lesson => widget.lesson;
 
   @override
   void dispose() {
+    _fallback?.cancel();
     WidgetsBinding.instance.addPostFrameCallback((_) => aiFabHidden.value--);
     super.dispose();
   }
@@ -55,13 +93,17 @@ class _LessonScreenState extends State<LessonScreen> {
   Future<void> _markComplete() async {
     setState(() => _saving = true);
     try {
-      await CoursesRepository.saveProgress(lesson.id, completed: true);
+      await CoursesRepository.saveProgress(lesson.id,
+          completed: true, watchedSeconds: _isVideo ? _seen.length : null);
       if (!mounted) return;
       setState(() => _completed = true);
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(S.of(context).t('generic_error'))),
+        SnackBar(
+            content: Text(_isVideo
+                ? '${S.of(context).t('watch_required')} $_pct%'
+                : S.of(context).t('generic_error'))),
       );
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -101,7 +143,7 @@ class _LessonScreenState extends State<LessonScreen> {
             SizedBox(
               width: double.infinity,
               child: FilledButton.icon(
-                onPressed: _saving ? null : _markComplete,
+                onPressed: (_saving || !_canComplete) ? null : _markComplete,
                 icon: _saving
                     ? const SizedBox(
                         width: 18,
@@ -109,7 +151,9 @@ class _LessonScreenState extends State<LessonScreen> {
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
                     : const Icon(Icons.check),
-                label: Text(s.t('mark_complete')),
+                label: Text(_canComplete
+                    ? s.t('mark_complete')
+                    : '${s.t('watch_required')} $_pct% ($_shownPct%)'),
               ),
             )
           else
@@ -144,7 +188,10 @@ class _LessonScreenState extends State<LessonScreen> {
                 aspectRatio: 16 / 9,
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(12),
-                  child: InAppWebPlayer(url: resolved),
+                  child: InAppWebPlayer(
+                      url: resolved,
+                      onTick: _onTick,
+                      onNoTracking: _startFallback),
                 ),
               );
             }
@@ -152,13 +199,12 @@ class _LessonScreenState extends State<LessonScreen> {
               key: ValueKey(lesson.id),
               url: resolved,
               startAtSeconds: lesson.positionSeconds,
+              onTick: _onTick,
               onProgress: (seconds, done) {
                 CoursesRepository.saveProgress(
                   lesson.id,
                   positionSeconds: seconds,
-                  completed: done ? true : null,
                 ).catchError((_) {});
-                if (done && mounted) setState(() => _completed = true);
               },
             );
           },
@@ -198,11 +244,13 @@ class _VideoLesson extends StatefulWidget {
     required this.url,
     required this.startAtSeconds,
     required this.onProgress,
+    required this.onTick,
   });
 
   final String url;
   final int startAtSeconds;
   final void Function(int seconds, bool done) onProgress;
+  final void Function(int position, int duration) onTick;
 
   @override
   State<_VideoLesson> createState() => _VideoLessonState();
@@ -243,9 +291,8 @@ class _VideoLessonState extends State<_VideoLesson> {
     setState(() {});
     final value = _controller.value;
     final total = value.duration.inSeconds;
-    if (!_reportedDone && total > 0 && value.position.inSeconds >= total * 0.9) {
-      _reportedDone = true;
-      widget.onProgress(value.position.inSeconds, true);
+    if (value.isPlaying && total > 0) {
+      widget.onTick(value.position.inSeconds, total);
     }
   }
 

@@ -259,15 +259,29 @@ class CoursesRepository {
     String lessonId, {
     int? positionSeconds,
     bool? completed,
+    int? watchedSeconds,
   }) async {
-    await _c.from('lesson_progress').upsert({
+    final row = {
       'user_id': _uid,
       'lesson_id': lessonId,
       if (positionSeconds != null) 'position_seconds': positionSeconds,
       if (completed != null) 'completed': completed,
       if (completed == true) 'completed_at': DateTime.now().toIso8601String(),
       'last_viewed_at': DateTime.now().toIso8601String(),
-    });
+    };
+    if (watchedSeconds != null) {
+      try {
+        await _c
+            .from('lesson_progress')
+            .upsert({...row, 'watched_seconds': watchedSeconds});
+        return;
+      } catch (e) {
+        // Server rejected completion: not watched enough. Anything else
+        // (e.g. SQL 21 not run yet) falls back to the plain save.
+        if (e.toString().contains('watch_required')) rethrow;
+      }
+    }
+    await _c.from('lesson_progress').upsert(row);
   }
 
   /// Most recently viewed enrolled lesson, for the home "continue" card.

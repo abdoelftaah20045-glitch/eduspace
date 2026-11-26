@@ -69,9 +69,9 @@ class _AiOverlayState extends State<AiOverlay>
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     const d = 40.0;
-    final pos = _pos ?? Offset(size.width - d / 2 - 6, size.height * .62);
+    final pos = _pos ?? Offset(size.width - d - 6, size.height * .62);
     final clamped = Offset(
-      pos.dx.clamp(-d / 2 + 6, size.width - d / 2 - 6),
+      pos.dx.clamp(6.0, size.width - d - 6),
       pos.dy.clamp(MediaQuery.of(context).padding.top + 8, size.height - d - 8),
     );
     return ValueListenableBuilder<int>(
@@ -88,9 +88,9 @@ class _AiOverlayState extends State<AiOverlay>
             child: GestureDetector(
               onPanUpdate: (u) => setState(() => _pos = clamped + u.delta),
               onPanEnd: (_) => setState(() {
-                // dock to the nearest edge, half hidden
+                // dock to the nearest edge, fully visible
                 final left = clamped.dx + d / 2 < size.width / 2;
-                _pos = Offset(left ? -d / 2 + 6 : size.width - d / 2 - 6, clamped.dy);
+                _pos = Offset(left ? 6.0 : size.width - d - 6, clamped.dy);
               }),
               onTap: _openChat,
               child: Opacity(

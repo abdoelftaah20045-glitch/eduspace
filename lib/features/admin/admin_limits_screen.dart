@@ -15,6 +15,7 @@ class AdminLimitsScreen extends StatefulWidget {
 class _AdminLimitsScreenState extends State<AdminLimitsScreen> {
   // key, label key, default
   static const _defs = [
+    ('lesson_watch_percent', 'lim_lesson_watch', 90),
     ('lvl_excellent', 'lim_lvl_excellent', 80),
     ('lvl_good', 'lim_lvl_good', 60),
     ('lvl_average', 'lim_lvl_average', 40),

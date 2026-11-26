@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
+import 'l10n.dart';
+
 /// True when [url] is a plain video file (or our own storage), which the
 /// native video player handles. Everything else is shown in the in-app web
 /// player (YouTube, Vimeo, Zoom/Meet/Teams pages, Facebook, Twitch...).
@@ -52,9 +54,18 @@ String _iframePage(String src) => '<html><head><meta name="viewport" '
 
 /// Plays a page or stream inside the app (no external browser).
 class InAppWebPlayer extends StatefulWidget {
-  const InAppWebPlayer({super.key, required this.url});
+  const InAppWebPlayer(
+      {super.key, required this.url, this.onTick, this.onNoTracking});
 
   final String url;
+
+  /// Called about once a second while the video really plays:
+  /// (current second, total seconds).
+  final void Function(int position, int duration)? onTick;
+
+  /// Called when the player cannot report real play time (other sites, or
+  /// YouTube embedding blocked), so the caller falls back to a timer.
+  final VoidCallback? onNoTracking;
 
   @override
   State<InAppWebPlayer> createState() => _InAppWebPlayerState();
@@ -64,11 +75,48 @@ class _InAppWebPlayerState extends State<InAppWebPlayer> {
   late final WebViewController _c;
   bool _loading = true;
   bool _failed = false;
+  bool _blocked = false;
+
+  String _ytPage(String id) => '<html><head><meta name="viewport" '
+      'content="width=device-width, initial-scale=1"></head>'
+      '<body style="margin:0;background:#000"><div id="p" '
+      'style="position:absolute;top:0;left:0;width:100%;height:100%"></div>'
+      '<script src="https://www.youtube.com/iframe_api"></script><script>'
+      'var pl;function onYouTubeIframeAPIReady(){pl=new YT.Player("p",{'
+      'videoId:"$id",width:"100%",height:"100%",'
+      'playerVars:{playsinline:1,rel:0,origin:"https://www.youtube.com"},'
+      'events:{onError:function(e){Flutter.postMessage("err:"+e.data)}}})}'
+      'setInterval(function(){try{if(pl&&pl.getPlayerState()==1){'
+      'Flutter.postMessage("t:"+Math.floor(pl.getCurrentTime())+":"+'
+      'Math.floor(pl.getDuration()))}}catch(e){}},1000);'
+      '</script></body></html>';
+
+  void _onMsg(String m) {
+    if (m.startsWith('t:')) {
+      final p = m.split(':');
+      final pos = int.tryParse(p[1]) ?? 0;
+      final dur = int.tryParse(p[2]) ?? 0;
+      widget.onTick?.call(pos, dur);
+    } else if (m.startsWith('err:')) {
+      // Embedding disabled by the owner (101/150/152/153) or any player
+      // error: open the YouTube page itself, still inside the app.
+      final id = _youtubeId(widget.url);
+      if (id != null && mounted) {
+        setState(() {
+          _blocked = true;
+          _loading = true;
+        });
+        _c.loadRequest(Uri.parse('https://m.youtube.com/watch?v=$id'));
+        widget.onNoTracking?.call();
+      }
+    }
+  }
 
   @override
   void initState() {
     super.initState();
     _c = WebViewController()
+      ..addJavaScriptChannel('Flutter', onMessageReceived: (m) => _onMsg(m.message))
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(Colors.black)
       ..setNavigationDelegate(NavigationDelegate(
@@ -87,10 +135,7 @@ class _InAppWebPlayerState extends State<InAppWebPlayer> {
     final yt = _youtubeId(widget.url);
     final vm = _vimeoId(widget.url);
     if (yt != null) {
-      _c.loadHtmlString(
-        _iframePage('https://www.youtube.com/embed/$yt?playsinline=1&rel=0&autoplay=1'),
-        baseUrl: 'https://www.youtube.com',
-      );
+      _c.loadHtmlString(_ytPage(yt), baseUrl: 'https://www.youtube.com');
     } else if (vm != null) {
       _c.loadHtmlString(
         _iframePage('https://player.vimeo.com/video/$vm?autoplay=1'),
@@ -106,6 +151,10 @@ class _InAppWebPlayerState extends State<InAppWebPlayer> {
     } else {
       _c.loadRequest(Uri.parse(widget.url));
     }
+    if (yt == null) {
+      WidgetsBinding.instance
+          .addPostFrameCallback((_) => widget.onNoTracking?.call());
+    }
   }
 
   @override
@@ -114,6 +163,18 @@ class _InAppWebPlayerState extends State<InAppWebPlayer> {
       children: [
         WebViewWidget(controller: _c),
         if (_loading) const Center(child: CircularProgressIndicator()),
+        if (_blocked)
+          Positioned(
+            left: 0,
+            right: 0,
+            top: 0,
+            child: Container(
+              color: Colors.black54,
+              padding: const EdgeInsets.all(6),
+              child: Text(S.of(context).t('video_embed_blocked'),
+                  style: const TextStyle(color: Colors.white, fontSize: 11)),
+            ),
+          ),
         if (_failed)
           Container(
             color: Colors.black87,

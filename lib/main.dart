@@ -13,6 +13,16 @@ import 'core/push_service.dart';
 import 'core/tenant.dart';
 
 Future<void> main() async {
+  ErrorWidget.builder = (d) => Material(
+        color: const Color(0x00000000),
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: SelectableText('Screen error: ${d.exceptionAsString()}',
+                style: const TextStyle(color: Colors.redAccent, fontSize: 12)),
+          ),
+        ),
+      );
   WidgetsFlutterBinding.ensureInitialized();
   // Immersive: hide status and navigation bars; a swipe shows them briefly.
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
