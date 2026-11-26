@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../planner/study_planner_screen.dart';
 import '../help/help_screen.dart';
+import '../performance/performance_screen.dart';
 import '../ai/ai_assistant_screen.dart';
 import '../leaderboard/leaderboard_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -83,6 +84,7 @@ class AppDrawer extends StatelessWidget {
             item(Icons.quiz_outlined, 'qb_title', const QuestionBankScreen()),
             item(Icons.event_outlined, 'sch_title', const ScheduleScreen()),
             item(Icons.checklist_rounded, 'planner_title', const StudyPlannerScreen()),
+            item(Icons.insights_outlined, 'perf_title', const PerformanceScreen()),
             item(Icons.auto_awesome, 'ai_title', const AiAssistantScreen()),
             item(Icons.help_outline, 'help_title', const HelpScreen()),
             item(Icons.emoji_events_outlined, 'lb_title', const LeaderboardScreen()),
