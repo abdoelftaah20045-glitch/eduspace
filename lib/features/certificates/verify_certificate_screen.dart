@@ -132,14 +132,6 @@ class _VerifyCertificateScreenState extends State<VerifyCertificateScreen> {
                   style: theme.textTheme.titleLarge?.copyWith(
                       color: Colors.white, fontWeight: FontWeight.w800),
                 ),
-                if (!valid)
-                  const Padding(
-                    padding: EdgeInsets.only(top: 6),
-                    child: Text('INVALID / غير صالحة',
-                        style: TextStyle(
-                            color: Colors.white70,
-                            fontWeight: FontWeight.w700)),
-                  ),
               ]),
             ),
             if (found) ...[
