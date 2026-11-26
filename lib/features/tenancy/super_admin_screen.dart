@@ -175,7 +175,7 @@ class _TenantDialogState extends State<_TenantDialog> {
           {
             'name': _name.text.trim(),
             'invite_code': _invite.text.trim().isEmpty
-                ? null
+                ? TenancyRepository.generateInviteCode()
                 : _invite.text.trim().toUpperCase(),
           },
         );

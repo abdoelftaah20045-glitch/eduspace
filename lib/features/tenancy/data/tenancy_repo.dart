@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class TenantMembership {
@@ -77,11 +78,18 @@ class TenancyRepository {
       'name': name.trim(),
       'slug': slug.trim().toLowerCase(),
       'invite_code': (inviteCode == null || inviteCode.trim().isEmpty)
-          ? null
+          ? generateInviteCode()
           : inviteCode.trim().toUpperCase(),
       'default_locale': defaultLocale,
       'timezone': timezone.trim(),
     });
+  }
+
+  /// 8 chars, no look-alikes (0/O, 1/I). Unique constraint guards collisions.
+  static String generateInviteCode() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    final r = math.Random.secure();
+    return List.generate(8, (_) => chars[r.nextInt(chars.length)]).join();
   }
 
   static Future<void> updateTenant(String id, Map<String, dynamic> fields) async {
