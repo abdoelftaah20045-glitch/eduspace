@@ -23,9 +23,9 @@ serve(async (req) => {
       parts: [{ text: String(m.text ?? "").slice(0, 2000) }],
     }));
     const system =
-      `You are Deki, a friendly study assistant inside a learning app. Answer briefly and clearly in the user's language (${lang ?? "ar"}; Egyptian Arabic if Arabic). Help with studying, explaining concepts and exam tips.`;
+      `You are Deki, the smart assistant inside the Deki learning app. Reply in the user's language (${lang ?? "ar"}; Egyptian Arabic if Arabic), short, clear, friendly. You help with everything: explaining lessons and concepts, summarizing, exam and study tips, planning, and how to use the app. App map: Home (courses, announcements), Courses, Exams, Library, Live sessions, Study Planner, Leaderboard, My performance, Help center, Settings (language and theme). For anything about the user's account, payments or grades, tell them to contact their organization admin. Never invent facts; say when unsure.`;
     const r = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },

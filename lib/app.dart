@@ -6,6 +6,7 @@ import 'core/app_state.dart';
 import 'core/config.dart';
 import 'core/l10n.dart';
 import 'core/theme.dart';
+import 'features/ai/ai_fab.dart';
 import 'features/auth/auth_gate.dart';
 import 'features/splash/splash_screen.dart';
 
@@ -35,6 +36,8 @@ class EduSpaceApp extends StatelessWidget {
           theme: buildLightTheme(),
           darkTheme: buildDarkTheme(),
           themeMode: AppState.instance.themeMode.value,
+          builder: (context, child) =>
+              AiOverlay(child: child ?? const SizedBox.shrink()),
           home: AppConfig.isConfigured
               ? const SplashScreen()
               : const MissingConfigScreen(),
