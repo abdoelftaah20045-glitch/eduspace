@@ -500,100 +500,68 @@ class _ScoreBox extends StatelessWidget {
             : pct >= 40
                 ? (s.t('band_average'), const Color(0xFFF29900))
                 : (s.t('band_weak'), const Color(0xFFE53935));
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
-          decoration: BoxDecoration(
-            color: accent,
-            borderRadius: BorderRadius.circular(14),
-          ),
-          child: Text(
-            '${score.toStringAsFixed(1)} / ${maxScore.toStringAsFixed(1)}',
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-        const SizedBox(height: 8),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-          decoration: BoxDecoration(
-            color: bandColor.withValues(alpha: .12),
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Text(
-            '${pct.toStringAsFixed(0)}% · $band',
-            style: TextStyle(
-                color: bandColor, fontWeight: FontWeight.w600, fontSize: 13),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-/// Full-width option button (reference: periwinkle option rows that fill
-/// with the primary color when selected).
-class _OptionButton extends StatelessWidget {
-  const _OptionButton({
-    required this.label,
-    required this.selected,
-    required this.multi,
-    required this.onTap,
-  });
-
-  final String label;
-  final bool selected;
-  final bool multi;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Material(
-        color: selected
-            ? scheme.primary
-            : scheme.primary.withValues(alpha: .08),
-        borderRadius: BorderRadius.circular(14),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(14),
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-                horizontal: 14, vertical: 13),
-            child: Row(
-              children: [
-                Icon(
-                  selected
-                      ? (multi
-                          ? Icons.check_box
-                          : Icons.radio_button_checked)
-                      : (multi
-                          ? Icons.check_box_outline_blank
-                          : Icons.radio_button_off),
-                  size: 20,
-                  color: selected ? Colors.white : scheme.primary,
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    label,
-                    style: TextStyle(
-                      color: selected ? Colors.white : null,
-                      fontWeight:
-                          selected ? FontWeight.w600 : FontWeight.normal,
-                    ),
+    final hero = pct >= 60 ? const Color(0xFF16A34A) : const Color(0xFFDC2626);
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 22, horizontal: 16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [hero.withValues(alpha: .85), hero]),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+              color: hero.withValues(alpha: .35),
+              blurRadius: 20,
+              offset: const Offset(0, 10)),
+        ],
+      ),
+      child: Column(
+        children: [
+          SizedBox(
+            width: 130,
+            height: 130,
+            child: Stack(alignment: Alignment.center, children: [
+              SizedBox(
+                width: 130,
+                height: 130,
+                child: TweenAnimationBuilder<double>(
+                  tween: Tween(begin: 0, end: (pct / 100).clamp(0.0, 1.0)),
+                  duration: const Duration(milliseconds: 900),
+                  curve: Curves.easeOutCubic,
+                  builder: (_, v, __) => CircularProgressIndicator(
+                    value: v,
+                    strokeWidth: 11,
+                    strokeCap: StrokeCap.round,
+                    backgroundColor: Colors.white24,
+                    valueColor: const AlwaysStoppedAnimation(Colors.white),
                   ),
                 ),
-              ],
-            ),
+              ),
+              Column(mainAxisSize: MainAxisSize.min, children: [
+                Text('${pct.toStringAsFixed(0)}%',
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 32,
+                        fontWeight: FontWeight.w800)),
+                Text('${score.toStringAsFixed(1)} / ${maxScore.toStringAsFixed(1)}',
+                    style: const TextStyle(color: Colors.white70, fontSize: 12)),
+              ]),
+            ]),
           ),
-        ),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Text(band,
+                style: TextStyle(
+                    color: hero, fontWeight: FontWeight.w800, fontSize: 14)),
+          ),
+        ],
       ),
     );
   }
