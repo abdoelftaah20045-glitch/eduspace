@@ -338,114 +338,94 @@ class _HomeTabState extends State<_HomeTab> {
           children: [
             SafeArea(
               bottom: false,
-              child: Container(
-                padding: const EdgeInsets.fromLTRB(14, 14, 14, 16),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        scheme.primary,
-                        Color.lerp(scheme.primary, Colors.black, .12)!
-                      ]),
-                  borderRadius: BorderRadius.circular(28),
-                  boxShadow: [
-                    BoxShadow(
-                        color: scheme.primary.withValues(alpha: .35),
-                        blurRadius: 18,
-                        offset: const Offset(0, 8)),
-                  ],
-                ),
-                child: Column(children: [
-                  Row(children: [
-                    Builder(
-                      builder: (ctx) => GestureDetector(
-                        onTap: () => Scaffold.of(ctx).openDrawer(),
-                        child: Container(
-                          width: 42,
-                          height: 42,
-                          decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: .22),
-                              shape: BoxShape.circle),
-                          child: const Icon(Icons.menu, color: Colors.white),
-                        ),
+              child: Column(children: [
+                Row(children: [
+                  Builder(
+                    builder: (ctx) => GestureDetector(
+                      onTap: () => Scaffold.of(ctx).openDrawer(),
+                      child: CircleAvatar(
+                        radius: 21,
+                        backgroundColor: scheme.primaryContainer,
+                        backgroundImage: (_avatarUrl ?? '').isNotEmpty
+                            ? NetworkImage(_avatarUrl!)
+                            : null,
+                        child: (_avatarUrl ?? '').isEmpty
+                            ? Text(
+                                _name.isNotEmpty
+                                    ? _name.substring(0, 1).toUpperCase()
+                                    : '?',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w800,
+                                    color: scheme.onPrimaryContainer))
+                            : null,
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                              RemoteUi.brandName.isNotEmpty
-                                  ? RemoteUi.brandName
-                                  : s.t('app_name'),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                  color: Colors.white70, fontSize: 12)),
-                          Text(
-                              '${s.t('welcome')}${_name.isNotEmpty ? ' ${_name.split(' ').first}' : ''}',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 19,
-                                  fontWeight: FontWeight.w800)),
-                        ],
-                      ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                            RemoteUi.brandName.isNotEmpty
+                                ? RemoteUi.brandName
+                                : s.t('app_name'),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                                color: scheme.onSurfaceVariant, fontSize: 12)),
+                        Text(
+                            '${s.t('welcome')}${_name.isNotEmpty ? ' ${_name.split(' ').first}' : ''}',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                                fontSize: 21, fontWeight: FontWeight.w800)),
+                      ],
                     ),
-                    GestureDetector(
-                      onTap: () => Navigator.of(context)
-                          .push(MaterialPageRoute(
-                              builder: (_) => const NotificationsScreen()))
-                          .then((_) => _load()),
-                      child: Container(
-                        width: 42,
-                        height: 42,
-                        decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: .22),
-                            shape: BoxShape.circle),
-                        child: Badge(
-                          label: Text('$_unread'),
-                          isLabelVisible: _unread > 0,
-                          child: const Icon(Icons.notifications_outlined,
-                              color: Colors.white),
-                        ),
-                      ),
-                    ),
-                  ]),
-                  const SizedBox(height: 14),
-                  InkWell(
-                    borderRadius: BorderRadius.circular(18),
-                    onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                        builder: (_) => const CoursesScreen())),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 13),
-                      decoration: BoxDecoration(
-                        color: scheme.surface,
-                        borderRadius: BorderRadius.circular(18),
-                      ),
-                      child: Row(children: [
-                        Icon(Icons.search, color: scheme.onSurfaceVariant),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Text(
-                              RemoteUi.welcomeText.isNotEmpty
-                                  ? RemoteUi.welcomeText
-                                  : s.t('home_search'),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style:
-                                  TextStyle(color: scheme.onSurfaceVariant)),
-                        ),
-                        Icon(Icons.tune, color: scheme.primary),
-                      ]),
+                  ),
+                  GestureDetector(
+                    onTap: () => Navigator.of(context)
+                        .push(MaterialPageRoute(
+                            builder: (_) => const NotificationsScreen()))
+                        .then((_) => _load()),
+                    child: Badge(
+                      label: Text('$_unread'),
+                      isLabelVisible: _unread > 0,
+                      child: const Icon(Icons.notifications_outlined,
+                          size: 26),
                     ),
                   ),
                 ]),
-              ),
+                const SizedBox(height: 14),
+                InkWell(
+                  borderRadius: BorderRadius.circular(28),
+                  onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                      builder: (_) => const CoursesScreen())),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 13),
+                    decoration: BoxDecoration(
+                      color: scheme.surface,
+                      borderRadius: BorderRadius.circular(28),
+                      border: Border.all(
+                          color: scheme.onSurfaceVariant, width: 1.2),
+                    ),
+                    child: Row(children: [
+                      Icon(Icons.search, color: scheme.onSurfaceVariant),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                            RemoteUi.welcomeText.isNotEmpty
+                                ? RemoteUi.welcomeText
+                                : s.t('home_search'),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(color: scheme.onSurfaceVariant)),
+                      ),
+                    ]),
+                  ),
+                ),
+              ]),
             ),
             const SizedBox(height: 16),
             const SizedBox(height: 14),
@@ -457,61 +437,60 @@ class _HomeTabState extends State<_HomeTab> {
             if (item != null && RemoteUi.visible('home.continue')) ...[
               FadeSlideIn(
                 child: Container(
-                  padding: const EdgeInsets.all(18),
+                  padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFE8805A),
-                    borderRadius: BorderRadius.circular(22),
+                    color: scheme.surface,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: scheme.outlineVariant),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(s.t('continue_learning'),
-                          style: const TextStyle(color: Colors.white70)),
+                      Text(s.t('continue_learning').toUpperCase(),
+                          style: TextStyle(
+                              color: scheme.primary,
+                              fontSize: 11,
+                              letterSpacing: .8,
+                              fontWeight: FontWeight.w800)),
                       const SizedBox(height: 6),
                       Text(item.course.title,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.w800)),
+                              fontSize: 18, fontWeight: FontWeight.w800)),
                       const SizedBox(height: 4),
                       Text(item.lesson.title,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                              color: Colors.white70, fontSize: 12)),
+                          style: TextStyle(
+                              color: scheme.onSurfaceVariant, fontSize: 12.5)),
                       const SizedBox(height: 12),
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(6),
-                        child: LinearProgressIndicator(
-                          value: _progressOf(item.course.id) / 100,
-                          minHeight: 7,
-                          backgroundColor: Colors.white24,
-                          valueColor: const AlwaysStoppedAnimation(Colors.white),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          FilledButton.icon(
-                            style: FilledButton.styleFrom(
-                                backgroundColor: Colors.white,
-                                foregroundColor: const Color(0xFFE8805A)),
-                            onPressed: () => Navigator.of(context)
-                                .push(MaterialPageRoute(
-                                    builder: (_) =>
-                                        LessonScreen(lesson: item.lesson)))
-                                .then((_) => _load()),
-                            icon: const Icon(Icons.play_arrow_rounded),
-                            label: Text(s.t('resume_lesson')),
+                      Row(children: [
+                        Expanded(
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(6),
+                            child: LinearProgressIndicator(
+                              value: _progressOf(item.course.id) / 100,
+                              minHeight: 7,
+                            ),
                           ),
-                          const Spacer(),
-                          Text('${_progressOf(item.course.id)}%',
-                              style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold)),
-                        ],
+                        ),
+                        const SizedBox(width: 10),
+                        Text('${_progressOf(item.course.id)}%',
+                            style:
+                                const TextStyle(fontWeight: FontWeight.w700)),
+                      ]),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: double.infinity,
+                        child: FilledButton(
+                          onPressed: () => Navigator.of(context)
+                              .push(MaterialPageRoute(
+                                  builder: (_) =>
+                                      LessonScreen(lesson: item.lesson)))
+                              .then((_) => _load()),
+                          child: Text(s.t('resume_lesson')),
+                        ),
                       ),
                     ],
                   ),

@@ -109,14 +109,8 @@ class FeaturedCourseCard extends StatelessWidget {
         width: 250,
         decoration: BoxDecoration(
           color: scheme.surface,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: scheme.outlineVariant.withValues(alpha: .5)),
-          boxShadow: [
-            BoxShadow(
-                color: Colors.black.withValues(alpha: .08),
-                blurRadius: 12,
-                offset: const Offset(0, 5))
-          ],
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: scheme.outlineVariant),
         ),
         clipBehavior: Clip.antiAlias,
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -127,7 +121,7 @@ class FeaturedCourseCard extends StatelessWidget {
               child: (c.coverUrl ?? '').isEmpty
                   ? Icon(Icons.menu_book, color: scheme.primary)
                   : Image.network(c.coverUrl!,
-                      fit: BoxFit.contain,
+                      fit: BoxFit.cover,
                       errorBuilder: (_, __, ___) =>
                           Icon(Icons.menu_book, color: scheme.primary)),
             ),
