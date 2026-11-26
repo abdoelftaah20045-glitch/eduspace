@@ -31,6 +31,9 @@ class Course {
     this.availableAt,
     this.availableUntil,
     this.skills = const [],
+    this.discountPercent,
+    this.discountStartsAt,
+    this.discountEndsAt,
   });
 
   final String id;
@@ -64,6 +67,25 @@ class Course {
   final DateTime? availableAt;
   final DateTime? availableUntil;
   final List<String> skills;
+  final double? discountPercent;
+  final DateTime? discountStartsAt;
+  final DateTime? discountEndsAt;
+
+  /// True while the automatic discount applies (matches the server rule).
+  bool get hasDiscount {
+    final p = discountPercent;
+    if (p == null || p <= 0 || price <= 0) return false;
+    final now = DateTime.now();
+    if (discountStartsAt != null && discountStartsAt!.isAfter(now)) return false;
+    if (discountEndsAt != null && !discountEndsAt!.isAfter(now)) return false;
+    return true;
+  }
+
+  /// Price after the automatic discount (rounded like the server).
+  double get effectivePrice => hasDiscount
+      ? double.parse(
+          (price - price * discountPercent! / 100).toStringAsFixed(2))
+      : price;
 
   bool get isFree => price <= 0;
 
@@ -123,6 +145,11 @@ class Course {
       availableAt: DateTime.tryParse('${m['available_at'] ?? ''}')?.toLocal(),
       availableUntil:
           DateTime.tryParse('${m['available_until'] ?? ''}')?.toLocal(),
+      discountPercent: (m['discount_percent'] as num?)?.toDouble(),
+      discountStartsAt:
+          DateTime.tryParse('${m['discount_starts_at'] ?? ''}')?.toLocal(),
+      discountEndsAt:
+          DateTime.tryParse('${m['discount_ends_at'] ?? ''}')?.toLocal(),
       skills: [for (final x in (m['skills'] as List? ?? const [])) '$x'],
     );
   }

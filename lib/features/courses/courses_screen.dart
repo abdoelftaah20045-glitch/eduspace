@@ -1,3 +1,4 @@
+import 'price_view.dart';
 import 'package:flutter/material.dart';
 import '../../core/pressable.dart';
 
@@ -201,6 +202,9 @@ class CourseCard extends StatelessWidget {
                           valueListenable: PaidCourses.enabled,
                           builder: (_, paid, __) {
                             final showPrice = paid && !course.isFree;
+                            if (showPrice && course.hasDiscount) {
+                              return PriceView(course: course, size: 14);
+                            }
                             return _MetaChip(
                               icon: showPrice
                                   ? Icons.payments_outlined

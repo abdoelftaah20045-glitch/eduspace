@@ -1,3 +1,4 @@
+import '../courses/price_view.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/l10n.dart';
@@ -158,9 +159,12 @@ class FeaturedCourseCard extends StatelessWidget {
                     style: const TextStyle(
                         fontSize: 12, fontWeight: FontWeight.w700)),
                 const Spacer(),
-                Text(price,
-                    style: TextStyle(
-                        fontWeight: FontWeight.w800, color: scheme.primary)),
+                c.price <= 0
+                    ? Text(price,
+                        style: TextStyle(
+                            fontWeight: FontWeight.w800,
+                            color: scheme.primary))
+                    : PriceView(course: c, size: 14),
               ]),
             ]),
           ),

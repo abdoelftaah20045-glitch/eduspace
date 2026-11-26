@@ -1,3 +1,4 @@
+import 'price_view.dart';
 import '../home/home_widgets.dart';
 import 'package:flutter/material.dart';
 
@@ -169,7 +170,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
     final scheme = Theme.of(context).colorScheme;
     final price = course.isFree || !PaidCourses.enabled.value
         ? s.t('free')
-        : '${course.price.toStringAsFixed(0)} ${course.currency}';
+        : '${course.effectivePrice.toStringAsFixed(0)} ${course.currency}${course.hasDiscount ? '  (-${course.discountPercent!.toStringAsFixed(0)}%)' : ''}';
     final contents = <String>[
       for (final sec in details.sections)
         for (final l in sec.lessons) l.title,
@@ -714,10 +715,13 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
     if (details.enrolled) return _actionButton(context, s, details);
     final price = details.course.isFree || !PaidCourses.enabled.value
         ? s.t('free')
-        : '${details.course.price.toStringAsFixed(2)} ${details.course.currency}';
+        : '';
     return Row(children: [
-      Text(price,
-          style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 18)),
+      details.course.isFree || !PaidCourses.enabled.value
+          ? Text(price,
+              style:
+                  const TextStyle(fontWeight: FontWeight.w800, fontSize: 18))
+          : PriceView(course: details.course, size: 18),
       const SizedBox(width: 16),
       Expanded(child: _actionButton(context, s, details)),
     ]);
@@ -776,14 +780,14 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
             builder: (_) => PaymentScreen(
               courseId: widget.courseId,
               title: details.course.title,
-              price: details.course.price,
+              price: details.course.effectivePrice,
             ),
           ));
           _load();
         },
         icon: const Icon(Icons.payments_outlined),
         label: Text(
-            '${s.t('pay_title')} · ${details.course.price.toStringAsFixed(2)}'),
+            '${s.t('pay_title')} · ${details.course.effectivePrice.toStringAsFixed(2)}'),
       ),
     );
   }

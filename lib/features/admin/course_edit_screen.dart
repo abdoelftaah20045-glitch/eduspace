@@ -42,6 +42,16 @@ class _CourseEditScreenState extends State<CourseEditScreen> {
   late final _price = TextEditingController(
       text: ((widget.course?['price'] as num?)?.toDouble() ?? 0)
           .toStringAsFixed(0));
+  late final _discount = TextEditingController(
+      text: (widget.course?['discount_percent'] as num?)?.toString() ?? '');
+  late DateTime? _discFrom = widget.course?['discount_starts_at'] != null
+      ? DateTime.tryParse(widget.course!['discount_starts_at'].toString())
+          ?.toLocal()
+      : null;
+  late DateTime? _discUntil = widget.course?['discount_ends_at'] != null
+      ? DateTime.tryParse(widget.course!['discount_ends_at'].toString())
+          ?.toLocal()
+      : null;
   late final _prerequisites = TextEditingController(
       text: widget.course?['prerequisites'] as String? ?? '');
   late String _level = widget.course?['level'] as String? ?? 'all_levels';
@@ -115,6 +125,7 @@ class _CourseEditScreenState extends State<CourseEditScreen> {
     _maxStudents.dispose();
     _instPhoto.dispose();
     _price.dispose();
+    _discount.dispose();
     _prerequisites.dispose();
     super.dispose();
   }
@@ -133,6 +144,14 @@ class _CourseEditScreenState extends State<CourseEditScreen> {
       'price': double.tryParse(_price.text.trim()) ?? 0,
       'currency': _currency,
       'level': _level,
+      // Only sent when used (or already set), so saving works before the
+      // discount SQL has been run.
+      if (_discount.text.trim().isNotEmpty ||
+          widget.course?['discount_percent'] != null) ...{
+        'discount_percent': double.tryParse(_discount.text.trim()),
+        'discount_starts_at': _discFrom?.toUtc().toIso8601String(),
+        'discount_ends_at': _discUntil?.toUtc().toIso8601String(),
+      },
       'available_at': _from?.toUtc().toIso8601String(),
       'available_until': _until?.toUtc().toIso8601String(),
       'status': _status,
@@ -247,6 +266,66 @@ class _CourseEditScreenState extends State<CourseEditScreen> {
                         keyboardType: TextInputType.number,
                       ),
                     )
+                  : const SizedBox.shrink(),
+            ),
+            ValueListenableBuilder<bool>(
+              valueListenable: PaidCourses.enabled,
+              builder: (_, on, __) => on
+                  ? Column(children: [
+                      Padding(
+                        padding: const EdgeInsets.only(top: 12),
+                        child: TextFormField(
+                          controller: _discount,
+                          decoration: InputDecoration(
+                              labelText: s.t('discount_percent_label'),
+                              helperText: s.t('discount_hint')),
+                          keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true),
+                          validator: (v) {
+                            final t = (v ?? '').trim();
+                            if (t.isEmpty) return null;
+                            final n = double.tryParse(t);
+                            return (n == null || n <= 0 || n >= 100)
+                                ? s.t('required_field')
+                                : null;
+                          },
+                        ),
+                      ),
+                      ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: Text(s.t('discount_from')),
+                        subtitle: Text(_discFrom == null
+                            ? '-'
+                            : _discFrom!.toString().substring(0, 10)),
+                        trailing: _discFrom == null
+                            ? const Icon(Icons.event)
+                            : IconButton(
+                                icon: const Icon(Icons.clear),
+                                onPressed: () =>
+                                    setState(() => _discFrom = null)),
+                        onTap: () async {
+                          final d = await _pickDate(_discFrom);
+                          if (d != null) setState(() => _discFrom = d);
+                        },
+                      ),
+                      ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: Text(s.t('discount_until')),
+                        subtitle: Text(_discUntil == null
+                            ? '-'
+                            : _discUntil!.toString().substring(0, 10)),
+                        trailing: _discUntil == null
+                            ? const Icon(Icons.event)
+                            : IconButton(
+                                icon: const Icon(Icons.clear),
+                                onPressed: () =>
+                                    setState(() => _discUntil = null)),
+                        onTap: () async {
+                          final d = await _pickDate(_discUntil);
+                          if (d != null) setState(() => _discUntil = d);
+                        },
+                      ),
+                    ])
                   : const SizedBox.shrink(),
             ),
             const SizedBox(height: 12),
