@@ -101,13 +101,26 @@ class _TenantMembersScreenState extends State<TenantMembersScreen> {
         ? s.t('tenant_members')
         : '${s.t('tenant_members')} · ${widget.tenantName}';
     return Scaffold(
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _addMember,
+        icon: const Icon(Icons.person_add_alt_1),
+        label: Text(s.t('add_member')),
+      ),
       appBar: AppBar(
         title: Text(title),
         actions: [
           IconButton(
             tooltip: s.t('edit_tenant'),
             icon: const Icon(Icons.settings_outlined),
-            onPressed: _tenant == null ? null : _editTenant,
+            onPressed: () async {
+              if (_tenant == null) await _load();
+              if (_tenant != null && mounted) {
+                await _editTenant();
+              } else if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text(S.of(context).t('generic_error'))));
+              }
+            },
           ),
         ],
       ),
@@ -115,22 +128,22 @@ class _TenantMembersScreenState extends State<TenantMembersScreen> {
         onRefresh: _load,
         child: members == null
             ? const Center(child: CircularProgressIndicator())
-            : members.isEmpty
-                ? ListView(
-                    children: [
-                      const SizedBox(height: 120),
-                      Center(child: Text(s.t('no_members'))),
-                    ],
-                  )
-                : ListView.builder(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: members.length + (_inviteCode == null ? 0 : 1),
+            : true
+                ? ListView.builder(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 90),
+                    itemCount: members.length + (_inviteCode == null ? 0 : 1) + (members.isEmpty ? 1 : 0),
                     itemBuilder: (context, i) {
                       if (_inviteCode != null && i == 0) {
                         return Card(
                             child: InviteCodeTile(code: _inviteCode!));
                       }
-                      final m = members[_inviteCode == null ? i : i - 1];
+                      final mi = _inviteCode == null ? i : i - 1;
+                      if (mi >= members.length) {
+                        return Padding(
+                            padding: const EdgeInsets.all(32),
+                            child: Center(child: Text(s.t('no_members'))));
+                      }
+                      final m = members[mi];
                       final profile = m['profiles'];
                       final name = profile is Map
                           ? (profile['full_name'] as String? ?? '')
@@ -178,9 +191,68 @@ class _TenantMembersScreenState extends State<TenantMembersScreen> {
                         ),
                       );
                     },
-                  ),
+                  )
+                : const SizedBox.shrink(),
       ),
     );
+  }
+
+  Future<void> _addMember() async {
+    final s = S.of(context);
+    final email = TextEditingController();
+    var admin = false;
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setD) => AlertDialog(
+          title: Text(s.t('add_member')),
+          content: Column(mainAxisSize: MainAxisSize.min, children: [
+            TextField(
+              controller: email,
+              keyboardType: TextInputType.emailAddress,
+              autofocus: true,
+              decoration: InputDecoration(labelText: s.t('member_email')),
+            ),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              value: admin,
+              title: Text(s.t('make_org_admin')),
+              onChanged: (v) => setD(() => admin = v),
+            ),
+          ]),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: Text(s.t('cancel'))),
+            FilledButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: Text(s.t('add_member'))),
+          ],
+        ),
+      ),
+    );
+    final addr = email.text.trim();
+    email.dispose();
+    if (ok != true || addr.isEmpty) return;
+    try {
+      await TenancyRepository.addMemberByEmail(_tenantId, addr, admin: admin);
+      await _load();
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(s.t('member_added'))));
+      }
+    } catch (e) {
+      final t = '$e';
+      final key = t.contains('user_not_found')
+          ? 'user_not_found'
+          : (t.contains('admin_add_member') || t.contains('PGRST202'))
+              ? 'add_member_sql_missing'
+              : 'generic_error';
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(s.t(key))));
+      }
+    }
   }
 }
 

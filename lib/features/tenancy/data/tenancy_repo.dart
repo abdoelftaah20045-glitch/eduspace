@@ -120,6 +120,13 @@ class TenancyRepository {
     return list;
   }
 
+  /// Admin adds an existing user by email (needs migration 0034).
+  static Future<void> addMemberByEmail(String tenantId, String email,
+      {bool admin = false}) async {
+    await _c.rpc('admin_add_member',
+        params: {'p_tenant': tenantId, 'p_email': email.trim(), 'p_admin': admin});
+  }
+
   static Future<void> setMembershipStatus(String id, String status) async {
     final values = <String, dynamic>{'status': status};
     if (status == 'active') {

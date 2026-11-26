@@ -66,8 +66,10 @@ class _AdminStudentDetailScreenState extends State<AdminStudentDetailScreen> {
           details: {'course': picked['title']});
       messenger.showSnackBar(SnackBar(content: Text(s.t('sd_granted'))));
       _load();
-    } catch (_) {
-      messenger.showSnackBar(SnackBar(content: Text(s.t('generic_error'))));
+    } catch (e) {
+      final t = '$e';
+      messenger.showSnackBar(SnackBar(
+          content: Text('${s.t('generic_error')}: ${t.length > 140 ? t.substring(0, 140) : t}')));
     }
   }
 

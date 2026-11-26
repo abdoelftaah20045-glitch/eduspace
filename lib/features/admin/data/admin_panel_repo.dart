@@ -133,7 +133,7 @@ class AdminPanelRepository {
       'source': 'manual',
       'granted_by': _c.auth.currentUser?.id,
       'updated_at': DateTime.now().toIso8601String(),
-    });
+    }, onConflict: 'user_id,course_id');
   }
 
   static Future<void> revokeEnrollment(String enrollmentId) async {
