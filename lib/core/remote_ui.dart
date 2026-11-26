@@ -16,6 +16,7 @@ class RemoteUi {
   static List<Map<String, dynamic>> faq = [];
   static String? primaryHex;
   static Map<String, num> limits = {};
+  static List<Map<String, dynamic>> events = [];
 
   /// Admin-set number (ui_limits) or the built-in default.
   static num limit(String key, num def) => limits[key] ?? def;
@@ -33,12 +34,20 @@ class RemoteUi {
           .from('tenant_settings')
           .select('setting_key, setting_value')
           .eq('tenant_id', TenantContext.id)
-          .inFilter('setting_key', ['ui_texts', 'ui_layout', 'ui_faq', 'ui_look', 'ui_limits']);
+          .inFilter('setting_key', ['ui_texts', 'ui_layout', 'ui_faq', 'ui_look', 'ui_limits', 'ui_events']);
       for (final r in rows) {
         final v = r['setting_value'];
         if (v is! Map) continue;
         if (r['setting_key'] == 'ui_faq') {
           faq = [
+            for (final e in (v['items'] as List? ?? const []))
+              Map<String, dynamic>.from(e as Map),
+          ];
+          version.value++;
+          continue;
+        }
+        if (r['setting_key'] == 'ui_events') {
+          events = [
             for (final e in (v['items'] as List? ?? const []))
               Map<String, dynamic>.from(e as Map),
           ];

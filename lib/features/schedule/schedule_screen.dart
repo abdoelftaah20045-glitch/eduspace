@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/l10n.dart';
+import '../../core/remote_ui.dart';
 import '../../core/tenant.dart';
 import '../exams/data/exams_repo.dart';
 import '../lives/data/lives_repo.dart';
@@ -64,6 +65,16 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
         if (d != null) out.add(_Entry('assignment', (r['title'] as String?) ?? '', d));
       }
     } catch (_) {}
+    try {
+      await RemoteUi.load();
+      for (final e in RemoteUi.events) {
+        final d = DateTime.tryParse((e['at'] ?? '').toString())?.toLocal();
+        if (d != null &&
+            d.isAfter(DateTime.now().subtract(const Duration(days: 1)))) {
+          out.add(_Entry('event', (e['title'] ?? '').toString(), d));
+        }
+      }
+    } catch (_) {}
     out.sort((a, b) => a.at.compareTo(b.at));
     if (mounted) setState(() => _items = out);
   }
@@ -71,6 +82,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
   IconData _icon(String k) => switch (k) {
         'live' => Icons.videocam_outlined,
         'exam' => Icons.quiz_outlined,
+        'event' => Icons.event_outlined,
         _ => Icons.assignment_outlined,
       };
 
