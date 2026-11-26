@@ -34,19 +34,30 @@ class Updater {
       final m = jsonDecode(utf8.decode(r.bodyBytes)) as Map<String, dynamic>;
       final latest = (m['build'] as num?)?.toInt() ?? 0;
       if (latest <= kAppBuild) return;
-      final ctx = rootNavigatorKey.currentState?.overlay?.context;
-      if (ctx == null || !ctx.mounted) return;
+      // Mandatory when version.json says force, or this build is older than
+      // min_build. min_build comes from ci/min_build.txt (see the workflow).
+      final minBuild = (m['min_build'] as num?)?.toInt() ?? 0;
+      final force = m['force'] == true || kAppBuild < minBuild;
+      final nav = rootNavigatorKey.currentState;
+      final ctx = nav?.overlay?.context;
+      if (nav == null || ctx == null || !ctx.mounted) return;
       _shown = true;
-      await showDialog<void>(
-        context: ctx,
-        barrierDismissible: false,
-        builder: (_) => _UpdateDialog(
-          build: latest,
-          version: '${m['version'] ?? ''}',
-          notes: '${m['notes'] ?? ''}',
-          apkUrl: '$_base/${m['apk'] ?? 'deki.apk'}',
-        ),
+      final view = _UpdateDialog(
+        build: latest,
+        version: '${m['version'] ?? ''}',
+        notes: '${m['notes'] ?? ''}',
+        apkUrl: '$_base/${m['apk'] ?? 'deki.apk'}',
+        force: force,
       );
+      if (force) {
+        // Full-screen, no back, no skip: stays until the app is updated.
+        await nav.push(MaterialPageRoute<void>(
+            fullscreenDialog: true, builder: (_) => view));
+      } else {
+        await showDialog<void>(
+            context: ctx, barrierDismissible: false, builder: (_) => view);
+        _shown = false;
+      }
     } catch (_) {
       // Offline or the release is not reachable: stay silent.
     }
@@ -58,11 +69,13 @@ class _UpdateDialog extends StatefulWidget {
       {required this.build,
       required this.version,
       required this.notes,
-      required this.apkUrl});
+      required this.apkUrl,
+      this.force = false});
   final int build;
   final String version;
   final String notes;
   final String apkUrl;
+  final bool force;
 
   @override
   State<_UpdateDialog> createState() => _UpdateDialogState();
@@ -119,6 +132,72 @@ class _UpdateDialogState extends State<_UpdateDialog> {
   @override
   Widget build(BuildContext context) {
     final s = S.of(context);
+    final body = Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(widget.version.isEmpty
+            ? s.t('update_body')
+            : '${s.t('update_body')}  (${widget.version})'),
+        if (widget.notes.isNotEmpty) ...[
+          const SizedBox(height: 8),
+          Text(widget.notes, style: Theme.of(context).textTheme.bodySmall),
+        ],
+        if (_busy) ...[
+          const SizedBox(height: 16),
+          LinearProgressIndicator(value: _progress),
+          const SizedBox(height: 6),
+          Text(s.t('update_downloading')),
+        ],
+        if (_error != null) ...[
+          const SizedBox(height: 12),
+          Text('${s.t('update_failed')}: $_error',
+              style: const TextStyle(color: Colors.red, fontSize: 12)),
+        ],
+      ],
+    );
+    if (widget.force) {
+      final scheme = Theme.of(context).colorScheme;
+      return PopScope(
+        canPop: false,
+        child: Scaffold(
+          body: SafeArea(
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(28),
+                child: Column(mainAxisSize: MainAxisSize.min, children: [
+                  Container(
+                    width: 100,
+                    height: 100,
+                    decoration: BoxDecoration(
+                        color: scheme.primary.withValues(alpha: .12),
+                        shape: BoxShape.circle),
+                    child: Icon(Icons.system_update_rounded,
+                        size: 52, color: scheme.primary),
+                  ),
+                  const SizedBox(height: 22),
+                  Text(s.t('update_available'),
+                      style: Theme.of(context)
+                          .textTheme
+                          .titleLarge
+                          ?.copyWith(fontWeight: FontWeight.w800)),
+                  const SizedBox(height: 12),
+                  body,
+                  const SizedBox(height: 22),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton(
+                      onPressed: _busy ? null : _install,
+                      child: Text(s.t('update_now')),
+                    ),
+                  ),
+                ]),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
     return PopScope(
       canPop: !_busy,
       child: AlertDialog(

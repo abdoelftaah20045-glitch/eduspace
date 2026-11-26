@@ -140,8 +140,12 @@ jobs:
           cp build/app/outputs/flutter-apk/app-arm64-v8a-release.apk deki.apk
           VERSION=$(grep -m1 '^version:' pubspec.yaml | sed 's/version: *//; s/+.*//')
           NOTES=$(git log -1 --pretty=%s | head -c 200 | tr -d '"\\')
-          printf '{"build": %s, "version": "%s", "apk": "deki.apk", "notes": "%s"}\n' \
-            "${{ github.run_number }}" "$VERSION" "$NOTES" > version.json
+          # ci/min_build.txt: "latest" = every update is mandatory, 0 = optional,
+          # or a number = builds older than that must update.
+          MB=$(tr -d ' \n' < ci/min_build.txt 2>/dev/null || echo 0)
+          [ "$MB" = "latest" ] && MB=${{ github.run_number }}
+          printf '{"build": %s, "min_build": %s, "version": "%s", "apk": "deki.apk", "notes": "%s"}\n' \
+            "${{ github.run_number }}" "$MB" "$VERSION" "$NOTES" > version.json
           cat version.json
           R=abdoelftaah20045-glitch/deki-releases
           gh release delete latest --repo $R --yes --cleanup-tag 2>/dev/null || true
