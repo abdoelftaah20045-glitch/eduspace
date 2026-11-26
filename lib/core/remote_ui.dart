@@ -15,6 +15,8 @@ class RemoteUi {
   static Map<String, Map<String, dynamic>> layout = {};
   static List<Map<String, dynamic>> faq = [];
   static String? primaryHex;
+  static String brandName = '';
+  static String welcomeText = '';
   static Map<String, num> limits = {};
   static List<Map<String, dynamic>> events = [];
 
@@ -34,7 +36,7 @@ class RemoteUi {
           .from('tenant_settings')
           .select('setting_key, setting_value')
           .eq('tenant_id', TenantContext.id)
-          .inFilter('setting_key', ['ui_texts', 'ui_layout', 'ui_faq', 'ui_look', 'ui_limits', 'ui_events']);
+          .inFilter('setting_key', ['ui_texts', 'ui_layout', 'ui_faq', 'ui_look', 'ui_limits', 'ui_events', 'branding']);
       for (final r in rows) {
         final v = r['setting_value'];
         if (v is! Map) continue;
@@ -43,6 +45,12 @@ class RemoteUi {
             for (final e in (v['items'] as List? ?? const []))
               Map<String, dynamic>.from(e as Map),
           ];
+          version.value++;
+          continue;
+        }
+        if (r['setting_key'] == 'branding') {
+          brandName = (v['display_name'] ?? '').toString().trim();
+          welcomeText = (v['welcome'] ?? '').toString().trim();
           version.value++;
           continue;
         }

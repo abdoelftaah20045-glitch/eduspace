@@ -331,7 +331,7 @@ class _HomeTabState extends State<_HomeTab> {
                             Icon(Icons.play_lesson_rounded,
                                 color: scheme.primary, size: 26),
                             const SizedBox(width: 6),
-                            Text(s.t('app_name'),
+                            Text(RemoteUi.brandName.isNotEmpty ? RemoteUi.brandName : s.t('app_name'),
                                 style: TextStyle(
                                     color: scheme.primary,
                                     fontSize: 22,
@@ -362,7 +362,7 @@ class _HomeTabState extends State<_HomeTab> {
                   color: Theme.of(context).colorScheme.onSurface),
             ),
             const SizedBox(height: 4),
-            Text(s.t('home_sub'),
+            Text(RemoteUi.welcomeText.isNotEmpty ? RemoteUi.welcomeText : s.t('home_sub'),
                 style: TextStyle(color: scheme.onSurfaceVariant)),
             const SizedBox(height: 14),
             // Search bar (reference: "Search here" on the student dashboard).

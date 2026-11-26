@@ -358,14 +358,20 @@ class _InstructionsTabState extends State<_InstructionsTab> {
         const SizedBox(height: 12),
         FilledButton(
           onPressed: () async {
-            await _c.from('tenant_settings').upsert({
-              'tenant_id': TenantContext.id,
-              'setting_key': 'payment_instructions',
-              'setting_value': {'text': _text.text.trim()},
-            });
+            String msg;
+            try {
+              await _c.from('tenant_settings').upsert({
+                'tenant_id': TenantContext.id,
+                'setting_key': 'payment_instructions',
+                'setting_value': {'text': _text.text.trim()},
+              });
+              msg = s.t('saved_ok');
+            } catch (_) {
+              msg = s.t('generic_error');
+            }
             if (context.mounted) {
               ScaffoldMessenger.of(context)
-                  .showSnackBar(SnackBar(content: Text(s.t('saved_ok'))));
+                  .showSnackBar(SnackBar(content: Text(msg)));
             }
           },
           child: Text(s.t('save')),
