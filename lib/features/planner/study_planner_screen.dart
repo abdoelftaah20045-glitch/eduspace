@@ -1,3 +1,4 @@
+import '../../core/maintenance.dart';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -136,7 +137,10 @@ class _StudyPlannerScreenState extends State<StudyPlannerScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) =>
+      MaintenanceGate(pageKey: 'planner', child: Builder(builder: _mtBuild));
+
+  Widget _mtBuild(BuildContext context) {
     final s = S.of(context);
     final today = _tasks.where((t) => t.day == _today).toList();
     final doneToday = today.where((t) => t.done).length;

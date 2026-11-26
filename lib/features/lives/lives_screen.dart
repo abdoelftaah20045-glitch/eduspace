@@ -1,3 +1,4 @@
+import '../../core/maintenance.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -47,7 +48,10 @@ class _LivesScreenState extends State<LivesScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) =>
+      MaintenanceGate(pageKey: 'lives', child: Builder(builder: _mtBuild));
+
+  Widget _mtBuild(BuildContext context) {
     final s = S.of(context);
     final all = _all;
     final upcoming = all == null

@@ -1,3 +1,4 @@
+import '../../core/maintenance.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/l10n.dart';
@@ -16,7 +17,10 @@ class _HelpScreenState extends State<HelpScreen> {
   String _q = '';
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) =>
+      MaintenanceGate(pageKey: 'help', child: Builder(builder: _mtBuild));
+
+  Widget _mtBuild(BuildContext context) {
     final s = S.of(context);
     final lang = s.locale.languageCode;
     String pick(dynamic m) {

@@ -1,3 +1,4 @@
+import '../../core/maintenance.dart';
 import 'price_view.dart';
 import 'package:flutter/material.dart';
 import '../../core/pressable.dart';
@@ -51,7 +52,10 @@ class _CoursesScreenState extends State<CoursesScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) =>
+      MaintenanceGate(pageKey: 'courses', child: Builder(builder: _mtBuild));
+
+  Widget _mtBuild(BuildContext context) {
     final s = S.of(context);
     return Scaffold(
       appBar: AppBar(

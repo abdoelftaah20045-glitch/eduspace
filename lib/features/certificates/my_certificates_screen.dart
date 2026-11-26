@@ -1,3 +1,4 @@
+import '../../core/maintenance.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -33,7 +34,10 @@ class _MyCertificatesScreenState extends State<MyCertificatesScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) =>
+      MaintenanceGate(pageKey: 'certificates', child: Builder(builder: _mtBuild));
+
+  Widget _mtBuild(BuildContext context) {
     final s = S.of(context);
     final theme = Theme.of(context);
     return Scaffold(

@@ -1,3 +1,4 @@
+import '../../core/maintenance.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -96,7 +97,10 @@ class _DiscussionScreenState extends State<DiscussionScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) =>
+      MaintenanceGate(pageKey: 'discussion', child: Builder(builder: _mtBuild));
+
+  Widget _mtBuild(BuildContext context) {
     final s = S.of(context);
     final fmt = DateFormat('d MMM, h:mm a', s.locale.languageCode);
     final threads = _threads;

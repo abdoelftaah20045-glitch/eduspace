@@ -1,3 +1,4 @@
+import '../../core/maintenance.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -140,7 +141,10 @@ class _QuestionBankScreenState extends State<QuestionBankScreen> {
       };
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) =>
+      MaintenanceGate(pageKey: 'qbank', child: Builder(builder: _mtBuild));
+
+  Widget _mtBuild(BuildContext context) {
     final s = S.of(context);
     final theme = Theme.of(context);
     final all = _qs.values.toList();

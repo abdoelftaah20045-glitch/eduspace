@@ -1,3 +1,4 @@
+import '../../core/maintenance.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/l10n.dart';
@@ -32,7 +33,10 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) =>
+      MaintenanceGate(pageKey: 'favorites', child: Builder(builder: _mtBuild));
+
+  Widget _mtBuild(BuildContext context) {
     final s = S.of(context);
     final courses = _courses;
     return Scaffold(

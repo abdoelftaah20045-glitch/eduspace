@@ -1,3 +1,4 @@
+import '../../core/maintenance.dart';
 import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
@@ -39,7 +40,10 @@ class _AssignmentsScreenState extends State<AssignmentsScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) =>
+      MaintenanceGate(pageKey: 'assignments', child: Builder(builder: _mtBuild));
+
+  Widget _mtBuild(BuildContext context) {
     final s = S.of(context);
     final items = _items;
     return Scaffold(

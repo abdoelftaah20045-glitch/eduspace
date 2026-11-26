@@ -1,3 +1,4 @@
+import '../../core/maintenance.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/l10n.dart';
@@ -41,7 +42,10 @@ class _MyCoursesScreenState extends State<MyCoursesScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) =>
+      MaintenanceGate(pageKey: 'my_courses', child: Builder(builder: _mtBuild));
+
+  Widget _mtBuild(BuildContext context) {
     final s = S.of(context);
     final scheme = Theme.of(context).colorScheme;
     final all = _items;

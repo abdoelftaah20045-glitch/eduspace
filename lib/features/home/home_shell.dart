@@ -1,3 +1,5 @@
+import '../../core/security.dart';
+import '../../core/maintenance.dart';
 import 'dart:async';
 import '../../core/in_app_player.dart';
 import 'package:flutter/material.dart';
@@ -47,6 +49,7 @@ class _HomeShellState extends State<HomeShell> {
   void initState() {
     super.initState();
     PaidCourses.load();
+    ScreenProtection.sync();
     RemoteUi.load().then((_) {
       if (mounted) setState(() {});
     });
@@ -56,7 +59,7 @@ class _HomeShellState extends State<HomeShell> {
   Widget build(BuildContext context) {
     final s = S.of(context);
     final pages = [
-      const _HomeTab(),
+      const MaintenanceGate(pageKey: 'home', child: _HomeTab()),
       const MyCoursesScreen(),
       const CoursesScreen(),
       const ExamsScreen(),

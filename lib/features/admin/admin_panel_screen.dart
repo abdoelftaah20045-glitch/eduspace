@@ -1,3 +1,4 @@
+import 'admin_maintenance_screen.dart';
 import 'package:flutter/material.dart';
 import '../../core/pressable.dart';
 import 'admin_insights.dart';
@@ -133,6 +134,8 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
           const Color(0xFF00ACC1), const AdminEventsScreen()),
       ('org_settings', 'admin_sub_settings', Icons.settings_outlined,
           const Color(0xFF607D8B), const AdminOrgSettingsScreen()),
+      ('mt_admin_title', 'mt_admin_sub', Icons.construction_rounded,
+          const Color(0xFFF57C00), const AdminMaintenanceScreen()),
       ('audit_label', 'admin_sub_audit', Icons.history, 
           const Color(0xFF8D6E63), const AdminAuditScreen()),
       ('users_label', 'admin_sub_users', Icons.people_outline,
@@ -193,6 +196,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
       'targeted_notify': 'announcements',
       'categories_label': 'courses',
       'org_settings': 'settings',
+      'mt_admin_title': 'settings',
       'ui_texts': 'settings',
       'ui_faq': 'settings',
       'ui_look': 'settings',

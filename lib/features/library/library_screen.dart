@@ -1,3 +1,4 @@
+import '../../core/maintenance.dart';
 import 'package:flutter/material.dart';
 import '../../core/pressable.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -88,7 +89,10 @@ class _LibraryScreenState extends State<LibraryScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) =>
+      MaintenanceGate(pageKey: 'library', child: Builder(builder: _mtBuild));
+
+  Widget _mtBuild(BuildContext context) {
     final s = S.of(context);
     final items = _items;
     return Scaffold(

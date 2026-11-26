@@ -1,3 +1,4 @@
+import '../../core/maintenance.dart';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -33,7 +34,10 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) =>
+      MaintenanceGate(pageKey: 'downloads', child: Builder(builder: _mtBuild));
+
+  Widget _mtBuild(BuildContext context) {
     final s = S.of(context);
     final items = _items;
     return Scaffold(
