@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'remote_ui.dart';
+
 /// Central translation system. Every UI string goes through [S.of].
 /// Arabic is the default launch language; English is the fallback.
 class S {
@@ -379,6 +381,16 @@ class S {
     'ai_chip4': {'ar': 'إزاي أستخدم التطبيق؟', 'en': 'How do I use the app?', 'fr': 'How do I use the app?', 'es': 'How do I use the app?', 'de': 'How do I use the app?'},
     'ai_copied': {'ar': 'تم النسخ', 'en': 'Copied', 'fr': 'Copied', 'es': 'Copied', 'de': 'Copied'},
     'ai_clear': {'ar': 'مسح المحادثة', 'en': 'Clear chat', 'fr': 'Clear chat', 'es': 'Clear chat', 'de': 'Clear chat'},
+    'ui_texts': {'ar': 'نصوص التطبيق', 'en': 'App texts', 'fr': 'App texts', 'es': 'App texts', 'de': 'App texts'},
+    'ui_texts_search': {'ar': 'ابحث في النصوص', 'en': 'Search texts', 'fr': 'Search texts', 'es': 'Search texts', 'de': 'Search texts'},
+    'admin_sub_texts': {'ar': 'عدّل أي كلمة في التطبيق بكل اللغات', 'en': 'Edit any word in the app, all languages', 'fr': 'Edit any word in the app, all languages', 'es': 'Edit any word in the app, all languages', 'de': 'Edit any word in the app, all languages'},
+    'ui_layout': {'ar': 'الواجهة والترتيب', 'en': 'Layout and visibility', 'fr': 'Layout and visibility', 'es': 'Layout and visibility', 'de': 'Layout and visibility'},
+    'admin_sub_layout': {'ar': 'اخفِ أو رتّب أقسام الرئيسية والقائمة', 'en': 'Show, hide and reorder Home and menu', 'fr': 'Show, hide and reorder Home and menu', 'es': 'Show, hide and reorder Home and menu', 'de': 'Show, hide and reorder Home and menu'},
+    'ui_layout_home': {'ar': 'أقسام الرئيسية', 'en': 'Home sections', 'fr': 'Home sections', 'es': 'Home sections', 'de': 'Home sections'},
+    'ui_layout_tiles': {'ar': 'أيقونات الرئيسية (رتّب بالسحب)', 'en': 'Home tiles (drag to reorder)', 'fr': 'Home tiles (drag to reorder)', 'es': 'Home tiles (drag to reorder)', 'de': 'Home tiles (drag to reorder)'},
+    'ui_layout_menu': {'ar': 'القائمة الجانبية (رتّب بالسحب)', 'en': 'Side menu (drag to reorder)', 'fr': 'Side menu (drag to reorder)', 'es': 'Side menu (drag to reorder)', 'de': 'Side menu (drag to reorder)'},
+    'reset_default': {'ar': 'رجّع الافتراضي', 'en': 'Reset to default', 'fr': 'Reset to default', 'es': 'Reset to default', 'de': 'Reset to default'},
+    'saved': {'ar': 'تم الحفظ', 'en': 'Saved', 'fr': 'Saved', 'es': 'Saved', 'de': 'Saved'},
     'audit_label': {'ar': 'سجل العمليات', 'en': 'Audit log', 'fr': 'Audit log', 'es': 'Audit log', 'de': 'Audit log'},
     'no_audit': {'ar': 'لا توجد عمليات مسجلة', 'en': 'No recorded actions', 'fr': 'No recorded actions', 'es': 'No recorded actions', 'de': 'No recorded actions'},
     'org_settings': {'ar': 'إعدادات المؤسسة', 'en': 'Organization settings', 'fr': 'Organization settings', 'es': 'Organization settings', 'de': 'Organization settings'},
@@ -792,7 +804,17 @@ class S {
     'delete_action': {'ar': 'احذف', 'en': 'Delete', 'fr': 'Supprimer', 'es': 'Eliminar', 'de': 'Löschen'},
   };
 
+  static Iterable<String> get keys => _values.keys;
+
+  static String defaultOf(String key, String lang) {
+    final entry = _values[key];
+    if (entry == null) return key;
+    return entry[lang] ?? entry['en'] ?? key;
+  }
+
   String t(String key) {
+    final over = RemoteUi.text(key, locale.languageCode);
+    if (over != null) return over;
     final entry = _values[key];
     if (entry == null) return key;
     return entry[locale.languageCode] ?? entry['en'] ?? key;

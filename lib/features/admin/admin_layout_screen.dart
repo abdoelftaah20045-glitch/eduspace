@@ -1,0 +1,168 @@
+import 'package:flutter/material.dart';
+
+import '../../core/l10n.dart';
+import '../../core/remote_ui.dart';
+import 'data/admin_tools_repo.dart';
+
+/// One controllable element: id used by the app, label key for its name.
+class _Item {
+  const _Item(this.id, this.label);
+  final String id;
+  final String label;
+}
+
+const _home = [
+  _Item('home.continue', 'continue_learning'),
+  _Item('home.banner', 'ann_title'),
+  _Item('home.my_courses', 'my_courses'),
+  _Item('home.lives', 'lv_title'),
+  _Item('home.discover', 'discover_label'),
+];
+const _quick = [
+  _Item('quick.courses', 'my_courses'),
+  _Item('quick.lives', 'lv_title'),
+  _Item('quick.exams', 'tab_exams'),
+  _Item('quick.library', 'library_label'),
+  _Item('quick.qbank', 'qb_title'),
+  _Item('quick.schedule', 'sch_title'),
+  _Item('quick.certs', 'my_certificates'),
+  _Item('quick.support', 'support'),
+];
+const _drawer = [
+  _Item('drawer.qb_title', 'qb_title'),
+  _Item('drawer.sch_title', 'sch_title'),
+  _Item('drawer.planner_title', 'planner_title'),
+  _Item('drawer.perf_title', 'perf_title'),
+  _Item('drawer.ai_title', 'ai_title'),
+  _Item('drawer.help_title', 'help_title'),
+  _Item('drawer.lb_title', 'lb_title'),
+  _Item('drawer.lv_title', 'lv_title'),
+  _Item('drawer.ann_title', 'ann_title'),
+  _Item('drawer.notifications', 'notifications'),
+  _Item('drawer.dr_library', 'dr_library'),
+  _Item('drawer.dr_favorites', 'dr_favorites'),
+];
+
+/// Admin: show/hide and reorder Home sections, Home tiles and menu items.
+class AdminLayoutScreen extends StatefulWidget {
+  const AdminLayoutScreen({super.key});
+
+  @override
+  State<AdminLayoutScreen> createState() => _AdminLayoutScreenState();
+}
+
+class _AdminLayoutScreenState extends State<AdminLayoutScreen> {
+  bool _loading = true;
+  bool _saving = false;
+  final Map<String, bool> _vis = {};
+  late List<_Item> _quickOrder;
+  late List<_Item> _drawerOrder;
+
+  @override
+  void initState() {
+    super.initState();
+    _quickOrder = [..._quick];
+    _drawerOrder = [..._drawer];
+    RemoteUi.load().then((_) {
+      for (final it in [..._home, ..._quick, ..._drawer]) {
+        _vis[it.id] = RemoteUi.visible(it.id);
+      }
+      int ord(_Item a, List<_Item> base) =>
+          RemoteUi.order(a.id, base.indexOf(a));
+      _quickOrder.sort((a, b) => ord(a, _quick).compareTo(ord(b, _quick)));
+      _drawerOrder.sort((a, b) => ord(a, _drawer).compareTo(ord(b, _drawer)));
+      if (mounted) setState(() => _loading = false);
+    });
+  }
+
+  Future<void> _save() async {
+    final s = S.of(context);
+    setState(() => _saving = true);
+    final out = <String, Map<String, dynamic>>{};
+    for (final it in _home) {
+      out[it.id] = {'visible': _vis[it.id] ?? true};
+    }
+    for (var i = 0; i < _quickOrder.length; i++) {
+      final it = _quickOrder[i];
+      out[it.id] = {'visible': _vis[it.id] ?? true, 'order': i};
+    }
+    for (var i = 0; i < _drawerOrder.length; i++) {
+      final it = _drawerOrder[i];
+      out[it.id] = {'visible': _vis[it.id] ?? true, 'order': i};
+    }
+    try {
+      RemoteUi.setLayout(out);
+      await AdminToolsRepository.saveSetting('ui_layout', out);
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(s.t('saved'))));
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(s.t('generic_error'))));
+      }
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  Widget _title(String t) => Padding(
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 6),
+        child: Text(t,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+      );
+
+  Widget _switch(S s, _Item it) => SwitchListTile(
+        dense: true,
+        value: _vis[it.id] ?? true,
+        title: Text(s.t(it.label)),
+        onChanged: (v) => setState(() => _vis[it.id] = v),
+      );
+
+  Widget _reorder(S s, List<_Item> list) => ReorderableListView(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        onReorder: (a, b) => setState(() {
+          if (b > a) b -= 1;
+          list.insert(b, list.removeAt(a));
+        }),
+        children: [
+          for (final it in list)
+            SwitchListTile(
+              key: ValueKey(it.id),
+              dense: true,
+              secondary: const Icon(Icons.drag_handle),
+              value: _vis[it.id] ?? true,
+              title: Text(s.t(it.label)),
+              onChanged: (v) => setState(() => _vis[it.id] = v),
+            ),
+        ],
+      );
+
+  @override
+  Widget build(BuildContext context) {
+    final s = S.of(context);
+    return Scaffold(
+      appBar: AppBar(title: Text(s.t('ui_layout'))),
+      body: _loading
+          ? const Center(child: CircularProgressIndicator())
+          : ListView(
+              padding: const EdgeInsets.only(bottom: 90),
+              children: [
+                _title(s.t('ui_layout_home')),
+                for (final it in _home) _switch(s, it),
+                _title(s.t('ui_layout_tiles')),
+                _reorder(s, _quickOrder),
+                _title(s.t('ui_layout_menu')),
+                _reorder(s, _drawerOrder),
+              ],
+            ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _saving ? null : _save,
+        icon: const Icon(Icons.save),
+        label: Text(s.t('save')),
+      ),
+    );
+  }
+}

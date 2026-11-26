@@ -17,6 +17,7 @@ import '../notifications/announcements_screen.dart';
 import '../notifications/notifications_screen.dart';
 import '../schedule/schedule_screen.dart';
 import '../settings/about_screen.dart';
+import '../../core/remote_ui.dart';
 import '../settings/settings_screen.dart';
 import '../support/support_screen.dart';
 
@@ -30,6 +31,17 @@ class AppDrawer extends StatelessWidget {
   void _go(BuildContext context, Widget page) {
     Navigator.of(context).pop();
     Navigator.of(context).push(MaterialPageRoute(builder: (_) => page));
+  }
+
+  List<Widget> _ordered(
+      List<(String, IconData, Widget)> defs,
+      Widget Function(IconData, String, Widget) item) {
+    final idx = [for (var i = 0; i < defs.length; i++) i]
+        .where((i) => RemoteUi.visible('drawer.${defs[i].$1}'))
+        .toList();
+    idx.sort((a, b) => RemoteUi.order('drawer.${defs[a].$1}', a)
+        .compareTo(RemoteUi.order('drawer.${defs[b].$1}', b)));
+    return [for (final i in idx) item(defs[i].$2, defs[i].$1, defs[i].$3)];
   }
 
   @override
@@ -81,19 +93,20 @@ class AppDrawer extends StatelessWidget {
                 ),
               ]),
             ),
-            item(Icons.quiz_outlined, 'qb_title', const QuestionBankScreen()),
-            item(Icons.event_outlined, 'sch_title', const ScheduleScreen()),
-            item(Icons.checklist_rounded, 'planner_title', const StudyPlannerScreen()),
-            item(Icons.insights_outlined, 'perf_title', const PerformanceScreen()),
-            item(Icons.auto_awesome, 'ai_title', const AiAssistantScreen()),
-            item(Icons.help_outline, 'help_title', const HelpScreen()),
-            item(Icons.emoji_events_outlined, 'lb_title', const LeaderboardScreen()),
-            item(Icons.videocam_outlined, 'lv_title', const LivesScreen()),
-            item(Icons.campaign_outlined, 'ann_title', const AnnouncementsScreen()),
-            item(Icons.notifications_outlined, 'notifications',
-                const NotificationsScreen()),
-            item(Icons.folder_outlined, 'dr_library', const LibraryScreen()),
-            item(Icons.favorite_border, 'dr_favorites', const FavoritesScreen()),
+            ..._ordered([
+              ('qb_title', Icons.quiz_outlined, const QuestionBankScreen()),
+              ('sch_title', Icons.event_outlined, const ScheduleScreen()),
+              ('planner_title', Icons.checklist_rounded, const StudyPlannerScreen()),
+              ('perf_title', Icons.insights_outlined, const PerformanceScreen()),
+              ('ai_title', Icons.auto_awesome, const AiAssistantScreen()),
+              ('help_title', Icons.help_outline, const HelpScreen()),
+              ('lb_title', Icons.emoji_events_outlined, const LeaderboardScreen()),
+              ('lv_title', Icons.videocam_outlined, const LivesScreen()),
+              ('ann_title', Icons.campaign_outlined, const AnnouncementsScreen()),
+              ('notifications', Icons.notifications_outlined, const NotificationsScreen()),
+              ('dr_library', Icons.folder_outlined, const LibraryScreen()),
+              ('dr_favorites', Icons.favorite_border, const FavoritesScreen()),
+            ], item),
             const Divider(),
             item(Icons.support_agent_outlined, 'support', const SupportScreen()),
             item(Icons.settings_outlined, 'settings', const SettingsScreen()),

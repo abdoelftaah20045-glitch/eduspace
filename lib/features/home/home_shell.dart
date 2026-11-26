@@ -27,6 +27,7 @@ import '../lives/lives_screen.dart';
 import '../qbank/question_bank_screen.dart';
 import '../schedule/schedule_screen.dart';
 import '../support/support_screen.dart';
+import '../../core/remote_ui.dart';
 import 'app_drawer.dart';
 
 /// Bottom navigation shell: Home / Courses / Exams / Account.
@@ -44,6 +45,9 @@ class _HomeShellState extends State<HomeShell> {
   void initState() {
     super.initState();
     PaidCourses.load();
+    RemoteUi.load().then((_) {
+      if (mounted) setState(() {});
+    });
   }
 
   @override
@@ -239,6 +243,19 @@ class _HomeTabState extends State<_HomeTab> {
     );
   }
 
+  static const quickIds = [
+    'courses', 'lives', 'exams', 'library', 'qbank', 'schedule', 'certs', 'support'
+  ];
+
+  List<Widget> _filterQuick(List<Widget> tiles) {
+    final idx = [for (var i = 0; i < tiles.length; i++) i]
+        .where((i) => RemoteUi.visible('quick.${quickIds[i]}'))
+        .toList();
+    idx.sort((a, b) => RemoteUi.order('quick.${quickIds[a]}', a)
+        .compareTo(RemoteUi.order('quick.${quickIds[b]}', b)));
+    return [for (final i in idx) tiles[i]];
+  }
+
   Widget _quick(BuildContext context, IconData icon, String label,
       Color color, Widget page) {
     return Pressable(
@@ -363,7 +380,7 @@ class _HomeTabState extends State<_HomeTab> {
                 padding: EdgeInsets.all(32),
                 child: Center(child: CircularProgressIndicator()),
               ),
-            if (item != null) ...[
+            if (item != null && RemoteUi.visible('home.continue')) ...[
               FadeSlideIn(
                 child: Container(
                   padding: const EdgeInsets.all(18),
@@ -428,12 +445,12 @@ class _HomeTabState extends State<_HomeTab> {
               ),
               const SizedBox(height: 14),
             ],
-            if (_announcements.isNotEmpty) ...[
+            if (_announcements.isNotEmpty && RemoteUi.visible('home.banner')) ...[
               _AnnouncementBanner(items: _announcements),
               const SizedBox(height: 16),
             ],
             const SizedBox(height: 4),
-            if (myCourses.isNotEmpty) ...[
+            if (myCourses.isNotEmpty && RemoteUi.visible('home.my_courses')) ...[
             Row(children: [
               Expanded(
                 child: Text(s.t('my_courses'),
@@ -463,11 +480,11 @@ class _HomeTabState extends State<_HomeTab> {
                   child: Text(s.t('no_my_courses')),
                 ),
               ),
-            if (_lives.isNotEmpty) ...[
+            if (_lives.isNotEmpty && RemoteUi.visible('home.lives')) ...[
               _UpcomingLives(lives: _lives),
               const SizedBox(height: 24),
             ],
-            if (_trending.isNotEmpty) ...[
+            if (_trending.isNotEmpty && RemoteUi.visible('home.discover')) ...[
             Row(children: [
               Expanded(
                 child: Text(s.t('discover_label'),
@@ -528,7 +545,7 @@ class _HomeTabState extends State<_HomeTab> {
               mainAxisSpacing: 12,
               crossAxisSpacing: 8,
               childAspectRatio: .8,
-              children: [
+              children: _filterQuick([
                 _quick(context, Icons.menu_book_outlined, s.t('my_courses'),
                     const Color(0xFF2196F3), const CoursesScreen()),
                 _quick(context, Icons.video_camera_front_outlined,
@@ -546,7 +563,7 @@ class _HomeTabState extends State<_HomeTab> {
                     const MyCertificatesScreen()),
                 _quick(context, Icons.support_agent, s.t('support'),
                     const Color(0xFFAB47BC), const SupportScreen()),
-              ],
+              ]),
             ),
           ],
         ),
