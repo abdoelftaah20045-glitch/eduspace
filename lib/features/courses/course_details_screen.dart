@@ -159,7 +159,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
           child: (course.coverUrl != null && course.coverUrl!.isNotEmpty)
               ? Image.network(
                   course.coverUrl!,
-                  fit: BoxFit.cover,
+                  fit: BoxFit.contain,
                   width: double.infinity,
                   errorBuilder: (_, __, ___) =>
                       Container(color: scheme.primary),

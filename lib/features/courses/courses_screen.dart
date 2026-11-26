@@ -154,7 +154,7 @@ class CourseCard extends StatelessWidget {
                               course.coverUrl!.isNotEmpty
                           ? Image.network(
                               course.coverUrl!,
-                              fit: BoxFit.cover,
+                              fit: BoxFit.contain,
                               errorBuilder: (_, __, ___) =>
                                   _Thumb(color: palette),
                             )

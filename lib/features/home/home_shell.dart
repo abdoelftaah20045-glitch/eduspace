@@ -188,7 +188,7 @@ class _HomeTabState extends State<_HomeTab> {
           child: Badge(
             label: Text('$badge'),
             isLabelVisible: badge > 0,
-            child: Icon(icon, color: const Color(0xFF14264A)),
+            child: Icon(icon, color: Theme.of(context).colorScheme.onSurface),
           ),
         ),
       ),
@@ -207,16 +207,26 @@ class _HomeTabState extends State<_HomeTab> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              height: 104,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                    colors: [pal.$2.withValues(alpha: .65), pal.$2]),
-                image: (c.coverUrl != null && c.coverUrl!.isNotEmpty)
-                    ? DecorationImage(
-                        image: NetworkImage(c.coverUrl!), fit: BoxFit.cover)
-                    : null,
+            AspectRatio(
+              aspectRatio: 16 / 9,
+              child: Container(
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                child: (c.coverUrl != null && c.coverUrl!.isNotEmpty)
+                    ? Image.network(c.coverUrl!,
+                        fit: BoxFit.contain,
+                        width: double.infinity,
+                        errorBuilder: (_, __, ___) => Container(
+                            decoration: BoxDecoration(
+                                gradient: LinearGradient(colors: [
+                          pal.$2.withValues(alpha: .65),
+                          pal.$2
+                        ]))))
+                    : Container(
+                        decoration: BoxDecoration(
+                            gradient: LinearGradient(colors: [
+                        pal.$2.withValues(alpha: .65),
+                        pal.$2
+                      ]))),
               ),
             ),
             Padding(
@@ -227,9 +237,9 @@ class _HomeTabState extends State<_HomeTab> {
                   Text(c.title,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontWeight: FontWeight.w800,
-                          color: Color(0xFF14264A))),
+                          color: Theme.of(context).colorScheme.onSurface)),
                   const SizedBox(height: 4),
                   Text(sub,
                       style: const TextStyle(
@@ -282,7 +292,10 @@ class _HomeTabState extends State<_HomeTab> {
             maxLines: 2,
             textAlign: TextAlign.center,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600)),
+            style: TextStyle(
+                fontSize: 11.5,
+                fontWeight: FontWeight.w600,
+                color: Theme.of(context).colorScheme.onSurface)),
       ]),
     );
   }
@@ -299,7 +312,7 @@ class _HomeTabState extends State<_HomeTab> {
       body: RefreshIndicator(
         onRefresh: _load,
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
           children: [
             SafeArea(
               child: Padding(
@@ -343,10 +356,10 @@ class _HomeTabState extends State<_HomeTab> {
             const SizedBox(height: 14),
             Text(
               '${s.t('welcome')}${_name.isNotEmpty ? ' يا ${_name.split(' ').first}' : ''}',
-              style: const TextStyle(
+              style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.w800,
-                  color: Color(0xFF14264A)),
+                  color: Theme.of(context).colorScheme.onSurface),
             ),
             const SizedBox(height: 4),
             Text(s.t('home_sub'),
@@ -454,10 +467,10 @@ class _HomeTabState extends State<_HomeTab> {
             Row(children: [
               Expanded(
                 child: Text(s.t('my_courses'),
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.w800,
-                        color: Color(0xFF14264A))),
+                        color: Theme.of(context).colorScheme.onSurface)),
               ),
             ]),
             const SizedBox(height: 10),
@@ -488,10 +501,10 @@ class _HomeTabState extends State<_HomeTab> {
             Row(children: [
               Expanded(
                 child: Text(s.t('discover_label'),
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.w800,
-                        color: Color(0xFF14264A))),
+                        color: Theme.of(context).colorScheme.onSurface)),
               ),
             ]),
             const SizedBox(height: 10),
@@ -535,7 +548,7 @@ class _HomeTabState extends State<_HomeTab> {
               ),
               const SizedBox(height: 20),
             ],
-            Text(s.t('sections_label'), style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: Color(0xFF14264A))),
+            Text(s.t('sections_label'), style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: Theme.of(context).colorScheme.onSurface)),
             const SizedBox(height: 12),
             // Quick dashboard grid (reference: round icon tiles).
             GridView.count(

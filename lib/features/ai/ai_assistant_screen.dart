@@ -38,9 +38,9 @@ class AiChatSheet extends StatelessWidget {
     final h = MediaQuery.of(context).size.height;
     return Container(
       height: h * .86,
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
       ),
       clipBehavior: Clip.antiAlias,
       child: Column(children: [
@@ -188,10 +188,10 @@ class _AiChatPanelState extends State<AiChatPanel> {
                     const SizedBox(height: 16),
                     Text(s.t('ai_intro'),
                         textAlign: TextAlign.center,
-                        style: const TextStyle(
+                        style: TextStyle(
                             fontSize: 17,
                             fontWeight: FontWeight.w800,
-                            color: Color(0xFF14264A))),
+                            color: Theme.of(context).colorScheme.onSurface)),
                     const SizedBox(height: 18),
                     Wrap(
                       alignment: WrapAlignment.center,
@@ -255,7 +255,7 @@ class _AiChatPanelState extends State<AiChatPanel> {
                                   height: 1.45,
                                   color: mine
                                       ? Colors.white
-                                      : const Color(0xFF14264A))),
+                                      : Theme.of(context).colorScheme.onSurface)),
                         ),
                       ),
                     );

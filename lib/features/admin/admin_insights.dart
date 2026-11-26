@@ -63,7 +63,7 @@ class _AdminInsightsState extends State<AdminInsights> {
       return const SizedBox.shrink();
     }
     final maxV = _top.isEmpty ? 1 : _top.first.$2;
-    const navy = Color(0xFF14264A);
+    final navy = Theme.of(context).colorScheme.onSurface;
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
       child: Column(

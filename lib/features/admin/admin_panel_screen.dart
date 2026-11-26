@@ -360,10 +360,10 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                   Padding(
                     padding: const EdgeInsets.only(bottom: 12),
                     child: Text(s.t('sections_label'),
-                        style: const TextStyle(
+                        style: TextStyle(
                             fontSize: 17,
                             fontWeight: FontWeight.w800,
-                            color: Color(0xFF14264A))),
+                            color: Theme.of(context).colorScheme.onSurface)),
                   ),
                   GridView.count(
                     crossAxisCount: 2,
@@ -412,9 +412,9 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                               Text(s.t(sec.$1),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                       fontWeight: FontWeight.w800,
-                                      color: Color(0xFF14264A))),
+                                      color: Theme.of(context).colorScheme.onSurface)),
                               const SizedBox(height: 2),
                               Text(s.t(sec.$2),
                                   maxLines: 2,
@@ -456,10 +456,10 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
             ),
             const Spacer(),
             Text('${value ?? '-'}',
-                style: const TextStyle(
+                style: TextStyle(
                     fontSize: 26,
                     fontWeight: FontWeight.w800,
-                    color: Color(0xFF14264A))),
+                    color: Theme.of(context).colorScheme.onSurface)),
           ]),
           const SizedBox(height: 8),
           Text(label,

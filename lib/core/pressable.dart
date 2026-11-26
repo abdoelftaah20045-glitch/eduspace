@@ -37,6 +37,7 @@ class _PressableState extends State<Pressable> {
   @override
   Widget build(BuildContext context) {
     final r = BorderRadius.circular(widget.radius);
+    final dark = Theme.of(context).brightness == Brightness.dark;
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTapDown: (_) => _set(true),
@@ -55,9 +56,19 @@ class _PressableState extends State<Pressable> {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 140),
           decoration: BoxDecoration(
-            color: widget.color,
+            color: (widget.color == Colors.white &&
+                    Theme.of(context).brightness == Brightness.dark)
+                ? Theme.of(context).colorScheme.surface
+                : widget.color,
             borderRadius: r,
-            boxShadow: _down
+            boxShadow: dark
+                ? [
+                    BoxShadow(
+                        color: Colors.black.withValues(alpha: .25),
+                        blurRadius: 8,
+                        offset: const Offset(0, 3)),
+                  ]
+                : _down
                 ? [
                     BoxShadow(
                         color: widget.shadowColor.withValues(alpha: .10),

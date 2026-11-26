@@ -2,7 +2,7 @@ import 'dart:math' as math;
 
 import 'package:barcode/barcode.dart' as bc;
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:intl/intl.dart' hide TextDirection;
 
 import 'data/certificates_repo.dart';
 
