@@ -1,5 +1,5 @@
--- Deki: automatic per-course discount (STAGED, not shipped until the owner approves).
--- Idempotent. Run after 0036.
+-- Deki part 26: automatic per-course discount (percent + optional start/end dates).
+-- Safe to run more than once. Run after part 25 / migration 0036.
 
 alter table public.courses
   add column if not exists discount_percent numeric(5,2)
