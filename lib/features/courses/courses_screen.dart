@@ -141,16 +141,15 @@ class CourseCard extends StatelessWidget {
         },
         child: Padding(
           padding: const EdgeInsets.all(12),
-          child: Row(
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Stack(
                 children: [
                   ClipRRect(
                     borderRadius: BorderRadius.circular(16),
-                    child: SizedBox(
-                      width: 96,
-                      height: 96,
+                    child: AspectRatio(
+                      aspectRatio: 16 / 9,
                       child: course.coverUrl != null &&
                               course.coverUrl!.isNotEmpty
                           ? Image.network(
@@ -163,15 +162,16 @@ class CourseCard extends StatelessWidget {
                     ),
                   ),
                   PositionedDirectional(
-                    top: 2,
-                    end: 2,
+                    top: 6,
+                    end: 6,
                     child: _FavoriteButton(
                         courseId: course.id, initial: course.isFavorite),
                   ),
                 ],
               ),
-              const SizedBox(width: 12),
-              Expanded(
+              const SizedBox(height: 10),
+              Align(
+                alignment: AlignmentDirectional.centerStart,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [

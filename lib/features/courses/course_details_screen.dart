@@ -154,20 +154,17 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
     return ListView(
       padding: EdgeInsets.zero,
       children: [
-        SizedBox(
-          height: 260,
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              if (course.coverUrl != null && course.coverUrl!.isNotEmpty)
-                Image.network(
+        AspectRatio(
+          aspectRatio: 16 / 9,
+          child: (course.coverUrl != null && course.coverUrl!.isNotEmpty)
+              ? Image.network(
                   course.coverUrl!,
                   fit: BoxFit.cover,
+                  width: double.infinity,
                   errorBuilder: (_, __, ___) =>
                       Container(color: scheme.primary),
                 )
-              else
-                Container(
+              : Container(
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
@@ -180,32 +177,13 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                         size: 72, color: Colors.white70),
                   ),
                 ),
-              const DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [Colors.transparent, Colors.black87],
-                    stops: [0.45, 1.0],
-                  ),
-                ),
-              ),
-              PositionedDirectional(
-                start: 20,
-                end: 20,
-                bottom: 18,
-                child: Text(
-                  course.title,
-                  style: theme.textTheme.headlineSmall?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    shadows: const [
-                      Shadow(color: Colors.black45, blurRadius: 8),
-                    ],
-                  ),
-                ),
-              ),
-            ],
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 14),
+          child: Text(
+            course.title,
+            style: theme.textTheme.headlineSmall
+                ?.copyWith(fontWeight: FontWeight.bold),
           ),
         ),
         Row(children: [

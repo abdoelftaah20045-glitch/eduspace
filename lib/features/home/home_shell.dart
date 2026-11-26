@@ -204,7 +204,7 @@ class _HomeTabState extends State<_HomeTab> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              height: 86,
+              height: 104,
               width: double.infinity,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
