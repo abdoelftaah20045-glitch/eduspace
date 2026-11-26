@@ -42,7 +42,7 @@ Deno.serve(async (req: Request) => {
     const started = Date.now();
     for (const model of (await pickModels(key)).slice(0, 4)) {
       for (let attempt = 0; attempt < 2; attempt++) {
-        if (Date.now() - started > 45000) break;
+        if (Date.now() - started > 30000) break;
         let r: Response;
         try {
           r = await fetch(`${BASE}/models/${model}:generateContent?key=${key}`, {
