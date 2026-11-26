@@ -8,6 +8,7 @@ import '../admin/admin_panel_screen.dart';
 import '../admin/data/admin_repo.dart';
 import '../certificates/my_certificates_screen.dart';
 import '../courses/favorites_screen.dart';
+import '../library/downloads_screen.dart';
 import '../library/library_screen.dart';
 import 'certs_strip.dart';
 import 'courses_strip.dart';
@@ -253,6 +254,13 @@ class ProfileScreen extends StatelessWidget {
                 title: Text(s.t('library_label')),
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute(builder: (_) => const LibraryScreen()),
+                ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.offline_pin_outlined),
+                title: Text(s.t('dl_title')),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const DownloadsScreen()),
                 ),
               ),
               ListTile(

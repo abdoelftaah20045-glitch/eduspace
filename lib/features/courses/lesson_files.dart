@@ -4,7 +4,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/l10n.dart';
+import '../../core/offline_store.dart';
 import '../../core/storage_urls.dart';
+import '../library/downloads_screen.dart';
 import '../../core/tenant.dart';
 
 SupabaseClient get _c => Supabase.instance.client;
@@ -77,6 +79,40 @@ class _LessonFilesState extends State<LessonFiles> {
     await launchUrl(Uri.parse(u), mode: LaunchMode.externalApplication);
   }
 
+  final Set<String> _saved = {};
+  final Set<String> _saving = {};
+
+  Future<void> _save(Map<String, dynamic> r) async {
+    final id = '${r['id']}';
+    final s = S.of(context);
+    setState(() => _saving.add(id));
+    try {
+      await OfflineStore.download(
+          id: id, name: '${r['name']}', url: '${r['file_url']}');
+      if (mounted) {
+        setState(() => _saved.add(id));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(s.t('dl_done'))));
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(s.t('dl_failed'))));
+      }
+    }
+    if (mounted) setState(() => _saving.remove(id));
+  }
+
+  Future<void> _tap(Map<String, dynamic> r) async {
+    final local = await OfflineStore.localPath('${r['id']}');
+    if (!mounted) return;
+    if (local != null) {
+      openOfflineFile(context, local, '${r['name']}');
+    } else {
+      _open('${r['file_url']}');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final s = S.of(context);
@@ -107,7 +143,7 @@ class _LessonFilesState extends State<LessonFiles> {
             dense: true,
             leading: const Icon(Icons.description_outlined),
             title: Text('${r['name']}'),
-            onTap: () => _open(r['file_url']),
+            onTap: () => _tap(r),
             trailing: widget.canEdit
                 ? IconButton(
                     icon: const Icon(Icons.delete_outline),
@@ -116,7 +152,17 @@ class _LessonFilesState extends State<LessonFiles> {
                       _load();
                     },
                   )
-                : const Icon(Icons.download_outlined),
+                : (_saving.contains('${r['id']}')
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2))
+                    : IconButton(
+                        icon: Icon(_saved.contains('${r['id']}')
+                            ? Icons.offline_pin
+                            : Icons.download_outlined),
+                        onPressed: () => _save(r),
+                      )),
           ),
       ],
     );
