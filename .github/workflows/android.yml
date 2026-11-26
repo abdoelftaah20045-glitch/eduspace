@@ -47,6 +47,9 @@ jobs:
           open(f'{d}/ic_launcher.xml', 'w').write(xml)
           PY
 
+      - name: App display name
+        run: sed -i 's/android:label="[^"]*"/android:label="Deki"/' android/app/src/main/AndroidManifest.xml
+
       - name: Patch Android config (permissions + signing)
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}

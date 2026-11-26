@@ -22,7 +22,7 @@ class EduSpaceApp extends StatelessWidget {
       builder: (context, _) {
         return MaterialApp(
           navigatorKey: rootNavigatorKey,
-          title: 'EduSpace',
+          title: 'Deki',
           debugShowCheckedModeBanner: false,
           locale: AppState.instance.locale.value,
           supportedLocales: S.supportedLocales,

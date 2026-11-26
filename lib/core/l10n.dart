@@ -20,7 +20,7 @@ class S {
   ];
 
   static const _values = <String, Map<String, String>>{
-    'app_name': {'ar': 'EduSpace', 'en': 'EduSpace', 'fr': 'EduSpace', 'es': 'EduSpace', 'de': 'EduSpace'},
+    'app_name': {'ar': 'ذكي', 'en': 'Deki', 'fr': 'Deki', 'es': 'Deki', 'de': 'Deki'},
     'login': {'ar': 'تسجيل الدخول', 'en': 'Log in', 'fr': 'Se connecter', 'es': 'Iniciar sesión', 'de': 'Anmelden'},
     'signup': {'ar': 'إنشاء حساب', 'en': 'Sign up', 'fr': 'S\'inscrire', 'es': 'Crear cuenta', 'de': 'Registrieren'},
     'email': {'ar': 'البريد الإلكتروني', 'en': 'Email', 'fr': 'E-mail', 'es': 'Correo electrónico', 'de': 'E-Mail'},

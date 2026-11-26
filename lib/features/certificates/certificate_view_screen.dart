@@ -250,7 +250,7 @@ class _CertCard extends StatelessWidget {
                       Icon(Icons.school, size: 30, color: primary),
                       const SizedBox(width: 8),
                       Text(
-                        'EduSpace',
+                        'Deki',
                         style: TextStyle(
                           color: primary,
                           fontSize: 22,
