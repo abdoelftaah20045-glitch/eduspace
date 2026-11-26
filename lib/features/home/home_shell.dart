@@ -64,7 +64,6 @@ class _HomeShellState extends State<HomeShell> {
     ];
     return Scaffold(
       body: pages[_index],
-      extendBody: true,
       bottomNavigationBar: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
