@@ -39,6 +39,15 @@ class _CertificateViewScreenState extends State<CertificateViewScreen> {
   final _captureKey = GlobalKey();
   bool _sharing = false;
   bool _exporting = false;
+  Map<String, dynamic>? _settings;
+
+  @override
+  void initState() {
+    super.initState();
+    CertificatesRepository.settingsFor(widget.cert.courseId).then((v) {
+      if (mounted) setState(() => _settings = v);
+    });
+  }
 
   /// Public verification link encoded in the PDF's QR code.
   String get _verifyUrl =>
@@ -181,7 +190,7 @@ class _CertificateViewScreenState extends State<CertificateViewScreen> {
                   child: SizedBox(
                     width: 960,
                     height: 680,
-                    child: _CertCard(cert: cert, date: date),
+                    child: _CertCard(cert: cert, date: date, settings: _settings),
                   ),
                 ),
               ),
@@ -207,16 +216,19 @@ class _CertificateViewScreenState extends State<CertificateViewScreen> {
 /// on the edges, gold seal ribbon, signature and date lines.
 /// Laid out on a fixed 960x680 canvas and scaled by FittedBox.
 class _CertCard extends StatelessWidget {
-  const _CertCard({required this.cert, required this.date});
+  const _CertCard({required this.cert, required this.date, this.settings});
 
   final Certificate cert;
   final String date;
+  final Map<String, dynamic>? settings;
 
   @override
   Widget build(BuildContext context) {
     final s = S.of(context);
     final primary = Theme.of(context).colorScheme.primary;
     final primaryDark = _deepen(primary);
+    final tpl = (settings?['template_url'] as String?) ?? '';
+    if (tpl.isNotEmpty) return _templateCard(s, tpl);
     return Container(
       color: Colors.white,
       child: Stack(
@@ -343,6 +355,55 @@ class _CertCard extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+extension on _CertCard {
+  /// Certificate drawn on the admin-uploaded background image: name, course,
+  /// date and serial are laid over it.
+  Widget _templateCard(S s, String url) {
+    final light = settings?['text_color'] == 'light';
+    final fg = light ? Colors.white : const Color(0xFF1B1B1B);
+    final sub = light ? Colors.white70 : Colors.black54;
+    final pos = (settings?['text_position'] as String?) ?? 'center';
+    final top = pos == 'top' ? 90.0 : (pos == 'low' ? 260.0 : 170.0);
+    return Stack(
+      children: [
+        Positioned.fill(
+          child: Image.network(url, fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => Container(color: Colors.white)),
+        ),
+        Positioned.fill(
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(80, top, 80, 40),
+            child: Column(
+              children: [
+                Text(s.t('this_certifies'),
+                    style: TextStyle(color: sub, fontSize: 18)),
+                const SizedBox(height: 10),
+                Text(cert.studentName,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        color: fg, fontSize: 40, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 12),
+                Text(s.t('has_completed'),
+                    style: TextStyle(color: sub, fontSize: 18)),
+                const SizedBox(height: 8),
+                Text(cert.courseTitle,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        color: fg, fontSize: 28, fontWeight: FontWeight.w600)),
+                const SizedBox(height: 16),
+                Text(date, style: TextStyle(color: sub, fontSize: 16)),
+                const Spacer(),
+                Text('${s.t('cert_number')}: ${cert.certificateNumber}',
+                    style: TextStyle(color: sub, fontSize: 13)),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

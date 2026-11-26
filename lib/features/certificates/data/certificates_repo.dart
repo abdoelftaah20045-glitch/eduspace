@@ -76,6 +76,18 @@ class CertificatesRepository {
         .maybeSingle();
     if (existing != null) return Certificate.fromMap(existing);
     if (details.percent < 100) return null;
+    // Preferred path: the server checks the course rules (completion, exam
+    // grade, on/off) and issues. Falls back to a direct insert when the
+    // certificate SQL (part 13) has not been run yet.
+    try {
+      final r = await _c.rpc('issue_certificate',
+          params: {'p_course': details.course.id});
+      if (r is List) {
+        return r.isEmpty
+            ? null
+            : Certificate.fromMap(Map<String, dynamic>.from(r.first as Map));
+      }
+    } catch (_) {}
     final metaName = (user.userMetadata?['full_name'] as String?)?.trim();
     final studentName = (metaName == null || metaName.isEmpty)
         ? (user.email ?? 'Student')
@@ -94,6 +106,25 @@ class CertificatesRepository {
         .select()
         .single();
     return Certificate.fromMap(inserted);
+  }
+
+  /// Template and look for a course's certificate (course row wins over the
+  /// global row). Null when nothing is configured.
+  static Future<Map<String, dynamic>?> settingsFor(String courseId) async {
+    try {
+      final rows = await _c
+          .from('certificate_settings')
+          .select()
+          .eq('tenant_id', TenantContext.id)
+          .or('course_id.eq.$courseId,course_id.is.null');
+      if (rows.isEmpty) return null;
+      final list = [for (final r in rows) Map<String, dynamic>.from(r)];
+      list.sort((a, b) =>
+          (a['course_id'] == null ? 1 : 0) - (b['course_id'] == null ? 1 : 0));
+      return list.first;
+    } catch (_) {
+      return null;
+    }
   }
 
   static String _newNumber() {

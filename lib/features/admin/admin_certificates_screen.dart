@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/l10n.dart';
+import 'certificate_settings_screen.dart';
 import 'data/admin_panel_repo.dart';
 
 /// Admin: all issued certificates - search and cancel with a reason.
@@ -64,7 +65,17 @@ class _AdminCertificatesScreenState extends State<AdminCertificatesScreen> {
   Widget build(BuildContext context) {
     final s = S.of(context);
     return Scaffold(
-      appBar: AppBar(title: Text(s.t('pref_certificates'))),
+      appBar: AppBar(
+        title: Text(s.t('pref_certificates')),
+        actions: [
+          IconButton(
+            tooltip: s.t('cert_settings'),
+            icon: const Icon(Icons.tune),
+            onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+                builder: (_) => const CertificateSettingsScreen())),
+          ),
+        ],
+      ),
       body: Column(
         children: [
           Padding(
