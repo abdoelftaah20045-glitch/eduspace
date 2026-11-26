@@ -193,7 +193,7 @@ class _InAppWebPlayerState extends State<InAppWebPlayer> {
                     _c.reload();
                   },
                   icon: const Icon(Icons.refresh),
-                  label: const Text('Retry'),
+                  label: Text(S.of(context).t('retry')),
                 ),
               ],
             ),
