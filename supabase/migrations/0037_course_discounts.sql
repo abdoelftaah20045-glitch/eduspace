@@ -55,3 +55,33 @@ begin
 end;
 $$;
 grant execute on function public.validate_coupon(text, uuid) to authenticated;
+
+-- The server recomputes the charged amount from the discounted price.
+create or replace function public.submit_payment(
+  p_course uuid, p_coupon text, p_receipt text, p_note text)
+returns uuid
+language plpgsql security definer set search_path = public
+as $$
+declare
+  tid uuid;
+  price numeric;
+  final numeric;
+  v record;
+  pid uuid;
+begin
+  select tenant_id into tid from public.courses where id = p_course;
+  if tid is null then raise exception 'course not found'; end if;
+  price := public.course_effective_price(p_course);
+  final := price;
+  if p_coupon is not null and length(trim(p_coupon)) > 0 then
+    select * into v from public.validate_coupon(p_coupon, p_course);
+    if v.ok then final := v.final_price; else p_coupon := null; end if;
+  end if;
+  insert into public.payment_requests
+    (tenant_id, user_id, course_id, amount, coupon_code, receipt_path, note)
+  values (tid, auth.uid(), p_course, final, nullif(trim(coalesce(p_coupon,'')), ''), p_receipt, p_note)
+  returning id into pid;
+  return pid;
+end;
+$$;
+grant execute on function public.submit_payment(uuid, text, text, text) to authenticated;
