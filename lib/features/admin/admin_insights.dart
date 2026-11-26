@@ -71,7 +71,7 @@ class _AdminInsightsState extends State<AdminInsights> {
         children: [
           if (_top.isNotEmpty) ...[
             Text(s.t('ins_top_courses'),
-                style: const TextStyle(
+                style: TextStyle(
                     fontSize: 17, fontWeight: FontWeight.w800, color: navy)),
             const SizedBox(height: 10),
             Container(
@@ -118,7 +118,7 @@ class _AdminInsightsState extends State<AdminInsights> {
                         width: 34,
                         child: Text('${t.$2}',
                             textAlign: TextAlign.end,
-                            style: const TextStyle(
+                            style: TextStyle(
                                 fontWeight: FontWeight.w800, color: navy)),
                       ),
                     ]),
@@ -129,7 +129,7 @@ class _AdminInsightsState extends State<AdminInsights> {
           ],
           if (_recent.isNotEmpty) ...[
             Text(s.t('ins_recent'),
-                style: const TextStyle(
+                style: TextStyle(
                     fontSize: 17, fontWeight: FontWeight.w800, color: navy)),
             const SizedBox(height: 10),
             for (final r in _recent)
