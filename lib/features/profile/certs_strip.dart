@@ -27,7 +27,6 @@ class _CertsStripState extends State<CertsStrip> {
   @override
   Widget build(BuildContext context) {
     final s = S.of(context);
-    if (_certs.isEmpty) return const SizedBox.shrink();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -47,21 +46,27 @@ class _CertsStripState extends State<CertsStrip> {
             ),
           ]),
         ),
+        if (_certs.isEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Text(s.t('pf_no_certs'),
+                style: Theme.of(context).textTheme.bodySmall),
+          )
+        else
         SizedBox(
-          height: 112,
-          child: ListView.separated(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            scrollDirection: Axis.horizontal,
+          height: 150,
+          child: PageView.builder(
+            controller: PageController(viewportFraction: .82),
             itemCount: _certs.length,
-            separatorBuilder: (_, __) => const SizedBox(width: 10),
             itemBuilder: (_, i) {
               final c = _certs[i];
-              return InkWell(
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 6),
+                child: InkWell(
                 borderRadius: BorderRadius.circular(14),
                 onTap: () => Navigator.of(context).push(MaterialPageRoute(
                     builder: (_) => CertificateViewScreen(cert: c))),
                 child: Container(
-                  width: 170,
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
@@ -88,7 +93,7 @@ class _CertsStripState extends State<CertsStrip> {
                     ],
                   ),
                 ),
-              );
+              ));
             },
           ),
         ),

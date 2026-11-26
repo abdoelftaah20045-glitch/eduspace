@@ -10,6 +10,7 @@ import '../certificates/my_certificates_screen.dart';
 import '../courses/favorites_screen.dart';
 import '../library/library_screen.dart';
 import 'certs_strip.dart';
+import 'courses_strip.dart';
 import '../support/support_screen.dart';
 import '../settings/settings_screen.dart';
 import '../tenancy/select_tenant_screen.dart';
@@ -72,7 +73,7 @@ class ProfileScreen extends StatelessWidget {
               // Gradient identity header (reference: profile header cards).
               Container(
                 padding: const EdgeInsets.symmetric(
-                    vertical: 24, horizontal: 16),
+                    vertical: 28, horizontal: 16),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: AlignmentDirectional.topStart,
@@ -132,6 +133,8 @@ class ProfileScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               const ProfileStats(),
+              const SizedBox(height: 8),
+              const CoursesStrip(),
               if ((profile?['bio'] as String? ?? '').isNotEmpty) ...[
                 const SizedBox(height: 8),
                 Card(
@@ -378,14 +381,28 @@ class _ProfileAvatarState extends State<_ProfileAvatar> {
     return Center(
       child: Stack(
         children: [
-          CircleAvatar(
-            radius: 44,
-            backgroundImage: url != null ? NetworkImage(url) : null,
-            child: _busy
-                ? const CircularProgressIndicator()
-                : (url == null
-                    ? const Icon(Icons.person, size: 44)
-                    : null),
+          ClipOval(
+            child: SizedBox(
+              width: 116,
+              height: 116,
+              child: _busy
+                  ? const Center(child: CircularProgressIndicator())
+                  : (url == null || url.isEmpty)
+                      ? Container(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .primaryContainer,
+                          child: Icon(Icons.person,
+                              size: 64,
+                              color: Theme.of(context).colorScheme.primary))
+                      : Image.network(url,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => Container(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .primaryContainer,
+                              child: const Icon(Icons.person, size: 64))),
+            ),
           ),
           Positioned(
             bottom: 0,

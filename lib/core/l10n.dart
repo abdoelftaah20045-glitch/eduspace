@@ -459,6 +459,8 @@ class S {
     'mc_completed': {'ar': 'المكتملة', 'en': 'Completed', 'fr': 'Completed', 'es': 'Completed', 'de': 'Completed'},
     'pf_interests': {'ar': 'اهتماماتي', 'en': 'My interests', 'fr': 'My interests', 'es': 'My interests', 'de': 'My interests'},
     'pf_interests_hint': {'ar': 'الاهتمامات (افصل بفاصلة)', 'en': 'Interests (comma separated)', 'fr': 'Interests (comma separated)', 'es': 'Interests (comma separated)', 'de': 'Interests (comma separated)'},
+    'pf_no_certs': {'ar': 'لسه معندكش شهادات. خلّص كورس وهتظهر هنا', 'en': 'No certificates yet. Finish a course and it shows here', 'fr': 'No certificates yet', 'es': 'No certificates yet', 'de': 'No certificates yet'},
+    'pf_no_courses': {'ar': 'لسه مش مشترك في كورسات', 'en': 'You are not enrolled in any course yet', 'fr': 'No courses yet', 'es': 'No courses yet', 'de': 'No courses yet'},
     'audit_label': {'ar': 'سجل العمليات', 'en': 'Audit log', 'fr': 'Audit log', 'es': 'Audit log', 'de': 'Audit log'},
     'no_audit': {'ar': 'لا توجد عمليات مسجلة', 'en': 'No recorded actions', 'fr': 'No recorded actions', 'es': 'No recorded actions', 'de': 'No recorded actions'},
     'org_settings': {'ar': 'إعدادات المؤسسة', 'en': 'Organization settings', 'fr': 'Organization settings', 'es': 'Organization settings', 'de': 'Organization settings'},
