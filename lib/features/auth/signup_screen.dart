@@ -147,6 +147,7 @@ class _SignupScreenState extends State<SignupScreen> {
               const SizedBox(height: 16),
               PasswordField(
                 controller: _password,
+                showStrength: true,
                 label: s.t('password'),
                 icon: Icons.lock_outline,
                 validator: (v) =>
