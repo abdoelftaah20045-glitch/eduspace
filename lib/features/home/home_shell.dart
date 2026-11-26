@@ -674,7 +674,7 @@ class _AnnouncementBannerState extends State<_AnnouncementBanner> {
             itemBuilder: (_, i) {
               final a = items[i];
               final hasImg = a.images.isNotEmpty;
-              final text = !hasImg || a.showText;
+              final text = !hasImg;
               return Stack(fit: StackFit.expand, children: [
                 if (hasImg)
                   ImageCarousel(

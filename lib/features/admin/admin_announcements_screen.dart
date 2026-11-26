@@ -184,7 +184,6 @@ class _AnnouncementSheetState extends State<_AnnouncementSheet> {
   final List<String> _images = [];
   final _slide = TextEditingController(text: '4');
   bool _uploading = false;
-  bool _showText = false;
 
   @override
   void dispose() {
@@ -225,7 +224,6 @@ class _AnnouncementSheetState extends State<_AnnouncementSheet> {
         'tenant_id': TenantContext.id,
         'ends_at': _endsAt?.toIso8601String(),
         if (_images.isNotEmpty) 'images': _images,
-        if (_images.isNotEmpty && _showText) 'show_text': true,
         if (_images.length > 1)
           'slide_seconds': (int.tryParse(_slide.text.trim()) ?? 4).clamp(2, 30),
         'created_by': Supabase.instance.client.auth.currentUser?.id,
@@ -356,13 +354,6 @@ class _AnnouncementSheetState extends State<_AnnouncementSheet> {
                       ]),
                   ],
                 ),
-              ),
-            if (_images.isNotEmpty)
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: Text(s.t('ann_show_text')),
-                value: _showText,
-                onChanged: (v) => setState(() => _showText = v),
               ),
             if (_images.length > 1)
               TextField(
