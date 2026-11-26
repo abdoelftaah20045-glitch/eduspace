@@ -26,6 +26,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
   String? _error;
   bool _enrolling = false;
   bool _isFav = false;
+  int _tab = 0;
 
   @override
   void initState() {
@@ -207,6 +208,35 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
             ],
           ),
         ),
+        Row(children: [
+          for (final e in [
+            (0, s.t('cd_overview')),
+            (1, s.t('cd_lessons')),
+            (2, s.t('cd_reviews')),
+          ])
+            Expanded(
+              child: InkWell(
+                onTap: () => setState(() => _tab = e.$1),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  decoration: BoxDecoration(
+                    color: _tab == e.$1 ? scheme.primary : null,
+                    border: Border(
+                        bottom: BorderSide(color: scheme.outlineVariant)),
+                  ),
+                  child: Center(
+                    child: Text(e.$2,
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: _tab == e.$1
+                                ? scheme.onPrimary
+                                : scheme.onSurfaceVariant)),
+                  ),
+                ),
+              ),
+            ),
+        ]),
+        if (_tab == 0)
         Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -249,16 +279,18 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
             ],
           ),
         ),
-        ...details.sections.map((section) => _SectionTile(
+        if (_tab == 1)
+          ...details.sections.map((section) => _SectionTile(
               section: section,
               onLessonTap: _openLesson,
             )),
-        if (details.sections.isEmpty)
+        if (_tab == 1 && details.sections.isEmpty)
           Padding(
             padding: const EdgeInsets.all(24),
             child: Center(child: Text(s.t('no_lessons'))),
           ),
-        ReviewsSection(
+        if (_tab == 2)
+          ReviewsSection(
           courseId: widget.courseId,
           enrolled: details.enrolled,
         ),
