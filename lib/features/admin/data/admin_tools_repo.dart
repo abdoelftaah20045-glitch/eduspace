@@ -102,20 +102,31 @@ class AdminToolsRepository {
 
   static Future<List<Map<String, dynamic>>> _rows(
       String table, String cols) async {
-    return _c
-        .from(table)
-        .select(cols)
-        .eq('tenant_id', TenantContext.id)
-        .limit(5000);
+    try {
+      final r = await _c
+          .from(table)
+          .select(cols)
+          .eq('tenant_id', TenantContext.id)
+          .limit(5000);
+      return List<Map<String, dynamic>>.from(r);
+    } catch (_) {
+      // A missing column/table must not blank the whole report.
+      return <Map<String, dynamic>>[];
+    }
   }
 
   /// All report numbers in one call. Counts are over the current tenant only.
   static Future<Map<String, dynamic>> fetchReport() async {
-    final members = await _c
-        .from('profiles')
-        .select('id, status, created_at, tenant_memberships!user_id!inner(tenant_id)')
-        .eq('tenant_memberships.tenant_id', TenantContext.id)
-        .limit(5000);
+    List<Map<String, dynamic>> members;
+    try {
+      members = List<Map<String, dynamic>>.from(await _c
+          .from('profiles')
+          .select('id, status, created_at, tenant_memberships!user_id!inner(tenant_id)')
+          .eq('tenant_memberships.tenant_id', TenantContext.id)
+          .limit(5000));
+    } catch (_) {
+      members = <Map<String, dynamic>>[];
+    }
     final results = await Future.wait([
       _rows('courses', 'id, status'),
       _rows('enrollments', 'id, status, course_id'),
