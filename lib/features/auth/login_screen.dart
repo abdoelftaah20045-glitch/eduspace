@@ -1,4 +1,5 @@
 import '../../core/app_state.dart';
+import '../../core/app_logo.dart';
 import '../../core/password_field.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -77,23 +78,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Center(
-                    child: Container(
-                      width: 88,
-                      height: 88,
-                      decoration: BoxDecoration(
-                        color: scheme.primary,
-                        borderRadius: BorderRadius.circular(26),
-                        boxShadow: [
-                          BoxShadow(
-                            color: scheme.primary.withValues(alpha: .35),
-                            blurRadius: 24,
-                            offset: const Offset(0, 12),
-                          ),
-                        ],
-                      ),
-                      child: Icon(Icons.school_rounded,
-                          size: 44, color: scheme.onPrimary),
-                    ),
+                    child: const AppLogo(size: 88),
                   ),
                   const SizedBox(height: 20),
                   Text(

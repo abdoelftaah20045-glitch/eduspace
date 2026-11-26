@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/app_logo.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/l10n.dart';
@@ -20,16 +21,7 @@ class AboutScreen extends StatelessWidget {
         children: [
           const SizedBox(height: 12),
           Center(
-            child: Container(
-              width: 84,
-              height: 84,
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                    colors: [Color(0xFF2196F3), Color(0xFF00ACC1)]),
-                borderRadius: BorderRadius.circular(24),
-              ),
-              child: const Icon(Icons.school, color: Colors.white, size: 46),
-            ),
+            child: const AppLogo(size: 84),
           ),
           const SizedBox(height: 12),
           Center(

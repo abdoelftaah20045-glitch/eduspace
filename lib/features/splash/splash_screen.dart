@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/app_logo.dart';
 import '../../core/l10n.dart';
 import '../auth/auth_gate.dart';
 
@@ -89,23 +90,7 @@ class _SplashScreenState extends State<SplashScreen>
                 scale: _logoScale,
                 child: FadeTransition(
                   opacity: _logoFade,
-                  child: Container(
-                    width: 110,
-                    height: 110,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(28),
-                      boxShadow: const [
-                        BoxShadow(
-                          color: Colors.black26,
-                          blurRadius: 24,
-                          offset: Offset(0, 12),
-                        ),
-                      ],
-                    ),
-                    child: Icon(Icons.menu_book_rounded,
-                        size: 56, color: scheme.primary),
-                  ),
+                  child: const AppLogo(size: 110),
                 ),
               ),
               const SizedBox(height: 28),
