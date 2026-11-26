@@ -146,7 +146,16 @@ class SupportRepository {
         .select()
         .eq('ticket_id', ticketId)
         .order('created_at');
-    return rows.map(SupportMessage.fromMap).toList();
+    final list = rows.map(SupportMessage.fromMap).toList();
+    // Oldest first; on equal timestamps the student's message comes first.
+    final indexed = list.asMap().entries.toList()
+      ..sort((a, b) {
+        final c = a.value.createdAt.compareTo(b.value.createdAt);
+        if (c != 0) return c;
+        if (a.value.isAdmin != b.value.isAdmin) return a.value.isAdmin ? 1 : -1;
+        return a.key.compareTo(b.key);
+      });
+    return [for (final e in indexed) e.value];
   }
 
   /// Reply on a ticket. Admins also mark it in_progress and notify the
