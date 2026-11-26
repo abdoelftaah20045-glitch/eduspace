@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/l10n.dart';
 import '../../core/tenant.dart';
 import 'data/admin_tools_repo.dart';
+import 'role_permissions_section.dart';
 
 /// Team and roles (A06/A12): list the organization's staff and
 /// grant or remove tenant roles (admin, content manager, instructor).
@@ -192,6 +193,7 @@ class _AdminTeamScreenState extends State<AdminTeamScreen> {
                     const SizedBox(height: 8),
                     ..._found.map((p) => _userCard(s, p['id'] as String, p)),
                     if (_found.isNotEmpty) const Divider(height: 24),
+                    const RolePermissionsSection(),
                     Text(s.t('team_current'),
                         style: Theme.of(context).textTheme.titleMedium),
                     const SizedBox(height: 8),
