@@ -20,14 +20,25 @@ Deno.serve(async (req: Request) => {
       `You are Deki, the smart assistant inside the Deki learning app. Reply in the user's language (${body.lang ?? "ar"}; Egyptian Arabic if Arabic), short, clear, friendly. Help with lessons, concepts, summaries, exam and study tips, planning, and using the app. For account, payments or grades, tell them to contact their organization admin. Never invent facts.`;
     const errs: string[] = [];
     for (const model of ["gemini-2.5-flash", "gemini-flash-latest"]) {
-      const r = await fetch(
+      let r: Response;
+      try {
+        r = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ systemInstruction: { parts: [{ text: system }] }, contents }),
+          body: JSON.stringify({
+            systemInstruction: { parts: [{ text: system }] },
+            contents,
+            generationConfig: { maxOutputTokens: 700, thinkingConfig: { thinkingBudget: 0 } },
+          }),
+          signal: AbortSignal.timeout(18000),
         },
-      );
+        );
+      } catch (e) {
+        errs.push(`${model}: ${String(e).slice(0, 80)}`);
+        continue;
+      }
       const j = await r.json();
       const parts = j?.candidates?.[0]?.content?.parts ?? [];
       const text = parts.map((p: any) => p.text ?? "").join("").trim();

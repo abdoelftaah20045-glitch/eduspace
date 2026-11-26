@@ -134,7 +134,7 @@ class _AiChatPanelState extends State<AiChatPanel> {
           'name': user?.userMetadata?['full_name'],
           'messages': [for (final m in _history) {'role': m.role, 'text': m.text}],
         },
-      ).timeout(const Duration(seconds: 45));
+      ).timeout(const Duration(seconds: 60));
       final data = res.data;
       if (data is Map && (data['text'] ?? '').toString().isNotEmpty) {
         reply = data['text'].toString();
