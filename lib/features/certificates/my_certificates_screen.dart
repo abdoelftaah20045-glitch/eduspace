@@ -73,9 +73,10 @@ class _MyCertificatesScreenState extends State<MyCertificatesScreen> {
                   )
                 : ListView.builder(
                     padding: const EdgeInsets.all(16),
-                    itemCount: _certs!.length,
+                    itemCount: groupCertsByCourse(_certs!).length,
                     itemBuilder: (context, i) {
-                      final c = _certs![i];
+                      final group = groupCertsByCourse(_certs!)[i];
+                      final c = pickCertLang(group, s.locale.languageCode);
                       return Card(
                         clipBehavior: Clip.antiAlias,
                         child: ListTile(
@@ -94,7 +95,7 @@ class _MyCertificatesScreenState extends State<MyCertificatesScreen> {
                                 const TextStyle(fontWeight: FontWeight.w600),
                           ),
                           subtitle: Text(
-                            '${c.lang == 'ar' ? 'العربية' : 'English'}  ·  ${c.certificateNumber}\n'
+                            '${group.map((x) => x.lang == 'ar' ? 'العربية' : 'English').join(' / ')}  ·  ${c.certificateNumber}\n'
                             '${DateFormat('d MMM y', s.locale.languageCode).format(c.issuedAt)}'
                             '${c.isValid ? '' : ' · ${s.t('status_cancelled')}'}',
                           ),
@@ -102,7 +103,7 @@ class _MyCertificatesScreenState extends State<MyCertificatesScreen> {
                           trailing: const Icon(Icons.chevron_right),
                           onTap: () => Navigator.of(context).push(
                             MaterialPageRoute(
-                              builder: (_) => CertificateViewScreen(cert: c),
+                              builder: (_) => CertificateViewScreen(cert: c, siblings: group),
                             ),
                           ),
                         ),

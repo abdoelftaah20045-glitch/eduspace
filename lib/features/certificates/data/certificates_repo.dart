@@ -138,3 +138,18 @@ class CertificatesRepository {
     return 'EDU-${DateTime.now().year}-$tail';
   }
 }
+
+
+/// One entry per course: the Arabic and English certificates of the same
+/// course are a single certificate with a language choice.
+List<List<Certificate>> groupCertsByCourse(List<Certificate> all) {
+  final map = <String, List<Certificate>>{};
+  for (final c in all) {
+    map.putIfAbsent(c.courseId, () => []).add(c);
+  }
+  return map.values.toList();
+}
+
+/// Picks the variant matching [lang], else the first one.
+Certificate pickCertLang(List<Certificate> g, String lang) =>
+    g.firstWhere((c) => c.lang == lang, orElse: () => g.first);

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../core/config.dart';
 import '../../core/l10n.dart';
+import '../certificates/certificate_card.dart';
 import '../certificates/certificate_view_screen.dart';
 import '../certificates/data/certificates_repo.dart';
 import '../certificates/my_certificates_screen.dart';
@@ -15,18 +17,26 @@ class CertsStrip extends StatefulWidget {
 
 class _CertsStripState extends State<CertsStrip> {
   List<Certificate> _certs = const [];
+  final Map<String, Map<String, dynamic>?> _settings = {};
 
   @override
   void initState() {
     super.initState();
     CertificatesRepository.fetchMine().then((c) {
-      if (mounted) setState(() => _certs = c.where((x) => x.isValid).toList());
+      final v = c.where((x) => x.isValid).toList();
+      if (mounted) setState(() => _certs = v);
+      for (final id in v.map((x) => x.courseId).toSet()) {
+        CertificatesRepository.settingsFor(id).then((m) {
+          if (mounted) setState(() => _settings[id] = m);
+        }).catchError((_) {});
+      }
     }).catchError((_) {});
   }
 
   @override
   Widget build(BuildContext context) {
     final s = S.of(context);
+    final groups = groupCertsByCourse(_certs);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -54,46 +64,47 @@ class _CertsStripState extends State<CertsStrip> {
           )
         else
         SizedBox(
-          height: 150,
+          height: 190,
           child: PageView.builder(
             controller: PageController(viewportFraction: .82),
-            itemCount: _certs.length,
+            itemCount: groups.length,
             itemBuilder: (_, i) {
-              final c = _certs[i];
+              final g = groups[i];
+              final c = pickCertLang(g, s.locale.languageCode);
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 6),
                 child: InkWell(
-                borderRadius: BorderRadius.circular(14),
-                onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                    builder: (_) => CertificateViewScreen(cert: c))),
-                child: Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                        colors: [Color(0xFF0D2A57), Color(0xFF1B4A8F)]),
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: const Color(0xFFC9A227), width: 1.5),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Icon(Icons.workspace_premium,
-                          color: Color(0xFFC9A227), size: 26),
-                      const Spacer(),
-                      Text(c.courseTitle,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                              color: Colors.white, fontWeight: FontWeight.bold)),
-                      Text(c.certificateNumber,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                              color: Colors.white70, fontSize: 10)),
-                    ],
+                  borderRadius: BorderRadius.circular(14),
+                  onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                      builder: (_) =>
+                          CertificateViewScreen(cert: c, siblings: g))),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                          color: Theme.of(context).dividerColor, width: 1),
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    child: IgnorePointer(
+                      child: FittedBox(
+                        fit: BoxFit.cover,
+                        child: SizedBox(
+                          width: 960,
+                          height: 680,
+                          child: CertificateCard(
+                            cert: c,
+                            lang: c.lang,
+                            verifyUrl: '${AppConfig.supabaseUrl}/rest/v1/rpc/'
+                                'verify_certificate?apikey=${AppConfig.supabaseAnonKey}'
+                                '&p_number=${c.certificateNumber}',
+                            settings: _settings[c.courseId],
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
-              ));
+              );
             },
           ),
         ),

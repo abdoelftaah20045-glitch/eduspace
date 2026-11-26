@@ -641,7 +641,7 @@ class S {
     'mark_all_read': {'ar': 'تحديد الكل كمقروء', 'en': 'Mark all as read', 'fr': 'Tout marquer comme lu', 'es': 'Marcar todo como leído', 'de': 'Alle als gelesen markieren'},
     'no_certificates': {'ar': 'مفيش شهادات لسه. كمّل كورس كامل عشان تاخد شهادتك.', 'en': 'No certificates yet. Finish a full course to earn yours.', 'fr': 'Aucun certificat pour le moment. Terminez un cours complet pour obtenir le vôtre.', 'es': 'Aún no hay certificados. Termina un curso completo para obtener el tuyo.', 'de': 'Noch keine Zertifikate. Schließe einen ganzen Kurs ab, um deins zu erhalten.'},
     'certificate_of_completion': {'ar': 'شهادة إتمام', 'en': 'Certificate of Completion', 'fr': 'Certificat de réussite', 'es': 'Certificado de finalización', 'de': 'Abschlusszertifikat'},
-    'this_certifies': {'ar': 'تشهد منصة EduSpace بأن', 'en': 'EduSpace certifies that', 'fr': 'EduSpace certifie que', 'es': 'EduSpace certifica que', 'de': 'EduSpace bescheinigt, dass'},
+    'this_certifies': {'ar': 'تشهد منصة Deki بأن', 'en': 'Deki certifies that', 'fr': 'Deki certifie que', 'es': 'Deki certifica que', 'de': 'Deki bescheinigt, dass'},
     'has_completed': {'ar': 'قد أتم بنجاح كورس', 'en': 'has successfully completed the course', 'fr': 'a terminé avec succès le cours', 'es': 'ha completado con éxito el curso', 'de': 'den Kurs erfolgreich abgeschlossen hat'},
     'issued_on': {'ar': 'تاريخ الإصدار', 'en': 'Issued on', 'fr': 'Délivré le', 'es': 'Emitido el', 'de': 'Ausgestellt am'},
     'cert_number': {'ar': 'رقم الشهادة', 'en': 'Certificate no.', 'fr': 'N° de certificat', 'es': 'N.º de certificado', 'de': 'Zertifikatsnr.'},

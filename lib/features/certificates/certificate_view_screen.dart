@@ -28,9 +28,13 @@ Color _deepen(Color c, [double factor = 0.62]) {
 /// Full certificate view. The share button captures the certificate as a PNG
 /// (so Arabic text renders correctly, no PDF font issues) and shares it.
 class CertificateViewScreen extends StatefulWidget {
-  const CertificateViewScreen({super.key, required this.cert});
+  const CertificateViewScreen(
+      {super.key, required this.cert, this.siblings = const []});
 
   final Certificate cert;
+
+  /// All language variants of the same course certificate (incl. [cert]).
+  final List<Certificate> siblings;
 
   @override
   State<CertificateViewScreen> createState() => _CertificateViewScreenState();
@@ -41,22 +45,23 @@ class _CertificateViewScreenState extends State<CertificateViewScreen> {
   bool _sharing = false;
   bool _exporting = false;
   Map<String, dynamic>? _settings;
+  late Certificate _cert = widget.cert;
 
   @override
   void initState() {
     super.initState();
-    CertificatesRepository.settingsFor(widget.cert.courseId).then((v) {
+    CertificatesRepository.settingsFor(_cert.courseId).then((v) {
       if (mounted) setState(() => _settings = v);
     });
   }
 
-  String get _lang => widget.cert.lang;
+  String get _lang => _cert.lang;
 
   /// Public verification link encoded in the PDF's QR code.
   String get _verifyUrl =>
       '${AppConfig.supabaseUrl}/rest/v1/rpc/verify_certificate'
       '?apikey=${AppConfig.supabaseAnonKey}'
-      '&p_number=${widget.cert.certificateNumber}';
+      '&p_number=${_cert.certificateNumber}';
 
   Future<Uint8List?> _capturePng() async {
     final boundary = _captureKey.currentContext?.findRenderObject()
@@ -75,7 +80,7 @@ class _CertificateViewScreenState extends State<CertificateViewScreen> {
       if (bytes == null) return;
       final dir = await getTemporaryDirectory();
       final file = File(
-          '${dir.path}/certificate-${widget.cert.certificateNumber}.png');
+          '${dir.path}/certificate-${_cert.certificateNumber}.png');
       await file.writeAsBytes(bytes);
       await Share.shareXFiles([XFile(file.path)]);
     } catch (_) {
@@ -113,7 +118,7 @@ class _CertificateViewScreenState extends State<CertificateViewScreen> {
                     crossAxisAlignment: pw.CrossAxisAlignment.start,
                     children: [
                       pw.Text(
-                        'Certificate: ${widget.cert.certificateNumber}',
+                        'Certificate: ${_cert.certificateNumber}',
                         style: const pw.TextStyle(
                             fontSize: 10, color: PdfColors.grey700),
                       ),
@@ -139,7 +144,7 @@ class _CertificateViewScreenState extends State<CertificateViewScreen> {
       );
       await Printing.sharePdf(
         bytes: await doc.save(),
-        filename: 'certificate-${widget.cert.certificateNumber}.pdf',
+        filename: 'certificate-${_cert.certificateNumber}.pdf',
       );
     } catch (_) {
       // PDF export failed; PNG share is still available.
@@ -151,7 +156,7 @@ class _CertificateViewScreenState extends State<CertificateViewScreen> {
   @override
   Widget build(BuildContext context) {
     final s = S.of(context);
-    final cert = widget.cert;
+    final cert = _cert;
     return Scaffold(
       appBar: AppBar(
         title: Text(s.t('certificate_of_completion')),
@@ -181,6 +186,24 @@ class _CertificateViewScreenState extends State<CertificateViewScreen> {
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
+          if (widget.siblings.length > 1)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Center(
+                child: SegmentedButton<String>(
+                  showSelectedIcon: false,
+                  segments: [
+                    for (final c in widget.siblings)
+                      ButtonSegment(
+                          value: c.lang,
+                          label: Text(c.lang == 'ar' ? 'العربية' : 'English')),
+                  ],
+                  selected: {_cert.lang},
+                  onSelectionChanged: (v) => setState(() => _cert =
+                      widget.siblings.firstWhere((c) => c.lang == v.first)),
+                ),
+              ),
+            ),
           RepaintBoundary(
             key: _captureKey,
             child: AspectRatio(
