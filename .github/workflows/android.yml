@@ -40,7 +40,7 @@ jobs:
           d = 'android/app/src/main/res/drawable-xxxhdpi'
           os.makedirs(d, exist_ok=True)
           for n, p in (('ic_fg', 'adaptive_foreground_1024'), ('ic_bg', 'adaptive_background_1024')):
-              Image.open(f'assets/brand_v3/{p}.png').convert('RGBA').resize((432, 432), Image.LANCZOS).save(f'{d}/{n}.png')
+              Image.open(f'assets/brand/{p}.png').convert('RGBA').resize((432, 432), Image.LANCZOS).save(f'{d}/{n}.png')
           d = 'android/app/src/main/res/mipmap-anydpi-v26'
           os.makedirs(d, exist_ok=True)
           xml = '<?xml version="1.0" encoding="utf-8"?><adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android"><background android:drawable="@drawable/ic_bg"/><foreground android:drawable="@drawable/ic_fg"/></adaptive-icon>'
