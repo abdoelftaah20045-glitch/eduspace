@@ -137,6 +137,7 @@ jobs:
           GH_TOKEN: ${{ secrets.RELEASES_TOKEN }}
         run: |
           if [ -z "$GH_TOKEN" ]; then echo "RELEASES_TOKEN not set, skipping"; exit 0; fi
+          if [ "$(tr -d ' \n' < ci/publish.txt 2>/dev/null || echo yes)" != "yes" ]; then echo "ci/publish.txt is not yes: feed untouched"; exit 0; fi
           cp build/app/outputs/flutter-apk/app-arm64-v8a-release.apk deki.apk
           VERSION=$(grep -m1 '^version:' pubspec.yaml | sed 's/version: *//; s/+.*//')
           NOTES=$(git log -1 --pretty=%s | head -c 200 | tr -d '"\\')
