@@ -325,6 +325,7 @@ class S {
     'discover_label': {'ar': 'اكتشف', 'en': 'Discover', 'fr': 'Discover', 'es': 'Discover', 'de': 'Discover'},
     'all_label': {'ar': 'الكل', 'en': 'All', 'fr': 'All', 'es': 'All', 'de': 'All'},
     'sections_label': {'ar': 'الأقسام', 'en': 'Sections', 'fr': 'Sections', 'es': 'Sections', 'de': 'Sections'},
+    'ann_show_text': {'ar': 'إظهار النص فوق الصورة', 'en': 'Show text on the banner', 'fr': 'Show text on the banner', 'es': 'Show text on the banner', 'de': 'Show text on the banner'},
     'audit_label': {'ar': 'سجل العمليات', 'en': 'Audit log', 'fr': 'Audit log', 'es': 'Audit log', 'de': 'Audit log'},
     'no_audit': {'ar': 'لا توجد عمليات مسجلة', 'en': 'No recorded actions', 'fr': 'No recorded actions', 'es': 'No recorded actions', 'de': 'No recorded actions'},
     'org_settings': {'ar': 'إعدادات المؤسسة', 'en': 'Organization settings', 'fr': 'Organization settings', 'es': 'Organization settings', 'de': 'Organization settings'},

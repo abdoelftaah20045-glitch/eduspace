@@ -37,16 +37,32 @@ class AppNotification {
 }
 
 class Announcement {
-  Announcement({required this.id, required this.title, required this.body});
+  Announcement({
+    required this.id,
+    required this.title,
+    required this.body,
+    this.images = const [],
+    this.slideSeconds = 4,
+    this.showText = false,
+  });
 
   final String id;
   final String title;
   final String body;
+  final List<String> images;
+  final int slideSeconds;
+  final bool showText;
 
   factory Announcement.fromMap(Map<String, dynamic> m) => Announcement(
         id: m['id'] as String,
         title: (m['title'] as String?) ?? '',
         body: (m['body'] as String?) ?? '',
+        images: [
+          if (m['images'] is List)
+            for (final u in m['images'] as List) u.toString(),
+        ],
+        slideSeconds: (m['slide_seconds'] as num?)?.toInt() ?? 4,
+        showText: m['show_text'] == true,
       );
 }
 
@@ -151,5 +167,26 @@ class NotificationsRepository {
       }
     }
     return null;
+  }
+
+  /// All currently active announcements (newest first) for the home banner.
+  static Future<List<Announcement>> fetchActiveAnnouncements() async {
+    final now = DateTime.now().toUtc().toIso8601String();
+    final rows = await _c
+        .from('announcements')
+        .select()
+        .eq('tenant_id', TenantContext.id)
+        .lte('starts_at', now)
+        .order('created_at', ascending: false)
+        .limit(10);
+    final out = <Announcement>[];
+    for (final m in rows) {
+      final ends = m['ends_at'];
+      final e = ends == null ? null : DateTime.tryParse(ends.toString());
+      if (e == null || e.isAfter(DateTime.now().toUtc())) {
+        out.add(Announcement.fromMap(m));
+      }
+    }
+    return out;
   }
 }

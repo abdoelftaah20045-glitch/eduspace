@@ -10,11 +10,13 @@ class ImageCarousel extends StatefulWidget {
     required this.urls,
     this.aspectRatio = 16 / 9,
     this.interval = const Duration(seconds: 4),
+    this.radius = 16,
   });
 
   final List<String> urls;
   final double aspectRatio;
   final Duration interval;
+  final double radius;
 
   @override
   State<ImageCarousel> createState() => _ImageCarouselState();
@@ -52,7 +54,7 @@ class _ImageCarouselState extends State<ImageCarousel> {
     if (widget.urls.isEmpty) return const SizedBox.shrink();
     final scheme = Theme.of(context).colorScheme;
     return ClipRRect(
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(widget.radius),
       child: AspectRatio(
         aspectRatio: widget.aspectRatio,
         child: Listener(

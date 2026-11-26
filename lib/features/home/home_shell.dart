@@ -1,6 +1,8 @@
+import 'dart:async';
 import '../../core/in_app_player.dart';
 import 'package:flutter/material.dart';
 import '../../core/pressable.dart';
+import '../../core/image_carousel.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -91,7 +93,7 @@ class _HomeTab extends StatefulWidget {
 class _HomeTabState extends State<_HomeTab> {
   ContinueItem? _continueItem;
   List<Course>? _myCourses;
-  Announcement? _announcement;
+  List<Announcement> _announcements = [];
   List<LiveSession> _lives = const [];
   int _unread = 0;
   List<Course> _trending = [];
@@ -114,11 +116,11 @@ class _HomeTabState extends State<_HomeTab> {
       // Notifications tables may not exist yet on older backends; never
       // let them break the home tab.
       var unread = 0;
-      Announcement? announcement;
+      var announcements = <Announcement>[];
       var lives = <LiveSession>[];
       try {
         unread = await NotificationsRepository.unreadCount();
-        announcement = await NotificationsRepository.fetchActiveAnnouncement();
+        announcements = await NotificationsRepository.fetchActiveAnnouncements();
       } catch (_) {}
       try {
         lives = await LivesRepository.fetchUpcoming();
@@ -146,7 +148,7 @@ class _HomeTabState extends State<_HomeTab> {
         _continueItem = results[0] as ContinueItem?;
         _myCourses = results[1] as List<Course>;
         _unread = unread;
-        _announcement = announcement;
+        _announcements = announcements;
         _lives = lives;
         _trending = trending;
         _loaded = true;
@@ -426,45 +428,9 @@ class _HomeTabState extends State<_HomeTab> {
               ),
               const SizedBox(height: 14),
             ],
-            if (_announcement != null) ...[
-              FadeSlideIn(
-                child: Container(
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.primary.withValues(alpha: .08),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: theme.colorScheme.primary.withValues(alpha: .25),
-                    ),
-                  ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Icon(Icons.campaign_outlined,
-                          color: theme.colorScheme.primary),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              _announcement!.title,
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.bold),
-                            ),
-                            if (_announcement!.body.isNotEmpty) ...[
-                              const SizedBox(height: 4),
-                              Text(_announcement!.body,
-                                  style: const TextStyle(fontSize: 13)),
-                            ],
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
+            if (_announcements.isNotEmpty) ...[
+              _AnnouncementBanner(items: _announcements),
+              const SizedBox(height: 16),
             ],
             const SizedBox(height: 4),
             if (myCourses.isNotEmpty) ...[
@@ -657,3 +623,136 @@ const _coursePalette = <(Color, Color)>[
   (Color(0xFFE8F7EE), Color(0xFF2E9E5B)),
   (Color(0xFFF3E9FF), Color(0xFF7C4DFF)),
 ];
+
+/// Home banner: announcement images full-bleed with rounded corners.
+/// Title/body overlay only when the admin turned "show text" on (or when the
+/// announcement has no image at all).
+class _AnnouncementBanner extends StatefulWidget {
+  const _AnnouncementBanner({required this.items});
+
+  final List<Announcement> items;
+
+  @override
+  State<_AnnouncementBanner> createState() => _AnnouncementBannerState();
+}
+
+class _AnnouncementBannerState extends State<_AnnouncementBanner> {
+  final _page = PageController();
+  Timer? _timer;
+  int _index = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer.periodic(const Duration(seconds: 5), (_) {
+      if (!mounted || !_page.hasClients || widget.items.length < 2) return;
+      _page.animateToPage((_index + 1) % widget.items.length,
+          duration: const Duration(milliseconds: 450),
+          curve: Curves.easeInOut);
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _page.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final items = widget.items;
+    return Column(children: [
+      ClipRRect(
+        borderRadius: BorderRadius.circular(22),
+        child: AspectRatio(
+          aspectRatio: 16 / 8,
+          child: PageView.builder(
+            controller: _page,
+            itemCount: items.length,
+            onPageChanged: (i) => setState(() => _index = i),
+            itemBuilder: (_, i) {
+              final a = items[i];
+              final hasImg = a.images.isNotEmpty;
+              final text = !hasImg || a.showText;
+              return Stack(fit: StackFit.expand, children: [
+                if (hasImg)
+                  ImageCarousel(
+                      urls: a.images,
+                      aspectRatio: 16 / 8,
+                      radius: 0,
+                      interval: Duration(seconds: a.slideSeconds))
+                else
+                  Container(
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                          colors: [Color(0xFFFFF3D6), Color(0xFFFFE2A8)]),
+                    ),
+                  ),
+                if (text && (a.title.isNotEmpty || a.body.isNotEmpty))
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    child: Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        gradient: hasImg
+                            ? const LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [Colors.transparent, Colors.black87])
+                            : null,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (a.title.isNotEmpty)
+                            Text(a.title,
+                                style: TextStyle(
+                                    color: hasImg
+                                        ? Colors.white
+                                        : const Color(0xFF5D4300),
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 16)),
+                          if (a.body.isNotEmpty)
+                            Text(a.body,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                    color: hasImg
+                                        ? Colors.white70
+                                        : const Color(0xFF8A6A1F),
+                                    fontSize: 12.5)),
+                        ],
+                      ),
+                    ),
+                  ),
+              ]);
+            },
+          ),
+        ),
+      ),
+      if (items.length > 1)
+        Padding(
+          padding: const EdgeInsets.only(top: 8),
+          child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+            for (var i = 0; i < items.length; i++)
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 250),
+                margin: const EdgeInsets.symmetric(horizontal: 3),
+                width: i == _index ? 18 : 7,
+                height: 7,
+                decoration: BoxDecoration(
+                  color: i == _index
+                      ? const Color(0xFF2563EB)
+                      : const Color(0xFFB8C4DD),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+          ]),
+        ),
+    ]);
+  }
+}
