@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../../core/empty_illustration.dart';
 import '../../core/image_carousel.dart';
 import '../../core/l10n.dart';
 import 'data/notifications_repo.dart';
@@ -236,13 +237,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             : _filtered.isEmpty
                 ? ListView(
                     children: [
-                      const SizedBox(height: 100),
-                      const Icon(Icons.notifications_none,
-                          size: 56, color: Colors.grey),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 90),
                       Center(
-                        child: Text(s.t('no_notifications'),
-                            style: const TextStyle(color: Colors.grey)),
+                        child: EmptyIllustration(
+                            icon: Icons.notifications_none,
+                            text: s.t('no_notifications')),
                       ),
                     ],
                   )

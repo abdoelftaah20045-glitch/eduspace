@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../core/empty_illustration.dart';
 import '../../core/l10n.dart';
 import '../../core/tenant.dart';
 
@@ -194,7 +195,7 @@ class _QuestionBankScreenState extends State<QuestionBankScreen> {
                     ? Center(
                         child: Padding(
                           padding: const EdgeInsets.all(32),
-                          child: Text(s.t('qb_empty'), textAlign: TextAlign.center),
+                          child: EmptyIllustration(icon: Icons.fact_check_outlined, text: s.t('qb_empty')),
                         ),
                       )
                     : ListView(

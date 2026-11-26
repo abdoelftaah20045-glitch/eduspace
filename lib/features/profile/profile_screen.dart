@@ -9,6 +9,7 @@ import '../admin/data/admin_repo.dart';
 import '../certificates/my_certificates_screen.dart';
 import '../courses/favorites_screen.dart';
 import '../library/library_screen.dart';
+import 'certs_strip.dart';
 import '../support/support_screen.dart';
 import '../settings/settings_screen.dart';
 import '../tenancy/select_tenant_screen.dart';
@@ -112,6 +113,7 @@ class ProfileScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               const ProfileStats(),
+              const CertsStrip(),
               const SizedBox(height: 8),
               ListTile(
                 leading: const Icon(Icons.edit_outlined),
