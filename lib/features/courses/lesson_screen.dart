@@ -127,51 +127,68 @@ class _LessonScreenState extends State<LessonScreen> {
   Widget build(BuildContext context) {
     final s = S.of(context);
     return Scaffold(
-      appBar: AppBar(title: Text(lesson.title)),
+      appBar: AppBar(
+        title: Text(lesson.title,
+            maxLines: 1, overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+      ),
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 10),
+          child: _completed
+              ? Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.check_circle,
+                        color: Theme.of(context).colorScheme.primary),
+                    const SizedBox(width: 8),
+                    Text(s.t('completed'),
+                        style: const TextStyle(fontWeight: FontWeight.w700)),
+                  ],
+                )
+              : SizedBox(
+                  width: double.infinity,
+                  child: FilledButton.icon(
+                    onPressed:
+                        (_saving || !_canComplete) ? null : _markComplete,
+                    icon: _saving
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.check),
+                    label: Text(_canComplete
+                        ? s.t('mark_complete')
+                        : '${s.t('watch_required')} $_pct% ($_shownPct%)'),
+                  ),
+                ),
+        ),
+      ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.zero,
         children: [
-          Text(lesson.title,
-              style: Theme.of(context)
-                  .textTheme
-                  .titleLarge
-                  ?.copyWith(fontWeight: FontWeight.w800)),
-          const SizedBox(height: 12),
           _buildBody(s),
-          if (lesson.content.isNotEmpty && lesson.type != 'text') ...[
-            const SizedBox(height: 16),
-            Text(lesson.content),
-          ],
-          const SizedBox(height: 16),
-          LessonFiles(lessonId: lesson.id),
-          const SizedBox(height: 24),
-          if (!_completed)
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton.icon(
-                onPressed: (_saving || !_canComplete) ? null : _markComplete,
-                icon: _saving
-                    ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Icon(Icons.check),
-                label: Text(_canComplete
-                    ? s.t('mark_complete')
-                    : '${s.t('watch_required')} $_pct% ($_shownPct%)'),
-              ),
-            )
-          else
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(Icons.check_circle,
-                    color: Theme.of(context).colorScheme.primary),
-                const SizedBox(width: 8),
-                Text(s.t('completed')),
+                Text(lesson.title,
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleLarge
+                        ?.copyWith(fontWeight: FontWeight.w800)),
+                if (lesson.content.isNotEmpty && lesson.type != 'text') ...[
+                  const SizedBox(height: 12),
+                  Text(lesson.content),
+                ],
+                const SizedBox(height: 16),
+                LessonFiles(lessonId: lesson.id),
+                const SizedBox(height: 16),
               ],
             ),
+          ),
         ],
       ),
     );
@@ -181,7 +198,7 @@ class _LessonScreenState extends State<LessonScreen> {
     switch (lesson.type) {
       case 'video':
         final url = lesson.mediaUrl;
-        if (url == null || url.isEmpty) return Text(s.t('no_content'));
+        if (url == null || url.isEmpty) return Padding(padding: const EdgeInsets.all(16), child: Text(s.t('no_content')));
         return FutureBuilder<String>(
           future: resolveStorageUrl(url),
           builder: (context, snap) {
@@ -193,7 +210,7 @@ class _LessonScreenState extends State<LessonScreen> {
               return AspectRatio(
                 aspectRatio: 16 / 9,
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.zero,
                   child: InAppWebPlayer(
                       url: resolved,
                       onTick: _onTick,
@@ -216,22 +233,26 @@ class _LessonScreenState extends State<LessonScreen> {
           },
         );
       case 'text':
-        return Text(lesson.content.trim().isEmpty ? s.t('no_content') : lesson.content);
+        return Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+            child: Text(lesson.content.trim().isEmpty ? s.t('no_content') : lesson.content));
       case 'pdf':
       case 'document':
       case 'presentation':
       case 'audio':
       case 'link':
         final url = lesson.mediaUrl;
-        if (url == null || url.isEmpty) return Text(s.t('no_content'));
-        return SizedBox(
+        if (url == null || url.isEmpty) return Padding(padding: const EdgeInsets.all(16), child: Text(s.t('no_content')));
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+          child: SizedBox(
           width: double.infinity,
           child: OutlinedButton.icon(
             onPressed: () => _openExternal(url),
             icon: const Icon(Icons.open_in_new),
             label: Text(s.t(lesson.type == 'link' ? 'open_link' : 'open_file')),
           ),
-        );
+        ));
       default:
         // live, quiz, assignment: their stages come later.
         return Card(
