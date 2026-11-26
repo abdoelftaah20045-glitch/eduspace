@@ -18,6 +18,12 @@ import '../notifications/data/notifications_repo.dart';
 import '../lives/data/lives_repo.dart';
 import '../notifications/notifications_screen.dart';
 import '../profile/profile_screen.dart';
+import '../certificates/my_certificates_screen.dart';
+import '../library/library_screen.dart';
+import '../lives/lives_screen.dart';
+import '../qbank/question_bank_screen.dart';
+import '../schedule/schedule_screen.dart';
+import '../support/support_screen.dart';
 import 'app_drawer.dart';
 
 /// Bottom navigation shell: Home / Courses / Exams / Account.
@@ -142,6 +148,33 @@ class _HomeTabState extends State<_HomeTab> {
       if (!mounted) return;
       setState(() => _loaded = true);
     }
+  }
+
+  Widget _quick(BuildContext context, IconData icon, String label,
+      Color color, Widget page) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(16),
+      onTap: () => Navigator.of(context)
+          .push(MaterialPageRoute(builder: (_) => page))
+          .then((_) => _load()),
+      child: Column(children: [
+        Container(
+          width: 56,
+          height: 56,
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: .14),
+            borderRadius: BorderRadius.circular(18),
+          ),
+          child: Icon(icon, color: color, size: 26),
+        ),
+        const SizedBox(height: 6),
+        Text(label,
+            maxLines: 2,
+            textAlign: TextAlign.center,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontSize: 11.5)),
+      ]),
+    );
   }
 
   @override
@@ -298,6 +331,57 @@ class _HomeTabState extends State<_HomeTab> {
                   ),
                 ],
               ),
+            ),
+            const SizedBox(height: 14),
+            // Search bar (reference: "Search here" on the student dashboard).
+            InkWell(
+              borderRadius: BorderRadius.circular(16),
+              onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const CoursesScreen())),
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                decoration: BoxDecoration(
+                  color: scheme.surface,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: scheme.outlineVariant),
+                ),
+                child: Row(children: [
+                  Icon(Icons.search, color: scheme.onSurfaceVariant),
+                  const SizedBox(width: 10),
+                  Text(s.t('home_search'),
+                      style: TextStyle(color: scheme.onSurfaceVariant)),
+                ]),
+              ),
+            ),
+            const SizedBox(height: 16),
+            // Quick dashboard grid (reference: round icon tiles).
+            GridView.count(
+              crossAxisCount: 4,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              mainAxisSpacing: 12,
+              crossAxisSpacing: 8,
+              childAspectRatio: .85,
+              children: [
+                _quick(context, Icons.menu_book_outlined, s.t('my_courses'),
+                    const Color(0xFF2196F3), const CoursesScreen()),
+                _quick(context, Icons.video_camera_front_outlined,
+                    s.t('lv_title'), const Color(0xFFE53935), const LivesScreen()),
+                _quick(context, Icons.quiz_outlined, s.t('tab_exams'),
+                    const Color(0xFF7C4DFF), const ExamsScreen()),
+                _quick(context, Icons.folder_open, s.t('library_label'),
+                    const Color(0xFF00ACC1), const LibraryScreen()),
+                _quick(context, Icons.fact_check_outlined, s.t('qb_title'),
+                    const Color(0xFFF29900), const QuestionBankScreen()),
+                _quick(context, Icons.event_outlined, s.t('sch_title'),
+                    const Color(0xFF2E9E5B), const ScheduleScreen()),
+                _quick(context, Icons.workspace_premium_outlined,
+                    s.t('my_certificates'), const Color(0xFFC9A227),
+                    const MyCertificatesScreen()),
+                _quick(context, Icons.support_agent, s.t('support'),
+                    const Color(0xFFAB47BC), const SupportScreen()),
+              ],
             ),
             const SizedBox(height: 20),
             if (!_loaded)

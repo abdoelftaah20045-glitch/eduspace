@@ -310,6 +310,7 @@ class S {
     'qb_sql': {'ar': 'لازم تشغل SQL الجزء 14 الأول.', 'en': 'Run SQL part 14 first.', 'fr': 'Exécutez la partie SQL 14.', 'es': 'Ejecuta la parte SQL 14.', 'de': 'SQL Teil 14 ausführen.'},
     'notif_add_images': {'ar': 'إضافة صور', 'en': 'Add images', 'fr': 'Add images', 'es': 'Add images', 'de': 'Add images'},
     'notif_img_sql': {'ar': 'لازم تشغل SQL الجزء 14 الأول عشان الصور.', 'en': 'Run SQL part 14 first for images.', 'fr': 'Run SQL part 14 first for images.', 'es': 'Run SQL part 14 first for images.', 'de': 'Run SQL part 14 first for images.'},
+    'home_search': {'ar': 'ابحث عن كورس أو درس', 'en': 'Search courses or lessons', 'fr': 'Rechercher un cours', 'es': 'Buscar un curso', 'de': 'Kurs suchen'},
     'audit_label': {'ar': 'سجل العمليات', 'en': 'Audit log', 'fr': 'Audit log', 'es': 'Audit log', 'de': 'Audit log'},
     'no_audit': {'ar': 'لا توجد عمليات مسجلة', 'en': 'No recorded actions', 'fr': 'No recorded actions', 'es': 'No recorded actions', 'de': 'No recorded actions'},
     'org_settings': {'ar': 'إعدادات المؤسسة', 'en': 'Organization settings', 'fr': 'Organization settings', 'es': 'Organization settings', 'de': 'Organization settings'},
