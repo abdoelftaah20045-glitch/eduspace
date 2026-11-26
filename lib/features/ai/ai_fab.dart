@@ -8,6 +8,9 @@ import 'ai_assistant_screen.dart';
 
 /// Wraps the whole app: a draggable glowing assistant button on every page
 /// once the user is signed in. Tap opens the chat sheet.
+/// Screens that must stay clear (exam, lesson player) bump this counter.
+final ValueNotifier<int> aiFabHidden = ValueNotifier<int>(0);
+
 class AiOverlay extends StatefulWidget {
   const AiOverlay({super.key, required this.child});
 
@@ -65,23 +68,34 @@ class _AiOverlayState extends State<AiOverlay>
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    const d = 56.0;
-    final pos = _pos ?? Offset(size.width - d - 16, size.height - d - 110);
+    const d = 40.0;
+    final pos = _pos ?? Offset(size.width - d / 2 - 6, size.height * .62);
     final clamped = Offset(
-      pos.dx.clamp(8.0, size.width - d - 8),
+      pos.dx.clamp(-d / 2 + 6, size.width - d / 2 - 6),
       pos.dy.clamp(MediaQuery.of(context).padding.top + 8, size.height - d - 8),
     );
-    return Stack(
+    return ValueListenableBuilder<int>(
+      valueListenable: aiFabHidden,
+      builder: (context, _, __) => Stack(
       children: [
         widget.child,
-        if (!_open)
+        if (!_open &&
+            aiFabHidden.value == 0 &&
+            MediaQuery.of(context).viewInsets.bottom == 0)
           Positioned(
             left: clamped.dx,
             top: clamped.dy,
             child: GestureDetector(
               onPanUpdate: (u) => setState(() => _pos = clamped + u.delta),
+              onPanEnd: (_) => setState(() {
+                // dock to the nearest edge, half hidden
+                final left = clamped.dx + d / 2 < size.width / 2;
+                _pos = Offset(left ? -d / 2 + 6 : size.width - d / 2 - 6, clamped.dy);
+              }),
               onTap: _openChat,
-              child: AnimatedBuilder(
+              child: Opacity(
+                opacity: .6,
+                child: AnimatedBuilder(
                 animation: _pulse,
                 builder: (_, child) => Container(
                   width: d,
@@ -109,11 +123,11 @@ class _AiOverlayState extends State<AiOverlay>
                   child: child,
                 ),
                 child: const Icon(Icons.auto_awesome,
-                    color: Colors.white, size: 28),
-              ),
+                    color: Colors.white, size: 20),
+              )),
             ),
           ),
       ],
-    );
+    ));
   }
 }

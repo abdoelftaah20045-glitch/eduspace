@@ -3,6 +3,7 @@ import 'dart:async';
 import 'dart:ui' show FontFeature;
 
 import 'package:flutter/material.dart';
+import '../ai/ai_fab.dart';
 
 import '../../core/l10n.dart';
 import 'data/exam_models.dart';
@@ -45,6 +46,7 @@ class _TakeExamScreenState extends State<TakeExamScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => aiFabHidden.value++);
     _start();
   }
 
@@ -80,6 +82,7 @@ class _TakeExamScreenState extends State<TakeExamScreen> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.addPostFrameCallback((_) => aiFabHidden.value--);
     _timer?.cancel();
     super.dispose();
   }

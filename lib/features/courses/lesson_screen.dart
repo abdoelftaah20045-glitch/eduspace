@@ -1,3 +1,4 @@
+import '../ai/ai_fab.dart';
 import '../../core/in_app_player.dart';
 import 'lesson_files.dart';
 import 'dart:async';
@@ -30,9 +31,16 @@ class _LessonScreenState extends State<LessonScreen> {
   Lesson get lesson => widget.lesson;
 
   @override
+  void dispose() {
+    WidgetsBinding.instance.addPostFrameCallback((_) => aiFabHidden.value--);
+    super.dispose();
+  }
+
+  @override
   void initState() {
     super.initState();
     _completed = lesson.completed;
+    WidgetsBinding.instance.addPostFrameCallback((_) => aiFabHidden.value++);
     _touchProgress();
   }
 
