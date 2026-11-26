@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/image_carousel.dart';
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -6,7 +7,8 @@ import '../../core/l10n.dart';
 import '../../core/tenant.dart';
 
 class _Ann {
-  _Ann(this.id, this.title, this.body, this.at);
+  _Ann(this.id, this.title, this.body, this.at, [this.images = const []]);
+  final List<String> images;
   final String id;
   final String title;
   final String body;
@@ -51,6 +53,10 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
           (m['body'] as String?) ?? '',
           DateTime.tryParse((m['created_at'] ?? '').toString())?.toLocal() ??
               DateTime.now(),
+          [
+            if (m['images'] is List)
+              for (final u in m['images'] as List) u.toString(),
+          ],
         ));
       }
       if (mounted) setState(() => _items = out);
@@ -118,6 +124,10 @@ class _AnnDetail extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
+          if (a.images.isNotEmpty) ...[
+            ImageCarousel(urls: a.images),
+            const SizedBox(height: 16),
+          ],
           Text(a.title,
               style: Theme.of(context)
                   .textTheme

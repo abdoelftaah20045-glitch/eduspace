@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -13,6 +14,8 @@ import 'core/tenant.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Immersive: hide status and navigation bars; a swipe shows them briefly.
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
   await AppState.instance.load();
   await TenantContext.instance.load();
   if (AppConfig.isConfigured) {

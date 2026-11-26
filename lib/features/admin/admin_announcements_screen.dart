@@ -1,9 +1,11 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/l10n.dart';
 import '../../core/tenant.dart';
+import 'data/admin_repo.dart';
 
 /// Admin: announcements list + compose, plus broadcast notifications
 /// (fan-out happens server-side via admin_broadcast_notification).
@@ -179,12 +181,33 @@ class _AnnouncementSheetState extends State<_AnnouncementSheet> {
   String _audience = 'all';
   DateTime? _endsAt;
   bool _saving = false;
+  final List<String> _images = [];
+  bool _uploading = false;
 
   @override
   void dispose() {
     _title.dispose();
     _body.dispose();
     super.dispose();
+  }
+
+  Future<void> _addImages() async {
+    final picked = await FilePicker.pickFiles(allowMultiple: true);
+    if (picked.isEmpty || !mounted) return;
+    setState(() => _uploading = true);
+    try {
+      for (final f in picked) {
+        final url = await AdminRepository.uploadCourseCover(
+            fileName: f.name, bytes: await f.readAsBytes());
+        _images.add(url);
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(S.of(context).t('generic_error'))));
+      }
+    }
+    if (mounted) setState(() => _uploading = false);
   }
 
   Future<void> _save() async {
@@ -198,6 +221,7 @@ class _AnnouncementSheetState extends State<_AnnouncementSheet> {
         'audience': _audience,
         'tenant_id': TenantContext.id,
         'ends_at': _endsAt?.toIso8601String(),
+        if (_images.isNotEmpty) 'images': _images,
         'created_by': Supabase.instance.client.auth.currentUser?.id,
       });
       if (!mounted) return;
@@ -280,6 +304,52 @@ class _AnnouncementSheetState extends State<_AnnouncementSheet> {
                   ),
               ],
             ),
+            const SizedBox(height: 8),
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: OutlinedButton.icon(
+                onPressed: _uploading ? null : _addImages,
+                icon: _uploading
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2))
+                    : const Icon(Icons.add_photo_alternate_outlined),
+                label: Text(s.t('ann_add_images')),
+              ),
+            ),
+            if (_images.isNotEmpty)
+              SizedBox(
+                height: 72,
+                child: ListView(
+                  scrollDirection: Axis.horizontal,
+                  children: [
+                    for (var i = 0; i < _images.length; i++)
+                      Stack(children: [
+                        Padding(
+                          padding: const EdgeInsets.all(4),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: Image.network(_images[i],
+                                width: 64, height: 64, fit: BoxFit.cover),
+                          ),
+                        ),
+                        PositionedDirectional(
+                          top: 0,
+                          end: 0,
+                          child: InkWell(
+                            onTap: () => setState(() => _images.removeAt(i)),
+                            child: const CircleAvatar(
+                                radius: 9,
+                                backgroundColor: Colors.black54,
+                                child: Icon(Icons.close,
+                                    size: 12, color: Colors.white)),
+                          ),
+                        ),
+                      ]),
+                  ],
+                ),
+              ),
             const SizedBox(height: 12),
             FilledButton.icon(
               onPressed: _saving ? null : _save,

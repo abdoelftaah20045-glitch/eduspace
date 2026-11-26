@@ -118,3 +118,6 @@ grant execute on function public.admin_issue_certificate(text, uuid) to authenti
 -- From now on certificates are issued only through issue_certificate, so the
 -- exam-grade rule cannot be bypassed by a direct insert.
 drop policy if exists certificates_insert_self_completed on public.certificates;
+
+-- Announcements: several images per announcement (public URLs).
+alter table public.announcements add column if not exists images jsonb not null default '[]'::jsonb;
