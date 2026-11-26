@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/password_field.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/app_state.dart';
@@ -105,16 +106,14 @@ class SettingsScreen extends StatelessWidget {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            TextField(
+            PasswordField(
               controller: password,
-              obscureText: true,
-              decoration: InputDecoration(labelText: s.t('new_password')),
+              label: s.t('new_password'),
             ),
             const SizedBox(height: 12),
-            TextField(
+            PasswordField(
               controller: confirm,
-              obscureText: true,
-              decoration: InputDecoration(labelText: s.t('confirm_password')),
+              label: s.t('confirm_password'),
             ),
           ],
         ),

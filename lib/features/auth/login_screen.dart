@@ -1,4 +1,5 @@
 import '../../core/app_state.dart';
+import '../../core/password_field.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -129,13 +130,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     },
                   ),
                   const SizedBox(height: 16),
-                  TextFormField(
+                  PasswordField(
                     controller: _password,
-                    obscureText: true,
-                    decoration: InputDecoration(
-                      labelText: s.t('password'),
-                      prefixIcon: const Icon(Icons.lock_outline),
-                    ),
+                    label: s.t('password'),
+                    icon: Icons.lock_outline,
+                    onSubmitted: (_) => _login(),
                     validator: (v) =>
                         (v == null || v.isEmpty) ? s.t('required_field') : null,
                   ),

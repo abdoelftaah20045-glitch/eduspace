@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/password_field.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/app_state.dart';
@@ -144,24 +145,18 @@ class _SignupScreenState extends State<SignupScreen> {
                 },
               ),
               const SizedBox(height: 16),
-              TextFormField(
+              PasswordField(
                 controller: _password,
-                obscureText: true,
-                decoration: InputDecoration(
-                  labelText: s.t('password'),
-                  prefixIcon: const Icon(Icons.lock_outline),
-                ),
+                label: s.t('password'),
+                icon: Icons.lock_outline,
                 validator: (v) =>
                     (v == null || v.length < 6) ? s.t('password_short') : null,
               ),
               const SizedBox(height: 16),
-              TextFormField(
+              PasswordField(
                 controller: _confirm,
-                obscureText: true,
-                decoration: InputDecoration(
-                  labelText: s.t('confirm_password'),
-                  prefixIcon: const Icon(Icons.lock_reset),
-                ),
+                label: s.t('confirm_password'),
+                icon: Icons.lock_reset,
                 validator: (v) =>
                     v != _password.text ? s.t('passwords_mismatch') : null,
               ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/password_field.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/l10n.dart';
@@ -75,17 +76,14 @@ class _SetNewPasswordScreenState extends State<SetNewPasswordScreen> {
             : Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  TextField(
+                  PasswordField(
                     controller: _password,
-                    obscureText: true,
-                    decoration: InputDecoration(labelText: s.t('new_password')),
+                    label: s.t('new_password'),
                   ),
                   const SizedBox(height: 12),
-                  TextField(
+                  PasswordField(
                     controller: _confirm,
-                    obscureText: true,
-                    decoration:
-                        InputDecoration(labelText: s.t('confirm_password')),
+                    label: s.t('confirm_password'),
                     onSubmitted: (_) => _save(),
                   ),
                   if (_error != null) ...[
