@@ -194,7 +194,7 @@ class _AnnouncementSheetState extends State<_AnnouncementSheet> {
   }
 
   Future<void> _addImages() async {
-    final picked = await FilePicker.pickFiles(allowMultiple: true);
+    final picked = await FilePicker.pickFiles(type: FileType.image);
     if (picked.isEmpty || !mounted) return;
     setState(() => _uploading = true);
     try {
