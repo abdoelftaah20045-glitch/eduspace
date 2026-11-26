@@ -1,4 +1,3 @@
-import '../../core/security.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/l10n.dart';
@@ -65,7 +64,6 @@ class _AdminOrgSettingsScreenState extends State<AdminOrgSettingsScreen> {
       PaidCourses.enabled.value = _paid;
       await AdminToolsRepository.saveSetting(
           'screen_protection', {'enabled': _protect});
-      await ScreenProtection.apply(_protect);
       messenger.showSnackBar(SnackBar(content: Text(s.t('saved_ok'))));
     } catch (_) {
       messenger.showSnackBar(SnackBar(content: Text(s.t('generic_error'))));

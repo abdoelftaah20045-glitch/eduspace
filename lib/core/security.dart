@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../features/admin/data/admin_repo.dart';
 import 'tenant.dart';
 
 /// Screen protection (Android FLAG_SECURE: blocks screenshots, screen
@@ -37,5 +38,22 @@ class ScreenProtection {
     }
   }
 
-  static Future<void> sync() async => apply(await loadSetting());
+  static bool _listening = false;
+
+  /// Admins (full admin role) are exempt and can capture the screen.
+  /// Everyone else follows the admin setting (default ON).
+  static Future<void> sync() async {
+    if (!_listening) {
+      _listening = true;
+      Supabase.instance.client.auth.onAuthStateChange.listen((e) {
+        if (e.event == AuthChangeEvent.signedOut) apply(true);
+      });
+    }
+    final admin = await AdminRepository.isAdmin();
+    if (admin) {
+      await apply(false);
+    } else {
+      await apply(await loadSetting());
+    }
+  }
 }

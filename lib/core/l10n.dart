@@ -631,7 +631,7 @@ class S {
     'mt_on': {'ar': 'تحت الصيانة', 'en': 'Under maintenance', 'fr': 'En maintenance', 'es': 'En mantenimiento', 'de': 'Wartung'},
     'mt_off': {'ar': 'شغالة', 'en': 'Open', 'fr': 'Ouverte', 'es': 'Abierta', 'de': 'Offen'},
     'screen_protection_toggle': {'ar': 'حماية الشاشة (منع اللقطات والتسجيل)', 'en': 'Screen protection (block screenshots and recording)', 'fr': 'Protection d\'écran (bloque captures et enregistrement)', 'es': 'Protección de pantalla (bloquea capturas y grabación)', 'de': 'Bildschirmschutz (blockiert Screenshots und Aufnahme)'},
-    'screen_protection_hint': {'ar': 'مفعّلة افتراضيا. لو قفلتها الطلاب يقدروا يصوروا الشاشة.', 'en': 'On by default. When off, students can capture the screen.', 'fr': 'Activée par défaut. Désactivée, les étudiants peuvent capturer l\'écran.', 'es': 'Activada por defecto. Si se desactiva, los estudiantes pueden capturar.', 'de': 'Standardmäßig an. Wenn aus, können Studierende den Bildschirm aufnehmen.'},
+    'screen_protection_hint': {'ar': 'مفعّلة افتراضيا لكل المستخدمين ما عدا الأدمن. لو قفلتها الطلاب يقدروا يصوروا الشاشة.', 'en': 'On by default for everyone except admins. When off, students can capture the screen.', 'fr': 'Activée par défaut. Désactivée, les étudiants peuvent capturer l\'écran.', 'es': 'Activada por defecto. Si se desactiva, los estudiantes pueden capturar.', 'de': 'Standardmäßig an. Wenn aus, können Studierende den Bildschirm aufnehmen.'},
     'price': {'ar': 'السعر', 'en': 'Price', 'fr': 'Prix', 'es': 'Precio', 'de': 'Preis'},
     'currency': {'ar': 'العملة', 'en': 'Currency', 'fr': 'Devise', 'es': 'Moneda', 'de': 'Währung'},
     'level': {'ar': 'المستوى', 'en': 'Level', 'fr': 'Niveau', 'es': 'Nivel', 'de': 'Niveau'},
