@@ -23,6 +23,21 @@ jobs:
       - name: Generate Android platform files
         run: flutter create --platforms=android --project-name eduspace_app .
 
+      - name: App icon from assets/logo.png
+        continue-on-error: true
+        run: |
+          pip install pillow
+          python3 - <<'PY'
+          from PIL import Image
+          import os
+          src = Image.open('assets/logo.png').convert('RGBA')
+          sizes = {'mdpi': 48, 'hdpi': 72, 'xhdpi': 96, 'xxhdpi': 144, 'xxxhdpi': 192}
+          for k, v in sizes.items():
+              d = f'android/app/src/main/res/mipmap-{k}'
+              os.makedirs(d, exist_ok=True)
+              src.resize((v, v), Image.LANCZOS).save(f'{d}/ic_launcher.png')
+          PY
+
       - name: Patch Android config (permissions + signing)
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
