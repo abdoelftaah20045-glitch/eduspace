@@ -72,32 +72,101 @@ class YtImporter {
     return '';
   }
 
+  static String? _findToken(dynamic n) {
+    if (n is Map) {
+      final t = n['token'];
+      if (t is String && t.length > 20) return t;
+      for (final v in n.values) {
+        final r = _findToken(v);
+        if (r != null) return r;
+      }
+    } else if (n is List) {
+      for (final v in n) {
+        final r = _findToken(v);
+        if (r != null) return r;
+      }
+    }
+    return null;
+  }
+
+  /// Next-page token of the VIDEO list (never the comments panel).
   static String? _token(dynamic data) {
+    final vm = <Map>[];
+    _collect(data, 'continuationItemViewModel', vm);
+    for (final e in vm) {
+      final t = _findToken(e);
+      if (t != null) return t;
+    }
     final out = <Map>[];
-    _collect(data, 'continuationEndpoint', out);
+    _collect(data, 'continuationItemRenderer', out);
     for (final e in out) {
-      final c = e['continuationCommand'];
-      if (c is Map && c['token'] is String) return c['token'] as String;
+      final ep = e['continuationEndpoint'];
+      final t = ep == null ? null : _findToken(ep);
+      if (t != null) return t;
+    }
+    return null;
+  }
+
+  static int _clock(String t) {
+    final parts = t.trim().split(':');
+    if (parts.length < 2 || parts.length > 3) return 0;
+    var n = 0;
+    for (final p in parts) {
+      final v = int.tryParse(p);
+      if (v == null) return 0;
+      n = n * 60 + v;
+    }
+    return n;
+  }
+
+  static String? _badgeTime(dynamic n) {
+    if (n is Map) {
+      final t = n['text'];
+      if (t is String && RegExp(r'^\d{1,2}(:\d{2}){1,2}$').hasMatch(t.trim())) {
+        return t.trim();
+      }
+      for (final v in n.values) {
+        final r = _badgeTime(v);
+        if (r != null) return r;
+      }
+    } else if (n is List) {
+      for (final v in n) {
+        final r = _badgeTime(v);
+        if (r != null) return r;
+      }
     }
     return null;
   }
 
   static List<YtVideo> _videos(dynamic data, Set<String> seen) {
+    final list = <YtVideo>[];
+    // Current YouTube layout: lockupViewModel.
+    final lk = <Map>[];
+    _collect(data, 'lockupViewModel', lk);
+    for (final r in lk) {
+      if (r['contentType'] != 'LOCKUP_CONTENT_TYPE_VIDEO') continue;
+      final id = r['contentId'] as String?;
+      if (id == null || !seen.add(id)) continue;
+      var title = '';
+      final md = r['metadata'];
+      if (md is Map && md['lockupMetadataViewModel'] is Map) {
+        final t = (md['lockupMetadataViewModel'] as Map)['title'];
+        if (t is Map && t['content'] is String) title = t['content'] as String;
+      }
+      final secs = _clock(_badgeTime(r['contentImage']) ?? '');
+      list.add(YtVideo(id, title.isEmpty ? id : title, secs,
+          'https://i.ytimg.com/vi/$id/hqdefault.jpg'));
+    }
+    // Older layout: playlistVideoRenderer.
     final out = <Map>[];
     _collect(data, 'playlistVideoRenderer', out);
-    final list = <YtVideo>[];
     for (final r in out) {
       final id = r['videoId'] as String?;
       if (id == null || !seen.add(id)) continue;
       final title = _text(r['title']);
       final secs = int.tryParse('${r['lengthSeconds'] ?? ''}') ?? 0;
-      final th = r['thumbnail'];
-      var thumb = 'https://i.ytimg.com/vi/$id/hqdefault.jpg';
-      if (th is Map && th['thumbnails'] is List && (th['thumbnails'] as List).isNotEmpty) {
-        final last = (th['thumbnails'] as List).last;
-        if (last is Map && last['url'] is String) thumb = last['url'] as String;
-      }
-      list.add(YtVideo(id, title.isEmpty ? id : title, secs, thumb));
+      list.add(YtVideo(id, title.isEmpty ? id : title, secs,
+          'https://i.ytimg.com/vi/$id/hqdefault.jpg'));
     }
     return list;
   }
@@ -110,7 +179,10 @@ class YtImporter {
     if (res.statusCode != 200) throw Exception('HTTP ${res.statusCode}');
     final html = utf8.decode(res.bodyBytes);
     final start = html.indexOf('ytInitialData = ');
-    if (start < 0) throw Exception('playlist page not readable');
+    if (start < 0) {
+      throw Exception(
+          'playlist page not readable (${html.length} bytes, consent=${html.contains('consent.youtube.com')}, bot-check=${html.contains('unusual traffic')})');
+    }
     final from = html.indexOf('{', start);
     var end = html.indexOf(';</script>', from);
     if (end < 0) end = html.length;
@@ -135,6 +207,11 @@ class YtImporter {
       final bl = <Map>[];
       _collect(data, 'playlistVideoRenderer', bl);
       if (bl.isNotEmpty) channel = _text(bl.first['shortBylineText']);
+    }
+    if (channel.isEmpty) {
+      final ow = <Map>[];
+      _collect(data, 'videoOwnerRenderer', ow);
+      if (ow.isNotEmpty) channel = _text(ow.first['title']);
     }
     title = title
         .replaceAll('&amp;', '&')
@@ -169,7 +246,10 @@ class YtImporter {
       videos.addAll(more);
       token = _token(d);
     }
-    if (videos.isEmpty) throw Exception('no videos (private or empty playlist?)');
+    if (videos.isEmpty) {
+      throw Exception(
+          'no videos found (page ${html.length} bytes, layout markers: lockup=${html.contains('lockupViewModel')}, renderer=${html.contains('playlistVideoRenderer')}, consent=${html.contains('consent.youtube.com')}). The playlist may be private or empty.');
+    }
     return YtPlaylist(id, title, channel, videos.first.thumb, videos);
   }
 
@@ -182,7 +262,10 @@ class YtImporter {
           .timeout(const Duration(seconds: 20));
       if (res.statusCode != 200) return '';
       final html = utf8.decode(res.bodyBytes);
-      final m = RegExp(r'"shortDescription":"((?:[^"\\]|\\.)*)"').firstMatch(html);
+      final m = RegExp(r'"shortDescription":"((?:[^"\\]|\\.)*)"')
+              .firstMatch(html) ??
+          RegExp(r'"attributedDescription":\{"content":"((?:[^"\\]|\\.)*)"')
+              .firstMatch(html);
       if (m == null) return '';
       final d = jsonDecode('"${m.group(1)}"') as String;
       return d.length > 1500 ? d.substring(0, 1500) : d;
