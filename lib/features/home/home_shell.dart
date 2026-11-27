@@ -66,7 +66,12 @@ class _HomeShellState extends State<HomeShell> {
       const ExamsScreen(),
       const ProfileScreen(),
     ];
-    return Scaffold(
+    return PopScope(
+      canPop: _index == 0,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop && _index != 0) setState(() => _index = 0);
+      },
+      child: Scaffold(
       body: pages[_index],
       bottomNavigationBar: SafeArea(
         child: Padding(
@@ -107,7 +112,7 @@ class _HomeShellState extends State<HomeShell> {
           ),
         ),
       ),
-    );
+    ));
   }
 }
 
