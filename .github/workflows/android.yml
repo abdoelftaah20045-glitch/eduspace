@@ -148,7 +148,7 @@ jobs:
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
         run: >
-          shorebird release android --artifact apk --target-platform android-arm64
+          shorebird release android --artifact apk --target-platform android-arm,android-arm64
           --flutter-version=latest --build-number=$((10000 + ${{ github.run_number }}))
           --dart-define=SUPABASE_URL=${{ secrets.SUPABASE_URL }}
           --dart-define=SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}
