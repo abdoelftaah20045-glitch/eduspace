@@ -221,44 +221,149 @@ class _UpdateDialogState extends State<_UpdateDialog> {
         ),
       );
     }
+    final scheme = Theme.of(context).colorScheme;
     return PopScope(
       canPop: !_busy,
-      child: AlertDialog(
-        title: Text(s.t('update_available')),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(widget.version.isEmpty
-                ? s.t('update_body')
-                : '${s.t('update_body')}  (${widget.version})'),
-            if (widget.notes.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              Text(widget.notes, style: Theme.of(context).textTheme.bodySmall),
-            ],
-            if (_busy) ...[
-              const SizedBox(height: 16),
-              LinearProgressIndicator(value: _progress),
-              const SizedBox(height: 6),
-              Text(s.t('update_downloading')),
-            ],
-            if (_error != null) ...[
-              const SizedBox(height: 12),
-              Text('${s.t('update_failed')}: $_error',
-                  style: const TextStyle(color: Colors.red, fontSize: 12)),
-            ],
-          ],
+      child: Dialog(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 22, vertical: 24),
+        child: TweenAnimationBuilder<double>(
+          tween: Tween(begin: 0, end: 1),
+          duration: const Duration(milliseconds: 520),
+          curve: Curves.easeOutBack,
+          builder: (_, t, child) => Opacity(
+            opacity: t.clamp(0.0, 1.0),
+            child: Transform(
+              alignment: Alignment.center,
+              transform: Matrix4.identity()
+                ..setEntry(3, 2, 0.0012)
+                ..rotateX((1 - t) * 0.5)
+                ..scale(0.88 + 0.12 * t),
+              child: child,
+            ),
+          ),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Theme.of(context).cardColor,
+              borderRadius: BorderRadius.circular(26),
+              boxShadow: [
+                BoxShadow(
+                    color: scheme.primary.withValues(alpha: .35),
+                    blurRadius: 36,
+                    offset: const Offset(0, 18)),
+                const BoxShadow(
+                    color: Color(0x22000000),
+                    blurRadius: 10,
+                    offset: Offset(0, 4)),
+              ],
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.fromLTRB(20, 24, 20, 18),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        scheme.primary,
+                        Color.lerp(scheme.primary, Colors.black, .3)!,
+                      ],
+                    ),
+                  ),
+                  child: Column(children: [
+                    TweenAnimationBuilder<double>(
+                      tween: Tween(begin: 0, end: 1),
+                      duration: const Duration(milliseconds: 1100),
+                      curve: Curves.elasticOut,
+                      builder: (_, v, child) =>
+                          Transform.scale(scale: .6 + .4 * v, child: child),
+                      child: Container(
+                        width: 68,
+                        height: 68,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                                color: Colors.black.withValues(alpha: .25),
+                                blurRadius: 14,
+                                offset: const Offset(0, 8)),
+                          ],
+                        ),
+                        child: Icon(Icons.rocket_launch_rounded,
+                            size: 34, color: scheme.primary),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(s.t('update_available'),
+                        style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 19,
+                            fontWeight: FontWeight.w800)),
+                    if (widget.version.isNotEmpty)
+                      Text('${widget.version}  (${widget.build})',
+                          style: const TextStyle(color: Colors.white70)),
+                  ]),
+                ),
+                Flexible(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 4),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (widget.notes.isNotEmpty)
+                          Text(widget.notes,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.copyWith(height: 1.55))
+                        else
+                          Text(s.t('update_body')),
+                        if (_busy) ...[
+                          const SizedBox(height: 16),
+                          LinearProgressIndicator(value: _progress),
+                          const SizedBox(height: 6),
+                          Text(s.t('update_downloading')),
+                        ],
+                        if (_error != null) ...[
+                          const SizedBox(height: 12),
+                          Text('${s.t('update_failed')}: $_error',
+                              style: const TextStyle(
+                                  color: Colors.red, fontSize: 12)),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                  child: Row(children: [
+                    Expanded(
+                      child: TextButton(
+                        onPressed:
+                            _busy ? null : () => Navigator.of(context).pop(),
+                        child: Text(s.t('update_later')),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      flex: 2,
+                      child: FilledButton(
+                        onPressed: _busy ? null : _install,
+                        child: Text(s.t('update_now')),
+                      ),
+                    ),
+                  ]),
+                ),
+              ],
+            ),
+          ),
         ),
-        actions: [
-          TextButton(
-            onPressed: _busy ? null : () => Navigator.of(context).pop(),
-            child: Text(s.t('update_later')),
-          ),
-          FilledButton(
-            onPressed: _busy ? null : _install,
-            child: Text(s.t('update_now')),
-          ),
-        ],
       ),
     );
   }

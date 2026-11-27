@@ -230,8 +230,20 @@ jobs:
           # or a number = builds older than that must update.
           MB=$(tr -d ' \n' < ci/min_build.txt 2>/dev/null || echo 0)
           [ "$MB" = "latest" ] && MB=${{ github.run_number }}
-          printf '{"build": %s, "min_build": %s, "version": "%s", "apk": "deki.apk", "notes": "%s"}\n' \
-            "${{ github.run_number }}" "$MB" "$VERSION" "$NOTES" > version.json
+          export BUILD="${{ github.run_number }}" MB VERSION NOTES
+          python3 - <<'PY'
+          import json, os
+          notes = os.environ.get('NOTES', '')
+          try:
+              t = open('ci/release_notes.txt', encoding='utf-8').read().strip()
+              if t:
+                  notes = t
+          except OSError:
+              pass
+          json.dump({'build': int(os.environ['BUILD']), 'min_build': int(os.environ['MB']),
+                     'version': os.environ['VERSION'], 'apk': 'deki.apk', 'notes': notes},
+                    open('version.json', 'w', encoding='utf-8'), ensure_ascii=False)
+          PY
           cat version.json
           R=abdoelftaah20045-glitch/deki-releases
           gh release delete latest --repo $R --yes --cleanup-tag 2>/dev/null || true

@@ -51,7 +51,7 @@ Deno.serve(async (req) => {
       .update({ push_sent_at: new Date().toISOString() })
       .eq('id', course_id).eq('status', 'published')
       .not('notified_at', 'is', null).is('push_sent_at', null)
-      .select('id, title, tenant_id, instructor_name');
+      .select('id, title, tenant_id, instructor_name, cover_url, instructor_photo_url');
     if (!claimed || claimed.length === 0) {
       return new Response('nothing to send', { status: 200 });
     }
@@ -69,6 +69,13 @@ Deno.serve(async (req) => {
       }
       return r;
     };
+    let image = (course.cover_url || course.instructor_photo_url || '') as string;
+    if (!image) {
+      const { data: br } = await db.from('tenant_settings').select('setting_value')
+        .eq('tenant_id', course.tenant_id).eq('setting_key', 'branding').maybeSingle();
+      image = ((br?.setting_value as { logo_url?: string } | null)?.logo_url ?? '') as string;
+    }
+    if (!image.startsWith('https://')) image = '';
     const teacher = decode(course.instructor_name ?? '').trim();
     const body = 'تم إضافة كورس ' + decode(course.title ?? '') +
       (teacher ? ' للمدرس ' + teacher : '');
@@ -94,7 +101,9 @@ Deno.serve(async (req) => {
           body: JSON.stringify({
             message: {
               token,
-              notification: { title: 'كورس جديد / New course', body: body },
+              notification: image
+                ? { title: 'كورس جديد / New course', body: body, image }
+                : { title: 'كورس جديد / New course', body: body },
               data: { type: 'new_course', course_id: course.id },
               android: { priority: 'HIGH' },
             },

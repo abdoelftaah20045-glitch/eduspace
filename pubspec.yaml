@@ -44,6 +44,7 @@ flutter:
   assets:
     - assets/logo.png
     - assets/brand/
+    - shorebird.yaml
   fonts:
     - family: Marhey
       fonts:
