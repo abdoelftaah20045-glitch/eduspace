@@ -116,96 +116,146 @@ class _MyCoursesScreenState extends State<MyCoursesScreen> {
                           itemBuilder: (_, i) {
                             final c = shown[i];
                             final p = (c.progressPercent ?? 0).clamp(0, 100);
+                            final done = p >= 100;
+                            final green = const Color(0xFF16A34A);
                             return InkWell(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(20),
                               onTap: () => Navigator.of(context)
                                   .push(MaterialPageRoute(
                                       builder: (_) =>
                                           CourseDetailsScreen(courseId: c.id)))
                                   .then((_) => _load()),
                               child: Container(
-                                margin: const EdgeInsets.only(bottom: 14),
+                                margin: const EdgeInsets.only(bottom: 16),
                                 clipBehavior: Clip.antiAlias,
                                 decoration: BoxDecoration(
                                   color: scheme.surface,
-                                  borderRadius: BorderRadius.circular(8),
-                                  border:
-                                      Border.all(color: scheme.outlineVariant),
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(color: scheme.outlineVariant),
+                                  boxShadow: [
+                                    BoxShadow(
+                                        color: Colors.black.withValues(alpha: .06),
+                                        blurRadius: 14,
+                                        offset: const Offset(0, 6)),
+                                  ],
                                 ),
                                 child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       AspectRatio(
-                                        aspectRatio: 16 / 7,
-                                        child: Container(
-                                          color: scheme.primaryContainer,
-                                          child: (c.coverUrl ?? '').isNotEmpty
-                                              ? CachedImage(c.coverUrl!,
-                                                  fit: BoxFit.cover,
-                                                  errorBuilder: (_, __, ___) =>
-                                                      const Icon(
-                                                          Icons.menu_book))
-                                              : const Icon(Icons.menu_book),
-                                        ),
+                                        aspectRatio: 16 / 8,
+                                        child: Stack(fit: StackFit.expand, children: [
+                                          Container(
+                                            color: scheme.primaryContainer,
+                                            child: (c.coverUrl ?? '').isNotEmpty
+                                                ? CachedImage(c.coverUrl!,
+                                                    fit: BoxFit.cover,
+                                                    errorBuilder: (_, __, ___) =>
+                                                        const SizedBox.shrink())
+                                                : null,
+                                          ),
+                                          const DecoratedBox(
+                                            decoration: BoxDecoration(
+                                              gradient: LinearGradient(
+                                                begin: Alignment.topCenter,
+                                                end: Alignment.bottomCenter,
+                                                colors: [Colors.transparent, Colors.black54],
+                                              ),
+                                            ),
+                                          ),
+                                          if ((c.field ?? '').trim().isNotEmpty)
+                                            PositionedDirectional(
+                                              top: 10,
+                                              start: 10,
+                                              child: Container(
+                                                padding: const EdgeInsets.symmetric(
+                                                    horizontal: 10, vertical: 4),
+                                                decoration: BoxDecoration(
+                                                  color: Colors.black54,
+                                                  borderRadius: BorderRadius.circular(20),
+                                                ),
+                                                child: Text(c.field!.trim(),
+                                                    style: const TextStyle(
+                                                        color: Colors.white,
+                                                        fontSize: 11,
+                                                        fontWeight: FontWeight.w700)),
+                                              ),
+                                            ),
+                                          PositionedDirectional(
+                                            top: 10,
+                                            end: 10,
+                                            child: Container(
+                                              padding: const EdgeInsets.symmetric(
+                                                  horizontal: 10, vertical: 4),
+                                              decoration: BoxDecoration(
+                                                color: done ? green : scheme.primary,
+                                                borderRadius: BorderRadius.circular(20),
+                                              ),
+                                              child: Text(
+                                                  done ? s.t('completed') : '$p%',
+                                                  style: const TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: 11,
+                                                      fontWeight: FontWeight.w800)),
+                                            ),
+                                          ),
+                                          PositionedDirectional(
+                                            bottom: 10,
+                                            end: 12,
+                                            child: CircleAvatar(
+                                              radius: 20,
+                                              backgroundColor: Colors.white,
+                                              child: Icon(Icons.play_arrow,
+                                                  color: scheme.primary, size: 26),
+                                            ),
+                                          ),
+                                        ]),
                                       ),
                                       Padding(
-                                        padding: const EdgeInsets.all(14),
+                                        padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
                                         child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
+                                          crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
-                                            if ((c.instructorName ?? '')
-                                                .isNotEmpty)
-                                              Text(c.instructorName!,
-                                                  maxLines: 1,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                  style: TextStyle(
-                                                      fontSize: 12,
-                                                      color: scheme
-                                                          .onSurfaceVariant)),
-                                            const SizedBox(height: 4),
                                             Text(c.title,
                                                 maxLines: 2,
                                                 overflow: TextOverflow.ellipsis,
                                                 style: const TextStyle(
-                                                    fontWeight: FontWeight.w700,
+                                                    fontWeight: FontWeight.w800,
                                                     fontSize: 16)),
-                                            const SizedBox(height: 10),
-                                            LinearProgressIndicator(
-                                              value: p / 100,
-                                              minHeight: 4,
-                                              borderRadius:
-                                                  BorderRadius.circular(4),
-                                              color: p >= 100
-                                                  ? const Color(0xFF16A34A)
-                                                  : scheme.primary,
+                                            if ((c.instructorName ?? '').isNotEmpty) ...[
+                                              const SizedBox(height: 4),
+                                              Text(c.instructorName!,
+                                                  maxLines: 1,
+                                                  overflow: TextOverflow.ellipsis,
+                                                  style: TextStyle(
+                                                      fontSize: 12.5,
+                                                      color: scheme.onSurfaceVariant)),
+                                            ],
+                                            const SizedBox(height: 12),
+                                            ClipRRect(
+                                              borderRadius: BorderRadius.circular(6),
+                                              child: LinearProgressIndicator(
+                                                value: p / 100,
+                                                minHeight: 7,
+                                                backgroundColor:
+                                                    scheme.surfaceContainerHighest,
+                                                color: done ? green : scheme.primary,
+                                              ),
                                             ),
                                             const SizedBox(height: 8),
                                             Row(children: [
                                               Expanded(
-                                                  child: Text(
-                                                      p >= 100
-                                                          ? s.t('completed')
-                                                          : '$p%',
+                                                  child: Text(done ? s.t('completed') : '$p%',
                                                       style: TextStyle(
                                                           fontSize: 12,
-                                                          fontWeight:
-                                                              FontWeight.w600,
-                                                          color: p >= 100
-                                                              ? const Color(
-                                                                  0xFF16A34A)
-                                                              : scheme
-                                                                  .onSurfaceVariant))),
-                                              Text(
-                                                  p >= 100
-                                                      ? ''
-                                                      : s.t('continue_learning'),
+                                                          fontWeight: FontWeight.w700,
+                                                          color: done
+                                                              ? green
+                                                              : scheme.onSurfaceVariant))),
+                                              Text(done ? '' : s.t('continue_learning'),
                                                   style: TextStyle(
                                                       fontSize: 13,
-                                                      fontWeight:
-                                                          FontWeight.w700,
+                                                      fontWeight: FontWeight.w800,
                                                       color: scheme.primary)),
                                             ]),
                                           ],
