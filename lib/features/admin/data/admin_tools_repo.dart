@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/tenant.dart';
+import '../auto_category.dart';
 
 /// Admin tools: audit log, categories, organization settings, report numbers.
 /// RLS is the real gate; every query is also scoped to the current tenant.
@@ -49,6 +50,40 @@ class AdminToolsRepository {
         .order('kind')
         .order('sort_order')
         .order('name');
+  }
+
+  /// Puts every course that has no category into one (rule based, free).
+  /// Returns how many courses were classified.
+  static Future<int> autoClassifyCourses() async {
+    final cats = <String>[
+      for (final c in await fetchCategories())
+        if (c['kind'] == 'category') (c['name'] as String).trim()
+    ];
+    final rows = await _c
+        .from('courses')
+        .select('id, title, description, field, instructor_name')
+        .eq('tenant_id', TenantContext.id)
+        .limit(2000);
+    var n = 0;
+    for (final r in rows as List) {
+      final m = r as Map;
+      if ('${m['field'] ?? ''}'.trim().isNotEmpty) continue;
+      final name = AutoCategory.pick(
+        title: '${m['title'] ?? ''}',
+        description: '${m['description'] ?? ''}',
+        existing: cats,
+        channel: '${m['instructor_name'] ?? ''}',
+      );
+      if (!cats.any((c) => c.toLowerCase() == name.toLowerCase())) {
+        try {
+          await addCategory('category', name);
+          cats.add(name);
+        } catch (_) {}
+      }
+      await _c.from('courses').update({'field': name}).eq('id', m['id']);
+      n++;
+    }
+    return n;
   }
 
   static Future<void> addCategory(String kind, String name) async {

@@ -1,3 +1,4 @@
+import 'auto_category.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -21,7 +22,7 @@ class ImportRow {
       this.level,
       {this.status = 'wait', this.note = '', this.courseId = '', this.review = ''});
   final int line;
-  final String category;
+  String category;
   final String url;
   final String title;
   final String language;
@@ -209,10 +210,12 @@ class ImportJob extends ChangeNotifier {
     notifyListeners();
     await BgGuard.begin(title, '$done/${rows.length}');
     final known = <String>{};
+    final names = <String>[];
     try {
       for (final c in await AdminToolsRepository.fetchCategories()) {
         if (c['kind'] == 'category') {
           known.add((c['name'] as String).trim().toLowerCase());
+          names.add((c['name'] as String).trim());
         }
       }
     } catch (_) {}
@@ -235,10 +238,20 @@ class ImportJob extends ChangeNotifier {
           if (id == null) throw s.t('fi_bad_link');
           final p = await YtImporter.fetchPlaylist(id);
           if (row.title.isNotEmpty) p.title = row.title;
+          if (row.category.isEmpty) {
+            // No category given: classify from the content (free rules).
+            row.category = AutoCategory.pick(
+              title: p.title,
+              videoTitles: [for (final v in p.videos) v.title],
+              existing: names,
+              channel: p.channel,
+            );
+          }
           if (row.category.isNotEmpty &&
               !known.contains(row.category.toLowerCase())) {
             await AdminToolsRepository.addCategory('category', decodeHtml(row.category));
             known.add(row.category.toLowerCase());
+            names.add(row.category);
           }
           final res = await PlaylistImport.run(
             p,

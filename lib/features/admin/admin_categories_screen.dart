@@ -93,6 +93,21 @@ class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
       child: Scaffold(
         appBar: AppBar(
           title: Text(s.t('categories_label')),
+          actions: [
+            TextButton(
+              onPressed: () async {
+                final n = await AdminToolsRepository.autoClassifyCourses()
+                    .catchError((_) => -1);
+                if (!mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text(n < 0
+                        ? s.t('generic_error')
+                        : '${s.t('auto_classify_done')} $n')));
+                _load();
+              },
+              child: Text(s.t('auto_classify')),
+            ),
+          ],
           bottom: TabBar(
             tabs: [for (final k in _kinds) Tab(text: s.t('kind_$k'))],
           ),

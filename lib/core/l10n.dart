@@ -721,6 +721,8 @@ class S {
     'imp_none': {'ar': 'مفيش كورسات مستوردة للمراجعة', 'en': 'No imported courses to review', 'fr': 'No imported courses to review', 'es': 'No imported courses to review', 'de': 'No imported courses to review'},
     'imp_waiting': {'ar': 'في انتظار أول كورس يخلص...', 'en': 'Waiting for the first course to finish...', 'fr': 'Waiting for the first course to finish...', 'es': 'Waiting for the first course to finish...', 'de': 'Waiting for the first course to finish...'},
     'search_hint': {'ar': 'ابحث هنا', 'en': 'Search here', 'fr': 'Rechercher', 'es': 'Buscar', 'de': 'Suchen'},
+    'auto_classify': {'ar': 'تصنيف تلقائي', 'en': 'Auto-sort', 'fr': 'Tri auto', 'es': 'Auto-clasificar', 'de': 'Auto-sortieren'},
+    'auto_classify_done': {'ar': 'تم تصنيف كورسات:', 'en': 'Courses sorted:', 'fr': 'Cours triés :', 'es': 'Cursos clasificados:', 'de': 'Kurse sortiert:'},
     'res_title': {'ar': 'نتيجة الامتحان', 'en': 'Exam result', 'fr': 'Résultat de l\'examen', 'es': 'Resultado del examen', 'de': 'Prüfungsergebnis'},
     'res_total': {'ar': 'عدد الأسئلة', 'en': 'Total questions', 'fr': 'Total des questions', 'es': 'Total de preguntas', 'de': 'Fragen gesamt'},
     'res_time_taken': {'ar': 'الوقت المستغرق', 'en': 'Time taken', 'fr': 'Temps écoulé', 'es': 'Tiempo empleado', 'de': 'Benötigte Zeit'},
