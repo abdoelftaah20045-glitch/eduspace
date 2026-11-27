@@ -23,19 +23,26 @@ const badUntil = new Map<string, number>();
 const isBad = (m: string) => (badUntil.get(m) ?? 0) > Date.now();
 
 async function pickModels(key: string): Promise<string[]> {
-  const fixed = ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-flash-latest', 'gemini-flash-lite-latest'];
+  const fixed = ['gemini-flash-lite-latest', 'gemini-flash-latest'];
   try {
-    const r = await fetch(`${BASE}/models?pageSize=200&key=${key}`, { signal: AbortSignal.timeout(6000) });
-    const j = await r.json();
+    const listed0: any[] = [];
+    let token = '';
+    for (let i = 0; i < 4; i++) {
+      const r = await fetch(`${BASE}/models?pageSize=200${token ? `&pageToken=${token}` : ''}&key=${key}`, { signal: AbortSignal.timeout(8000) });
+      const j = await r.json();
+      listed0.push(...(j?.models ?? []));
+      token = j?.nextPageToken ?? '';
+      if (!token) break;
+    }
     const ver = (n: string) => parseFloat((n.match(/gemini-(\d+(?:\.\d+)?)/) ?? [])[1] ?? '0');
-    const listed: string[] = (j?.models ?? [])
+    // Video input needs Gemini models (not Gemma). Includes preview names: they may be the only ones open to new keys.
+    const listed: string[] = listed0
       .filter((m: any) => (m.supportedGenerationMethods ?? []).includes('generateContent'))
       .map((m: any) => String(m.name).replace('models/', ''))
-      .filter((n: string) => /flash/.test(n) && !/(image|tts|live|audio|embed|robotics|computer|preview|exp)/.test(n));
-    // Stable 2.5 family first (free tier, video input), then the rest newest first. Only names Google actually lists.
-    const pref = ['gemini-2.5-flash', 'gemini-2.5-flash-lite'].filter((n) => listed.includes(n));
-    const rest = listed.filter((n) => !pref.includes(n)).sort((a, b) => ver(b) - ver(a) || a.length - b.length);
-    const all = [...new Set([...pref, ...rest, ...(listed.length ? [] : fixed)])];
+      .filter((n: string) => /gemini/.test(n) && /(flash|lite|latest)/.test(n) && !/(image|tts|live|audio|embed|robotics|computer|vision|imagen|veo|aqa)/.test(n));
+    const rank = (n: string) => (/lite|8b/.test(n) ? 0 : 1);
+    const all = [...new Set(listed)].sort((a, b) => rank(a) - rank(b) || ver(b) - ver(a) || a.length - b.length);
+    if (!all.length) return fixed;
     const ok = all.filter((m) => !isBad(m));
     return (ok.length ? ok : all).slice(0, 6);
   } catch (_) {
@@ -46,7 +53,7 @@ async function pickModels(key: string): Promise<string[]> {
 // Reads Google's 429 body: per-day quota (stop using that model today) or per-minute (wait the given delay).
 function quotaInfo(j: any): { perDay: boolean; waitMs: number } {
   const details: any[] = j?.error?.details ?? [];
-  let perDay = /per ?day|daily/i.test(String(j?.error?.message ?? ''));
+  let perDay = /per ?day|daily/i.test(String(j?.error?.message ?? '')) || /limit:\s*0\b/.test(JSON.stringify(j?.error ?? {}));
   let waitMs = 20000;
   for (const d of details) {
     for (const v of d?.violations ?? []) if (/PerDay/i.test(String(v?.quotaId ?? ''))) perDay = true;

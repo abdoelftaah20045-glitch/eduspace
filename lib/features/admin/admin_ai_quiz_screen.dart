@@ -29,6 +29,8 @@ class _AdminAiQuizScreenState extends State<AdminAiQuizScreen> {
   int _skipped = 0;
   int _failed = 0;
   int _retry = 0;
+  bool _diagBusy = false;
+  String _diagText = '';
   int _quotaStreak = 0;
   String _current = '';
   String? _error;
@@ -239,12 +241,52 @@ class _AdminAiQuizScreenState extends State<AdminAiQuizScreen> {
     if (mounted) setState(() => _running = false);
   }
 
+  Future<void> _diag() async {
+    setState(() {
+      _diagBusy = true;
+      _diagText = 'بفحص موديلات Gemini لمفتاحك (حوالي نص دقيقة)...';
+    });
+    String out;
+    try {
+      final res = await _c.functions
+          .invoke('ai-assistant', body: {'diag': true}).timeout(const Duration(seconds: 90));
+      final d = res.data;
+      if (d is Map && d['probes'] is List) {
+        final b = StringBuffer('${d['verdict']}\n');
+        for (final p in (d['probes'] as List)) {
+          if (p is Map) {
+            b.writeln('${p['ok'] == true ? 'OK' : 'X'}  ${p['model']}  ${p['status']}${p['limit0'] == true ? '  (quota 0)' : ''}');
+          }
+        }
+        out = b.toString();
+      } else {
+        out = 'رد غير متوقع: $d';
+      }
+    } catch (e) {
+      out = 'تعذر الفحص: انشر ai-assistant الجديدة الأول. ($e)';
+    }
+    if (mounted) setState(() {
+      _diagBusy = false;
+      _diagText = out;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final courses = _courses;
     return Scaffold(
       appBar: AppBar(title: const Text('اختبارات تدريبية بالذكاء الاصطناعي')),
       body: ListView(padding: const EdgeInsets.all(16), children: [
+        OutlinedButton.icon(
+          onPressed: _diagBusy ? null : _diag,
+          icon: const Icon(Icons.search),
+          label: const Text('افحص مفتاح Gemini'),
+        ),
+        if (_diagText.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 8, bottom: 8),
+            child: SelectableText(_diagText, style: const TextStyle(fontSize: 12)),
+          ),
         _autoCard(),
         const Card(
           child: Padding(
