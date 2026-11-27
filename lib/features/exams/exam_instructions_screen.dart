@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/l10n.dart';
 import 'data/exam_models.dart';
@@ -21,10 +22,33 @@ class ExamInstructionsScreen extends StatefulWidget {
 class _ExamInstructionsScreenState extends State<ExamInstructionsScreen> {
   int? _questionCount;
   double? _totalPoints;
+  DateTime? _retryAt; // lesson exams: attempts used up, retry after this time
+
+  Future<void> _checkCooldown() async {
+    try {
+      final c = Supabase.instance.client;
+      final ex = await c.from('exams').select('lesson_id').eq('id', widget.exam.id).maybeSingle();
+      if (ex == null || ex['lesson_id'] == null) return;
+      final since = DateTime.now().toUtc().subtract(const Duration(hours: 12));
+      final rows = await c
+          .from('exam_attempts')
+          .select('started_at')
+          .eq('exam_id', widget.exam.id)
+          .eq('user_id', c.auth.currentUser!.id)
+          .gt('started_at', since.toIso8601String())
+          .order('started_at');
+      final max = widget.exam.maxAttempts < 1 ? 1 : widget.exam.maxAttempts;
+      if (rows.length >= max && mounted) {
+        final first = DateTime.parse('${rows.first['started_at']}').toLocal();
+        setState(() => _retryAt = first.add(const Duration(hours: 12)));
+      }
+    } catch (_) {}
+  }
 
   @override
   void initState() {
     super.initState();
+    _checkCooldown();
     // Count + total points only; the attempt starts after the user agrees.
     ExamsRepository.fetchQuestions(widget.exam).then((qs) {
       if (!mounted) return;
@@ -143,6 +167,13 @@ class _ExamInstructionsScreenState extends State<ExamInstructionsScreen> {
           _rule(s, 'rule_timer', Icons.alarm),
           _rule(s, 'rule_no_pause', Icons.pause_circle_outline),
           _rule(s, 'rule_attempts', Icons.replay_circle_filled_outlined),
+          if (_retryAt != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: Text(
+                  'خلصت محاولاتك. تقدر تحاول تاني الساعة ${_retryAt!.hour.toString().padLeft(2, '0')}:${_retryAt!.minute.toString().padLeft(2, '0')}. راجع الدرس وجرب بعدها.',
+                  style: const TextStyle(fontWeight: FontWeight.w800, color: Color(0xFFE53935))),
+            ),
         ],
       ),
       bottomNavigationBar: SafeArea(
@@ -157,7 +188,9 @@ class _ExamInstructionsScreenState extends State<ExamInstructionsScreen> {
             icon: const Icon(Icons.play_arrow),
             label: Text(s.t('agree_start'),
                 style: const TextStyle(fontWeight: FontWeight.bold)),
-            onPressed: () {
+            onPressed: _retryAt != null
+                ? null
+                : () {
               Navigator.of(context).pushReplacement(
                 MaterialPageRoute(
                     builder: (_) => TakeExamScreen(exam: widget.exam)),

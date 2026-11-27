@@ -65,6 +65,7 @@ class _CourseEditScreenState extends State<CourseEditScreen> {
       ? DateTime.tryParse(widget.course!['available_until'].toString())
           ?.toLocal()
       : null;
+  late bool _unlock = widget.course?['unlock_requires_pass'] != false;
   bool _saving = false;
   bool _uploadingCover = false;
 
@@ -155,6 +156,8 @@ class _CourseEditScreenState extends State<CourseEditScreen> {
       'available_at': _from?.toUtc().toIso8601String(),
       'available_until': _until?.toUtc().toIso8601String(),
       'status': _status,
+      if (widget.course != null && widget.course!.containsKey('unlock_requires_pass'))
+        'unlock_requires_pass': _unlock,
       'prerequisites': _prerequisites.text.trim(),
       if (_skills.text.trim().isNotEmpty)
         'skills': [
@@ -383,6 +386,13 @@ class _CourseEditScreenState extends State<CourseEditScreen> {
                   .toList(),
               onChanged: (v) => setState(() => _status = v ?? 'draft'),
             ),
+            if (widget.course != null && widget.course!.containsKey('unlock_requires_pass'))
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                value: _unlock,
+                title: const Text('لازم ينجح في اختبار الدرس عشان يفتح اللي بعده'),
+                onChanged: (v) => setState(() => _unlock = v),
+              ),
             const SizedBox(height: 12),
             TextFormField(
               controller: _prerequisites,

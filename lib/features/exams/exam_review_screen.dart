@@ -178,7 +178,8 @@ class _ExamReviewScreenState extends State<ExamReviewScreen> {
                               '${s.t('your_answer')}: ${given.isEmpty ? s.t('not_answered') : given}',
                               style: TextStyle(color: statusColor),
                             ),
-                            if (isCorrect != true &&
+                            if ((_attempt?['passed'] as bool? ?? false) &&
+                                isCorrect != true &&
                                 correct.isNotEmpty &&
                                 q.type != 'essay') ...[
                               const SizedBox(height: 4),
@@ -187,6 +188,12 @@ class _ExamReviewScreenState extends State<ExamReviewScreen> {
                                 style: const TextStyle(
                                     color: Color(0xFF2E9E5B)),
                               ),
+                            ] else if (isCorrect != true &&
+                                !(_attempt?['passed'] as bool? ?? false) &&
+                                q.type != 'essay') ...[
+                              const SizedBox(height: 4),
+                              const Text('الإجابة الصحيحة بتظهر بعد ما تنجح في الاختبار.',
+                                  style: TextStyle(fontSize: 12, color: Colors.grey)),
                             ],
                           ],
                         ),

@@ -209,12 +209,22 @@ class CoursesRepository {
       };
     }
 
+    // Lessons locked until the previous lesson's exam is passed (server decides).
+    var locked = <String>{};
+    if (enrolled) {
+      try {
+        final r = await _c.rpc('locked_lessons', params: {'p_course': courseId});
+        locked = {for (final x in (r as List)) '$x'};
+      } catch (_) {}
+    }
+
     Lesson merge(Lesson l) {
       final p = progress[l.id];
       return l.copyWith(
         completed: p?.completed ?? false,
         positionSeconds: p?.positionSeconds ?? 0,
         accessible: (enrolled || l.isFreePreview) &&
+            !locked.contains(l.id) &&
             !(l.availability == 'date' &&
                 l.availableAt != null &&
                 l.availableAt!.isAfter(DateTime.now())),
