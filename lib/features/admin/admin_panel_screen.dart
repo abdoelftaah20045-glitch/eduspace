@@ -34,6 +34,7 @@ import '../tenancy/super_admin_screen.dart';
 import '../tenancy/tenant_members_screen.dart';
 import 'admin_events_screen.dart';
 import 'youtube_import_screen.dart';
+import 'file_import_screen.dart';
 import 'admin_limits_screen.dart';
 import 'admin_moderation_screen.dart';
 import 'data/admin_panel_repo.dart';
@@ -207,6 +208,13 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
         const Color(0xFFE53935),
         const YoutubeImportScreen()
       ),
+      (
+        'fi_title',
+        'fi_sub',
+        Icons.upload_file_outlined,
+        const Color(0xFF6A1B9A),
+        const FileImportScreen()
+      ),
     ];
     const scopeOf = {
       'reports_label': 'reports',
@@ -235,6 +243,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
       'library_label': 'library',
       'tenant_members': 'students',
       'yt_import': 'courses',
+      'fi_title': 'courses',
     };
     if (!PaidCourses.enabled.value) {
       sections.removeWhere((sec) => sec.$1 == 'admin_payments');

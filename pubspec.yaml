@@ -29,6 +29,7 @@ dependencies:
   intl: any
   http: ^1.2.0
   open_filex: ^4.5.0
+  archive: any
 
 dev_dependencies:
   flutter_test:

@@ -305,7 +305,7 @@ class _YoutubeImportScreenState extends State<YoutubeImportScreen> {
             'title': v.title,
             'type': 'video',
             'content': v.description,
-            'media_url': v.url,
+            'media_url': '${v.url}&list=${p.id}',
             'duration_seconds': v.seconds > 0 ? v.seconds : null,
             'sort_order': i,
           });
