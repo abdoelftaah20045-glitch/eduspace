@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:barcode/barcode.dart' as bc;
 import 'package:flutter/material.dart';
+import '../../core/remote_ui.dart';
 import 'package:intl/intl.dart' hide TextDirection;
 
 import 'data/certificates_repo.dart';
@@ -105,7 +106,7 @@ class CertificateCard extends StatelessWidget {
       {required double offset, required bool decorated}) {
     final fam = _ar ? 'NotoNaskhArabic' : 'serif';
     final out = <Widget>[];
-    if (decorated) {
+    if (decorated && RemoteUi.visible('cert.logo')) {
       out.add(Positioned(
         left: (1020 - 80) * k,
         top: 70 * k,
@@ -147,7 +148,8 @@ class CertificateCard extends StatelessWidget {
     final fam = _ar ? 'NotoNaskhArabic' : null;
     final out = <Widget>[];
     // Signature (app name) and date lines.
-    out.add(Positioned(
+    final showSig = RemoteUi.visible('cert.signature');
+    if (showSig) out.add(Positioned(
       left: (690 - 150) * k,
       top: (1210 - 215) * k,
       width: 300 * k,
@@ -156,7 +158,7 @@ class CertificateCard extends StatelessWidget {
           'assets/brand/sig_en.png',
           fit: BoxFit.contain),
     ));
-    for (final x in [690.0, 1350.0]) {
+    for (final x in showSig ? [690.0, 1350.0] : [1350.0]) {
       out.add(Positioned(
           left: (x - 150) * k,
           top: 1210 * k,
@@ -164,12 +166,14 @@ class CertificateCard extends StatelessWidget {
           height: 3 * k,
           child: ColoredBox(color: dark)));
     }
-    out.add(_t(_ar ? 'منصة ذكي' : 'Deki', 1225, 30, dark,
-        family: fam, cx: 690));
+    if (showSig) {
+      out.add(_t(_ar ? 'منصة ذكي' : 'Deki', 1225, 30, dark,
+          family: fam, cx: 690));
+    }
     out.add(_t(_ar ? 'التاريخ $_date' : 'Date: $_date', 1225, 30, dark,
         family: fam, cx: 1350));
     // QR + number.
-    out.add(Positioned(
+    if (RemoteUi.visible('cert.qr')) out.add(Positioned(
       left: 120 * k,
       top: 1060 * k,
       width: 240 * k,

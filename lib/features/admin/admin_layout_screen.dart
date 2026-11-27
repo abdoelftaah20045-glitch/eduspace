@@ -17,6 +17,11 @@ const _courseItems = [
   _Item('courses.filters', 'cat_in_progress'),
   _Item('courses.continue', 'continue_learning'),
 ];
+const _certItems = [
+  _Item('cert.logo', 'cert_logo'),
+  _Item('cert.signature', 'cert_signature'),
+  _Item('cert.qr', 'cert_qr'),
+];
 const _coursePage = [
   _Item('course.progress', 'cd_complete'),
   _Item('course.stats', 'level_label'),
@@ -88,7 +93,7 @@ class _AdminLayoutScreenState extends State<AdminLayoutScreen> {
     _cpOrder = [..._coursePage];
     _homeOrder = [..._home];
     RemoteUi.load().then((_) {
-      for (final it in [..._home, ..._quick, ..._drawer, ..._courseItems, ..._coursePage]) {
+      for (final it in [..._home, ..._quick, ..._drawer, ..._courseItems, ..._certItems, ..._coursePage]) {
         _vis[it.id] = RemoteUi.visible(it.id);
       }
       int ord(_Item a, List<_Item> base) =>
@@ -113,7 +118,7 @@ class _AdminLayoutScreenState extends State<AdminLayoutScreen> {
       final it = _quickOrder[i];
       out[it.id] = {'visible': _vis[it.id] ?? true, 'order': i};
     }
-    for (final it in _courseItems) {
+    for (final it in [..._courseItems, ..._certItems]) {
       out[it.id] = {'visible': _vis[it.id] ?? true};
     }
     for (var i = 0; i < _cpOrder.length; i++) {
@@ -192,6 +197,8 @@ class _AdminLayoutScreenState extends State<AdminLayoutScreen> {
                 _reorder(s, _cpOrder),
                 _title(s.t('ui_layout_tiles')),
                 _reorder(s, _quickOrder),
+                _title(s.t('my_certificates')),
+                for (final it in _certItems) _switch(s, it),
                 _title(s.t('ui_layout_menu')),
                 _reorder(s, _drawerOrder),
               ],
