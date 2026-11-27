@@ -103,6 +103,53 @@ class _AdminBookSourcesScreenState extends State<AdminBookSourcesScreen> {
             lang: lang is List ? lang.join(',') : (lang ?? '').toString(),
           ));
         }
+      } else if (_source == 'wikisource') {
+        final host = _lang == 'ar' ? 'ar.wikisource.org' : 'en.wikisource.org';
+        final uri = Uri.https(host, '/w/api.php', {
+          'action': 'query',
+          'list': 'search',
+          'srsearch': q,
+          'srnamespace': '0',
+          'srlimit': '40',
+          'format': 'json',
+        });
+        final r = await http.get(uri).timeout(const Duration(seconds: 25));
+        final rows = (jsonDecode(r.body)['query']['search'] as List);
+        for (final d in rows) {
+          final t = (d['title'] ?? '').toString();
+          out.add(_Found(
+            title: t,
+            author: 'Wikisource',
+            link: 'https://$host/wiki/${Uri.encodeComponent(t.replaceAll(' ', '_'))}',
+            cover: null,
+            license: 'Public domain / CC BY-SA (Wikisource)',
+            source: host,
+            lang: _lang == 'ar' ? 'ara' : 'eng',
+          ));
+        }
+      } else if (_source == 'ncbi') {
+        final uri = Uri.https('www.ebi.ac.uk',
+            '/europepmc/webservices/rest/search', {
+          'query': '$q AND OPEN_ACCESS:y AND SRC:MED AND HAS_BOOK:y',
+          'format': 'json',
+          'resultType': 'core',
+          'pageSize': '60',
+        });
+        final r = await http.get(uri).timeout(const Duration(seconds: 25));
+        final rows = (jsonDecode(r.body)['resultList']['result'] as List);
+        for (final d in rows) {
+          final b = (d['bookid'] ?? '').toString();
+          if (b.isEmpty) continue;
+          out.add(_Found(
+            title: (d['title'] ?? '').toString().replaceAll(RegExp(r'<[^>]*>'), ''),
+            author: (d['authorString'] ?? '').toString(),
+            link: 'https://www.ncbi.nlm.nih.gov/books/$b/',
+            cover: null,
+            license: 'NCBI Bookshelf open-access subset (check book page)',
+            source: 'ncbi.nlm.nih.gov/books',
+            lang: 'eng',
+          ));
+        }
       } else {
         final uri = Uri.https('openstax.org', '/apps/cms/api/v2/pages/', {
           'type': 'books.Book',
@@ -212,6 +259,25 @@ class _AdminBookSourcesScreenState extends State<AdminBookSourcesScreen> {
                   selected: _source == 'archive',
                   onSelected: (_) => setState(() {
                     _source = 'archive';
+                    _lang = 'any';
+                    _res = const [];
+                  }),
+                ),
+                ChoiceChip(
+                  label: const Text('Wikisource'),
+                  selected: _source == 'wikisource',
+                  onSelected: (_) => setState(() {
+                    _source = 'wikisource';
+                    _lang = 'en';
+                    _res = const [];
+                  }),
+                ),
+                ChoiceChip(
+                  label: const Text('NCBI Bookshelf'),
+                  selected: _source == 'ncbi',
+                  onSelected: (_) => setState(() {
+                    _source = 'ncbi';
+                    _lang = 'any';
                     _res = const [];
                   }),
                 ),
@@ -220,6 +286,7 @@ class _AdminBookSourcesScreenState extends State<AdminBookSourcesScreen> {
                   selected: _source == 'openstax',
                   onSelected: (_) => setState(() {
                     _source = 'openstax';
+                    _lang = 'any';
                     _res = const [];
                   }),
                 ),
@@ -242,12 +309,13 @@ class _AdminBookSourcesScreenState extends State<AdminBookSourcesScreen> {
                   ),
                 ),
               ),
-              if (_source == 'archive') ...[
+              if (_source == 'archive' || _source == 'wikisource') ...[
                 const SizedBox(width: 8),
                 DropdownButton<String>(
                   value: _lang,
                   items: [
-                    DropdownMenuItem(value: 'any', child: Text(ar ? 'كل اللغات' : 'Any')),
+                    if (_source == 'archive')
+                      DropdownMenuItem(value: 'any', child: Text(ar ? 'كل اللغات' : 'Any')),
                     DropdownMenuItem(value: 'en', child: Text(ar ? 'إنجليزي' : 'English')),
                     DropdownMenuItem(value: 'ar', child: Text(ar ? 'عربي' : 'Arabic')),
                   ],
