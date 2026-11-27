@@ -4,6 +4,16 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      shorebird_mode:
+        description: 'none = normal build; release = Shorebird release (full APK, patchable baseline); patch = Dart-only patch for an existing release'
+        default: 'none'
+        type: choice
+        options: [none, release, patch]
+      release_version:
+        description: 'patch mode only: release version to patch, e.g. 0.2.0+114'
+        default: ''
+        type: string
 
 permissions:
   contents: write
@@ -105,6 +115,7 @@ jobs:
         continue-on-error: true
 
       - name: Build release APKs (split per ABI)
+        if: ${{ inputs.shorebird_mode == '' || inputs.shorebird_mode == 'none' }}
         env:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
@@ -123,29 +134,90 @@ jobs:
           --dart-define=FB_PROJECT_ID=${{ secrets.FB_PROJECT_ID }}
           --dart-define=APP_BUILD=${{ github.run_number }}
 
+      - name: Set up Shorebird
+        if: ${{ inputs.shorebird_mode == 'release' || inputs.shorebird_mode == 'patch' }}
+        uses: shorebirdtech/setup-shorebird@v1
+        with:
+          cache: true
+
+      - name: Shorebird release (one full APK, baseline for patches)
+        if: ${{ inputs.shorebird_mode == 'release' }}
+        env:
+          SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+        run: >
+          shorebird release android --artifact apk --target-platform android-arm64
+          --flutter-version=latest --build-number=${{ github.run_number }}
+          --dart-define=SUPABASE_URL=${{ secrets.SUPABASE_URL }}
+          --dart-define=SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}
+          --dart-define=SENTRY_DSN=${{ secrets.SENTRY_DSN }}
+          --dart-define=FCM_ENABLED=${{ secrets.FCM_ENABLED }}
+          --dart-define=PUSH_LIVE=${{ secrets.PUSH_LIVE }}
+          --dart-define=FB_API_KEY=${{ secrets.FB_API_KEY }}
+          --dart-define=FB_APP_ID=${{ secrets.FB_APP_ID }}
+          --dart-define=FB_SENDER_ID=${{ secrets.FB_SENDER_ID }}
+          --dart-define=FB_PROJECT_ID=${{ secrets.FB_PROJECT_ID }}
+          --dart-define=APP_BUILD=${{ github.run_number }}
+
+      - name: Shorebird patch (Dart-only update, small download)
+        if: ${{ inputs.shorebird_mode == 'patch' }}
+        env:
+          SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+        run: |
+          RV="${{ inputs.release_version }}"
+          [ -n "$RV" ] || { echo "release_version is required for patch"; exit 1; }
+          RB="${RV#*+}"
+          shorebird patch android --release-version="$RV" --artifact apk \
+            --dart-define=SUPABASE_URL=${{ secrets.SUPABASE_URL }} \
+            --dart-define=SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }} \
+            --dart-define=SENTRY_DSN=${{ secrets.SENTRY_DSN }} \
+            --dart-define=FCM_ENABLED=${{ secrets.FCM_ENABLED }} \
+            --dart-define=PUSH_LIVE=${{ secrets.PUSH_LIVE }} \
+            --dart-define=FB_API_KEY=${{ secrets.FB_API_KEY }} \
+            --dart-define=FB_APP_ID=${{ secrets.FB_APP_ID }} \
+            --dart-define=FB_SENDER_ID=${{ secrets.FB_SENDER_ID }} \
+            --dart-define=FB_PROJECT_ID=${{ secrets.FB_PROJECT_ID }} \
+            --dart-define=APP_BUILD="$RB"
+
+      - name: Name the Shorebird APK like a normal arm64 build
+        if: ${{ inputs.shorebird_mode == 'release' }}
+        run: |
+          mkdir -p build/app/outputs/flutter-apk
+          F=$(ls build/app/outputs/flutter-apk/*.apk 2>/dev/null | head -1)
+          echo "release apk: $F"
+          [ -n "$F" ] && [ "$F" != "build/app/outputs/flutter-apk/app-arm64-v8a-release.apk" ] && cp "$F" build/app/outputs/flutter-apk/app-arm64-v8a-release.apk || true
+          ls -l build/app/outputs/flutter-apk/
+
       - name: Show APK sizes
+        if: ${{ inputs.shorebird_mode != 'patch' }}
         run: ls -lh build/app/outputs/flutter-apk/
 
       - name: Upload APK artifacts
+        if: ${{ inputs.shorebird_mode != 'patch' }}
         uses: actions/upload-artifact@v4
         with:
           name: eduspace-release-apks
           path: build/app/outputs/flutter-apk/app-*-release.apk
 
       - name: Update latest release
+        if: ${{ inputs.shorebird_mode != 'patch' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release delete latest --yes 2>/dev/null || true
-          gh release create latest \
-            build/app/outputs/flutter-apk/app-arm64-v8a-release.apk \
-            build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk \
-            build/app/outputs/flutter-apk/app-x86_64-release.apk \
+          FILES=$(ls build/app/outputs/flutter-apk/app-*-release.apk)
+          gh release create latest $FILES \
             --title "Latest APK" \
             --prerelease \
             --notes "Latest successful build from main. Most phones: arm64-v8a. Signed with the stable EduSpace release key when signing secrets are set, otherwise the debug key."
 
       - name: Publish update feed (public releases repo)
+        if: ${{ inputs.shorebird_mode != 'patch' }}
         env:
           GH_TOKEN: ${{ secrets.RELEASES_TOKEN }}
         run: |
