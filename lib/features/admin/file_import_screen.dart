@@ -206,7 +206,7 @@ class _FileImportScreenState extends State<FileImportScreen> {
   String _fileName = '';
   String _error = '';
   bool _running = false;
-  bool _withDesc = false;
+  bool _withDesc = true;
   int _done = 0;
   String _progress = '';
 
