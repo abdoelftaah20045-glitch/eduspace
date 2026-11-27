@@ -40,6 +40,8 @@ class _LessonEditScreenState extends State<LessonEditScreen> {
   late String _type = widget.lesson?['type'] as String? ?? 'text';
   late bool _freePreview =
       (widget.lesson?['is_free_preview'] as bool?) ?? false;
+  late final _asgHours = TextEditingController(
+      text: '${widget.lesson?['assignment_hours'] ?? ''}');
   late bool _hidden = (widget.lesson?['is_hidden'] as bool?) ?? false;
   late String _availability =
       (widget.lesson?['availability'] as String?) == 'date' ? 'date' : 'open';
@@ -132,6 +134,8 @@ class _LessonEditScreenState extends State<LessonEditScreen> {
       'duration_seconds': minutes != null ? minutes * 60 : null,
       'is_free_preview': _freePreview,
       'is_hidden': _hidden,
+      if (widget.lesson != null && widget.lesson!.containsKey('assignment_hours'))
+        'assignment_hours': int.tryParse(_asgHours.text.trim()),
       'availability': _availability,
       'available_at': _availability == 'date'
           ? _openAt?.toUtc().toIso8601String()
@@ -229,6 +233,17 @@ class _LessonEditScreenState extends State<LessonEditScreen> {
               title: Text(s.t('free_preview')),
               subtitle: Text(s.t('free_preview_hint')),
             ),
+            if (widget.lesson != null && widget.lesson!.containsKey('assignment_hours'))
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: TextField(
+                  controller: _asgHours,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                      labelText: 'ساعات تسليم تكليف الدرس (فاضي = الافتراضي)',
+                      border: OutlineInputBorder()),
+                ),
+              ),
             SwitchListTile(
               value: _hidden,
               onChanged: (v) => setState(() => _hidden = v),

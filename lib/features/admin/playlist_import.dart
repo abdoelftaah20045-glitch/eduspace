@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/l10n.dart';
 import 'data/admin_repo.dart';
 import 'youtube_import_screen.dart';
+import 'lesson_links.dart';
 
 String _mmss(int sec) {
   final m = sec ~/ 60;
@@ -178,6 +179,9 @@ class PlaylistImport {
     for (var i = 0; i < rows.length; i += 50) {
       await db.from('lessons').insert(rows.skip(i).take(50).toList());
     }
+    try {
+      await LessonLinks.pull([courseId]);
+    } catch (_) {}
     return (rows.length, courseId);
     } catch (e) {
       // Do not leave an empty draft course behind when we created it.

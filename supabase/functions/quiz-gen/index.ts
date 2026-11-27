@@ -140,11 +140,15 @@ Deno.serve(async (req: Request) => {
     const mins = Math.round(Number(lesson.duration_seconds ?? 0) / 60);
     // 10 questions minimum, +1 per 4 minutes of video, 20 maximum.
     const vcount = Math.min(20, Math.max(10, 10 + Math.round((mins || 8) / 4)));
+    const acount = 3 + (mins >= 20 ? 1 : 0) + (mins >= 40 ? 1 : 0);
     const vprompt =
       `Course: ${cTitle}${field ? ' (' + field + ')' : ''}\nLesson title: ${title}\n\n` +
       `Watch this video. Write ${vcount} multiple-choice questions that test ONLY what the speaker actually explains in it, spread across the video from start to end and covering each main point. ` +
       `Write in the language of the video/lesson title (Arabic stays Arabic). Do not ask about the channel, timestamps or anything not said in the video. ` +
-      `Each question has exactly 4 options, exactly one correct (index 0-3), and a one-sentence explanation based on the video.`;
+      `Each question has exactly 4 options, exactly one correct (index 0-3), and a one-sentence explanation based on the video. ` +
+      `ALSO fill assignment_questions with ${acount} short written-answer questions (one or two sentences to answer each) that make the student apply or explain what the video taught; no multiple choice. ` +
+      `ALSO fill resources with links, files or materials that the speaker explicitly names or shows on screen as study resources, with the full URL ONLY if it is clearly shown or spelled out; otherwise leave resources empty. Never invent a URL.`;
+    let extra: any = null;
     let grounded = false;
     let quotaHit = false;
     const prompt =
@@ -173,6 +177,8 @@ Deno.serve(async (req: Request) => {
       },
       required: ['questions'],
     };
+    (schema.properties as any).assignment_questions = { type: 'ARRAY', items: { type: 'STRING' } };
+    (schema.properties as any).resources = { type: 'ARRAY', items: { type: 'OBJECT', properties: { title: { type: 'STRING' }, url: { type: 'STRING' } }, required: ['title', 'url'] } };
     let qs: any[] | null = null;
     const errs: string[] = [];
     const started = Date.now();
@@ -190,7 +196,7 @@ Deno.serve(async (req: Request) => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               contents: [{ role: 'user', parts: isVideo ? [{ fileData: { fileUri: videoUrl!, mimeType: 'video/*' } }, { text: vprompt }] : [{ text: prompt }] }],
-              generationConfig: { responseMimeType: 'application/json', responseSchema: schema, temperature: 0.3, maxOutputTokens: 9000 },
+              generationConfig: { responseMimeType: 'application/json', responseSchema: schema, temperature: 0.3, maxOutputTokens: 12000 },
             }),
             signal: AbortSignal.timeout(isVideo ? 110000 : 60000),
           });
@@ -198,7 +204,7 @@ Deno.serve(async (req: Request) => {
           const t = (j?.candidates?.[0]?.content?.parts ?? []).filter((p: any) => !p.thought)
             .map((p: any) => p.text ?? '').join('');
           if (t) {
-            qs = JSON.parse(t).questions ?? []; grounded = isVideo;
+            const parsed = JSON.parse(t); qs = parsed.questions ?? []; extra = parsed; grounded = isVideo;
           } else {
             errs.push(`${model}: ${r.status} ${String(j?.error?.message ?? 'empty').slice(0, 80)}`);
             if (isVideo && (r.status === 429 || /quota|limit|hours/i.test(String(j?.error?.message ?? '')))) quotaHit = true;
@@ -255,6 +261,33 @@ Deno.serve(async (req: Request) => {
         })));
       await db.from('exam_questions').insert({ exam_id: exam.id, question_id: row.id, sort_order: order++ });
     }
+    // Assignment card (draft or published like the quiz) and link suggestions.
+    // Best effort: a missing table (SQL not run yet) never blocks the quiz.
+    try {
+      const aq: string[] = (Array.isArray(extra?.assignment_questions) ? extra.assignment_questions : [])
+        .filter((x: any) => typeof x === 'string' && x.trim()).map((x: string) => x.trim()).slice(0, 6);
+      if (aq.length >= 2) {
+        const { data: ha } = await db.from('assignments').select('id').eq('lesson_id', lesson.id).limit(1);
+        if (!ha || !ha.length) {
+          const base: any = {
+            course_id: course.id, lesson_id: lesson.id,
+            title: `تكليف: ${title}`.slice(0, 200),
+            description: 'أجب عن الأسئلة دي بإجابات قصيرة.',
+            max_points: aq.length * 2, allow_late: false,
+            status: publish ? 'published' : 'draft', ai_generated: true, questions: aq, created_by: uid,
+          };
+          const r1 = await db.from('assignments').insert({ ...base, tenant_id: course.tenant_id });
+          if (r1.error) await db.from('assignments').insert(base);
+        }
+      }
+      const rs: any[] = (Array.isArray(extra?.resources) ? extra.resources : [])
+        .filter((r: any) => r && /^https?:\/\/[^\s]+$/i.test(String(r.url ?? ''))).slice(0, 8);
+      if (rs.length) {
+        await db.from('lesson_link_suggestions').upsert(
+          rs.map((r) => ({ tenant_id: course.tenant_id, lesson_id: lesson.id, title: String(r.title || r.url).slice(0, 120), url: String(r.url) })),
+          { onConflict: 'lesson_id,url', ignoreDuplicates: true });
+      }
+    } catch (_) { /* optional parts */ }
     return await finish({ ok: true, exam_id: exam.id, questions: order, grounded, status: publish ? 'published' : 'draft' });
   } catch (e) {
     return json({ error: 'handler', detail: String(e).slice(0, 300) });

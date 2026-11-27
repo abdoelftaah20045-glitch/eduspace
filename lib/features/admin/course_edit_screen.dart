@@ -65,6 +65,8 @@ class _CourseEditScreenState extends State<CourseEditScreen> {
       ? DateTime.tryParse(widget.course!['available_until'].toString())
           ?.toLocal()
       : null;
+  late final _asgHours = TextEditingController(
+      text: '${widget.course?['assignment_hours'] ?? ''}');
   late bool _unlock = widget.course?['unlock_requires_pass'] != false;
   bool _saving = false;
   bool _uploadingCover = false;
@@ -158,6 +160,8 @@ class _CourseEditScreenState extends State<CourseEditScreen> {
       'status': _status,
       if (widget.course != null && widget.course!.containsKey('unlock_requires_pass'))
         'unlock_requires_pass': _unlock,
+      if (widget.course != null && widget.course!.containsKey('assignment_hours'))
+        'assignment_hours': int.tryParse(_asgHours.text.trim()),
       'prerequisites': _prerequisites.text.trim(),
       if (_skills.text.trim().isNotEmpty)
         'skills': [
@@ -392,6 +396,17 @@ class _CourseEditScreenState extends State<CourseEditScreen> {
                 value: _unlock,
                 title: const Text('لازم ينجح في اختبار الدرس عشان يفتح اللي بعده'),
                 onChanged: (v) => setState(() => _unlock = v),
+              ),
+            if (widget.course != null && widget.course!.containsKey('assignment_hours'))
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: TextField(
+                  controller: _asgHours,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                      labelText: 'ساعات تسليم تكليفات الكورس (فاضي = الافتراضي)',
+                      border: OutlineInputBorder()),
+                ),
               ),
             const SizedBox(height: 12),
             TextFormField(

@@ -2,6 +2,7 @@ import '../ai/ai_fab.dart';
 import '../../core/in_app_player.dart';
 import 'lesson_files.dart';
 import 'lesson_exam_card.dart';
+import 'lesson_assignment_card.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -187,6 +188,7 @@ class _LessonScreenState extends State<LessonScreen> {
                 const SizedBox(height: 16),
                 LessonFiles(lessonId: lesson.id),
                 LessonExamCard(lessonId: lesson.id),
+                LessonAssignmentCard(lessonId: lesson.id),
                 const SizedBox(height: 16),
               ],
             ),
