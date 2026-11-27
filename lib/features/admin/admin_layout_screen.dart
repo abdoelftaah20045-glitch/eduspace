@@ -40,6 +40,7 @@ const _home = [
   _Item('home.banner', 'ann_title'),
   _Item('home.my_courses', 'my_courses'),
   _Item('home.lives', 'lv_title'),
+  _Item('home.books', 'library_label'),
   _Item('home.discover', 'discover_label'),
   _Item('home.tiles', 'sections_label'),
 ];

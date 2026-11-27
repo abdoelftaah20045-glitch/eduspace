@@ -16,6 +16,7 @@ import '../../core/paid_courses.dart';
 import '../../core/tenant.dart';
 import '../../core/widgets.dart';
 import 'home_blocks.dart';
+import 'home_books.dart';
 import '../courses/course_details_screen.dart';
 import '../courses/courses_screen.dart';
 import '../courses/data/course_models.dart';
@@ -486,6 +487,9 @@ class _HomeTabState extends State<_HomeTab> with WidgetsBindingObserver {
               _UpcomingLives(lives: _lives),
               const SizedBox(height: 24),
             ],
+      ],
+      'home.books': [
+            if (RemoteUi.visible('home.books')) const HomeBooks(),
       ],
       'home.discover': [
             if (_trending.isNotEmpty && RemoteUi.visible('home.discover')) ...[
