@@ -1,3 +1,4 @@
+import '../../core/remote_ui.dart';
 import '../../core/cached_avatar.dart';
 import '../../core/maintenance.dart';
 import 'package:flutter/material.dart';
@@ -177,7 +178,7 @@ class ProfileScreen extends StatelessWidget {
               ],
               const CertsStrip(),
               const SizedBox(height: 8),
-              ListTile(
+              if (RemoteUi.visible('profile.edit')) ListTile(
                 leading: const Icon(Icons.edit_outlined),
                 title: Text(s.t('edit_profile')),
                 onTap: () => Navigator.of(context).push(
@@ -196,14 +197,14 @@ class ProfileScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              ListTile(
+              if (RemoteUi.visible('profile.favorites')) ListTile(
                 leading: const Icon(Icons.favorite_border),
                 title: Text(s.t('favorites')),
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute(builder: (_) => const FavoritesScreen()),
                 ),
               ),
-              ListTile(
+              if (RemoteUi.visible('profile.certs')) ListTile(
                 leading: const Icon(Icons.workspace_premium_outlined),
                 title: Text(s.t('my_certificates')),
                 onTap: () => Navigator.of(context).push(
@@ -240,28 +241,28 @@ class ProfileScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-              ListTile(
+              if (RemoteUi.visible('profile.library')) ListTile(
                 leading: const Icon(Icons.folder_open),
                 title: Text(s.t('library_label')),
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute(builder: (_) => const LibraryScreen()),
                 ),
               ),
-              ListTile(
+              if (RemoteUi.visible('profile.downloads')) ListTile(
                 leading: const Icon(Icons.offline_pin_outlined),
                 title: Text(s.t('dl_title')),
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute(builder: (_) => const DownloadsScreen()),
                 ),
               ),
-              ListTile(
+              if (RemoteUi.visible('profile.support')) ListTile(
                 leading: const Icon(Icons.support_agent),
                 title: Text(s.t('support')),
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute(builder: (_) => const SupportScreen()),
                 ),
               ),
-              ListTile(
+              if (RemoteUi.visible('profile.settings')) ListTile(
                 leading: const Icon(Icons.settings_outlined),
                 title: Text(s.t('settings')),
                 onTap: () => Navigator.of(context).push(

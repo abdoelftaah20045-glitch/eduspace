@@ -62,20 +62,36 @@ class _HomeShellState extends State<HomeShell> {
   @override
   Widget build(BuildContext context) {
     final s = S.of(context);
-    final pages = [
-      const MaintenanceGate(pageKey: 'home', child: _HomeTab()),
-      const MyCoursesScreen(),
-      const CoursesScreen(),
-      const ExamsScreen(),
-      const ProfileScreen(),
+    return ValueListenableBuilder<int>(
+      valueListenable: RemoteUi.version,
+      builder: (context, _, __) => _shell(context, s),
+    );
+  }
+
+  Widget _shell(BuildContext context, S s) {
+    // Home first and Account last are fixed; the three middle tabs can be
+    // hidden or reordered by the admin (ui_layout: tab.my / tab.courses / tab.exams).
+    final mid = <(String, Widget, IconData, String)>[
+      ('my', const MyCoursesScreen(), Icons.school_outlined, s.t('my_courses')),
+      ('courses', const CoursesScreen(), Icons.menu_book_outlined, s.t('tab_courses')),
+      ('exams', const ExamsScreen(), Icons.quiz_outlined, s.t('tab_exams')),
     ];
+    final order = {for (var i = 0; i < mid.length; i++) mid[i].$1: RemoteUi.order('tab.${mid[i].$1}', i)};
+    final shownMid = mid.where((t) => RemoteUi.visible('tab.${t.$1}')).toList()
+      ..sort((a, b) => order[a.$1]!.compareTo(order[b.$1]!));
+    final tabs = <(String, Widget, IconData, String)>[
+      ('home', const MaintenanceGate(pageKey: 'home', child: _HomeTab()), Icons.home_outlined, s.t('tab_home')),
+      ...shownMid,
+      ('account', const ProfileScreen(), Icons.person_outline, s.t('tab_account')),
+    ];
+    final idx = _index.clamp(0, tabs.length - 1);
     return PopScope(
-      canPop: _index == 0,
+      canPop: idx == 0,
       onPopInvokedWithResult: (didPop, _) {
-        if (!didPop && _index != 0) setState(() => _index = 0);
+        if (!didPop && idx != 0) setState(() => _index = 0);
       },
       child: Scaffold(
-      body: pages[_index],
+      body: tabs[idx].$2,
       bottomNavigationBar: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
@@ -87,29 +103,11 @@ class _HomeShellState extends State<HomeShell> {
             child: NavigationBar(
         height: 64,
         labelBehavior: NavigationDestinationLabelBehavior.alwaysHide,
-        selectedIndex: _index,
+        selectedIndex: idx,
         onDestinationSelected: (i) => setState(() => _index = i),
         destinations: [
-          NavigationDestination(
-            icon: const Icon(Icons.home_outlined),
-            label: s.t('tab_home'),
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.school_outlined),
-            label: s.t('my_courses'),
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.menu_book_outlined),
-            label: s.t('tab_courses'),
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.quiz_outlined),
-            label: s.t('tab_exams'),
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.person_outline),
-            label: s.t('tab_account'),
-          ),
+          for (final t in tabs)
+            NavigationDestination(icon: Icon(t.$3), label: t.$4),
         ],
       ),
           ),

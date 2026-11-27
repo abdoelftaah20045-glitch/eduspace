@@ -68,6 +68,21 @@ const _drawer = [
   _Item('drawer.dr_favorites', 'dr_favorites'),
 ];
 
+const _tabItems = [
+  _Item('tab.my', 'my_courses'),
+  _Item('tab.courses', 'tab_courses'),
+  _Item('tab.exams', 'tab_exams'),
+];
+const _profileItems = [
+  _Item('profile.edit', 'edit_profile'),
+  _Item('profile.favorites', 'favorites'),
+  _Item('profile.certs', 'my_certificates'),
+  _Item('profile.library', 'library_label'),
+  _Item('profile.downloads', 'dl_title'),
+  _Item('profile.support', 'support'),
+  _Item('profile.settings', 'settings'),
+];
+
 /// Admin: show/hide and reorder Home sections, Home tiles and menu items.
 class AdminLayoutScreen extends StatefulWidget {
   const AdminLayoutScreen({super.key});
@@ -84,6 +99,7 @@ class _AdminLayoutScreenState extends State<AdminLayoutScreen> {
   late List<_Item> _drawerOrder;
   late List<_Item> _cpOrder;
   late List<_Item> _homeOrder;
+  late List<_Item> _tabOrder;
 
   @override
   void initState() {
@@ -92,8 +108,9 @@ class _AdminLayoutScreenState extends State<AdminLayoutScreen> {
     _drawerOrder = [..._drawer];
     _cpOrder = [..._coursePage];
     _homeOrder = [..._home];
+    _tabOrder = [..._tabItems];
     RemoteUi.load().then((_) {
-      for (final it in [..._home, ..._quick, ..._drawer, ..._courseItems, ..._certItems, ..._coursePage]) {
+      for (final it in [..._home, ..._quick, ..._drawer, ..._courseItems, ..._certItems, ..._coursePage, ..._tabItems, ..._profileItems]) {
         _vis[it.id] = RemoteUi.visible(it.id);
       }
       int ord(_Item a, List<_Item> base) =>
@@ -101,6 +118,7 @@ class _AdminLayoutScreenState extends State<AdminLayoutScreen> {
       _quickOrder.sort((a, b) => ord(a, _quick).compareTo(ord(b, _quick)));
       _drawerOrder.sort((a, b) => ord(a, _drawer).compareTo(ord(b, _drawer)));
       _homeOrder.sort((a, b) => ord(a, _home).compareTo(ord(b, _home)));
+      _tabOrder.sort((a, b) => ord(a, _tabItems).compareTo(ord(b, _tabItems)));
       _cpOrder.sort((a, b) => ord(a, _coursePage).compareTo(ord(b, _coursePage)));
       if (mounted) setState(() => _loading = false);
     });
@@ -118,8 +136,12 @@ class _AdminLayoutScreenState extends State<AdminLayoutScreen> {
       final it = _quickOrder[i];
       out[it.id] = {'visible': _vis[it.id] ?? true, 'order': i};
     }
-    for (final it in [..._courseItems, ..._certItems]) {
+    for (final it in [..._courseItems, ..._certItems, ..._profileItems]) {
       out[it.id] = {'visible': _vis[it.id] ?? true};
+    }
+    for (var i = 0; i < _tabOrder.length; i++) {
+      final it = _tabOrder[i];
+      out[it.id] = {'visible': _vis[it.id] ?? true, 'order': i};
     }
     for (var i = 0; i < _cpOrder.length; i++) {
       final it = _cpOrder[i];
@@ -189,6 +211,10 @@ class _AdminLayoutScreenState extends State<AdminLayoutScreen> {
           : ListView(
               padding: const EdgeInsets.only(bottom: 90),
               children: [
+                _title('الشريط السفلي (الرئيسية والحساب ثابتين)'),
+                _reorder(s, _tabOrder),
+                _title(s.t('tab_account')),
+                for (final it in _profileItems) _switch(s, it),
                 _title(s.t('ui_layout_home')),
                 _reorder(s, _homeOrder),
                 _title(s.t('tab_courses')),
