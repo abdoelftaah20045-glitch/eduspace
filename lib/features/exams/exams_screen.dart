@@ -81,17 +81,18 @@ class _ExamCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: const Color(0xFFE3F2FD),
-        borderRadius: BorderRadius.circular(20),
+        color: Colors.transparent,
+        border: Border.all(color: const Color(0xFFDADCE0)),
+        borderRadius: BorderRadius.circular(4),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: const Color(0xFF1E88E5)),
+          Icon(icon, size: 14, color: const Color(0xFF5F6368)),
           const SizedBox(width: 4),
           Text(label,
               style: const TextStyle(
-                  fontSize: 12, color: Color(0xFF1E88E5))),
+                  fontSize: 12, color: Color(0xFF5F6368))),
         ],
       ),
     );
@@ -103,9 +104,11 @@ class _ExamCard extends StatelessWidget {
     final theme = Theme.of(context);
     final canStart = exam.isOpen && !exam.attemptsExhausted;
     return PressScale(child: Card(
-      elevation: 2,
+      elevation: 0,
       margin: const EdgeInsets.only(bottom: 14),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      shape: RoundedRectangleBorder(
+          side: BorderSide(color: theme.colorScheme.outlineVariant),
+          borderRadius: BorderRadius.circular(8)),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -117,12 +120,10 @@ class _ExamCard extends StatelessWidget {
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: canStart
-                          ? const [Color(0xFF00ACC1), Color(0xFF2196F3)]
-                          : [Colors.grey, Colors.grey.shade600],
-                    ),
-                    borderRadius: BorderRadius.circular(14),
+                    color: canStart
+                        ? theme.colorScheme.primary
+                        : Colors.grey.shade500,
+                    borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Icon(Icons.quiz_outlined,
                       color: Colors.white, size: 26),
@@ -178,7 +179,7 @@ class _ExamCard extends StatelessWidget {
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 10),
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14)),
+                        borderRadius: BorderRadius.circular(6)),
                   ),
                   icon: const Icon(Icons.fact_check_outlined, size: 18),
                   label: Text(s.t('review_answers')),
@@ -195,7 +196,7 @@ class _ExamCard extends StatelessWidget {
                 style: FilledButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14)),
+                      borderRadius: BorderRadius.circular(6)),
                 ),
                 onPressed: canStart
                     ? () {
