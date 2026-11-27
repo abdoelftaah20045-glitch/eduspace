@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 import '../library/data/library_repo.dart';
+import 'custom_book_source.dart';
 
 bool _ar(BuildContext c) => Localizations.localeOf(c).languageCode == 'ar';
 
@@ -44,6 +45,15 @@ class _AdminBookSourcesScreenState extends State<AdminBookSourcesScreen> {
   bool _busy = false;
   String? _err;
   List<_Found> _res = const [];
+  List<CustomBookSource> _custom = [];
+
+  @override
+  void initState() {
+    super.initState();
+    CustomBookSource.load().then((v) {
+      if (mounted) setState(() => _custom = v);
+    });
+  }
 
   @override
   void dispose() {
@@ -58,6 +68,24 @@ class _AdminBookSourcesScreenState extends State<AdminBookSourcesScreen> {
     final m = RegExp(r'licenses/([a-z\-]+)/([0-9.]+)').firstMatch(u);
     if (m != null) return 'CC ${m.group(1)!.toUpperCase()} ${m.group(2)}';
     return 'Creative Commons';
+  }
+
+  Future<void> _editCustom(int? i) async {
+    final r = await Navigator.of(context).push<CustomBookSource>(
+        MaterialPageRoute(
+            builder: (_) => CustomSourceEditor(
+                source: i == null ? null : _custom[i])));
+    if (r == null) return;
+    final next = List<CustomBookSource>.from(_custom);
+    if (i == null) {
+      next.add(r);
+    } else {
+      next[i] = r;
+    }
+    try {
+      await CustomBookSource.save(next);
+      if (mounted) setState(() => _custom = next);
+    } catch (_) {}
   }
 
   Future<void> _search() async {
@@ -101,6 +129,22 @@ class _AdminBookSourcesScreenState extends State<AdminBookSourcesScreen> {
                     .toString()),
             source: 'archive.org',
             lang: lang is List ? lang.join(',') : (lang ?? '').toString(),
+          ));
+        }
+      } else if (_source.startsWith('c:')) {
+        final idx = int.tryParse(_source.substring(2)) ?? -1;
+        if (idx < 0 || idx >= _custom.length) throw Exception('no source');
+        final cs = _custom[idx];
+        final rows = await cs.search(q);
+        for (final m in rows) {
+          out.add(_Found(
+            title: m['title'] ?? '',
+            author: m['author'] ?? '',
+            link: m['link'] ?? '',
+            cover: (m['cover'] ?? '').isEmpty ? null : m['cover'],
+            license: (m['license'] ?? '').isEmpty ? 'Unknown (check source)' : m['license']!,
+            source: cs.name,
+            lang: m['language'] ?? '',
           ));
         }
       } else if (_source == 'wikisource') {
@@ -282,6 +326,23 @@ class _AdminBookSourcesScreenState extends State<AdminBookSourcesScreen> {
                     _lang = 'any';
                     _res = const [];
                   }),
+                ),
+                for (var i = 0; i < _custom.length; i++)
+                  GestureDetector(
+                    onLongPress: () => _editCustom(i),
+                    child: ChoiceChip(
+                      label: Text(_custom[i].name),
+                      selected: _source == 'c:$i',
+                      onSelected: (_) => setState(() {
+                        _source = 'c:$i';
+                        _lang = 'any';
+                        _res = const [];
+                      }),
+                    ),
+                  ),
+                ActionChip(
+                  label: const Icon(Icons.add, size: 18),
+                  onPressed: () => _editCustom(null),
                 ),
                 ChoiceChip(
                   label: const Text('OpenStax'),
