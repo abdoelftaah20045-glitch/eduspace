@@ -298,7 +298,7 @@ class _YoutubeImportScreenState extends State<YoutubeImportScreen> {
   final List<String> _errors = [];
   bool _loading = false;
   bool _importing = false;
-  bool _withDesc = true;
+  bool _withDesc = false;
   String _progress = '';
 
   @override
