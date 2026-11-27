@@ -12,9 +12,6 @@ ThemeData _base(ColorScheme scheme) {
     useMaterial3: true,
     colorScheme: scheme,
     switchTheme: SwitchThemeData(
-      thumbIcon: WidgetStateProperty.resolveWith((st) => st.contains(WidgetState.selected)
-          ? const Icon(Icons.check_rounded)
-          : const Icon(Icons.close_rounded)),
       trackColor: WidgetStateProperty.resolveWith((st) =>
           st.contains(WidgetState.selected)
               ? scheme.primary

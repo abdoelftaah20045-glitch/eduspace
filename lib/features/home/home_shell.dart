@@ -552,7 +552,22 @@ class _HomeTabState extends State<_HomeTab> {
                   Builder(
                     builder: (ctx) => IconButton(
                       tooltip: s.t('tab_account'),
-                      icon: const Icon(Icons.menu_rounded, size: 28),
+                      icon: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          for (final w in const [22.0, 16.0, 22.0])
+                            Container(
+                              width: w,
+                              height: 2.6,
+                              margin: const EdgeInsets.symmetric(vertical: 2.4),
+                              decoration: BoxDecoration(
+                                color: scheme.onSurface,
+                                borderRadius: BorderRadius.circular(2),
+                              ),
+                            ),
+                        ],
+                      ),
                       onPressed: () => Scaffold.of(ctx).openDrawer(),
                     ),
                   ),

@@ -137,7 +137,7 @@ class CachedImage extends StatelessWidget {
         if (snap.connectionState == ConnectionState.done) {
           return errorBuilder != null
               ? errorBuilder!(ctx, 'load failed', null)
-              : holder(const Icon(Icons.broken_image_outlined));
+              : holder();
         }
         return holder();
       },
