@@ -1,3 +1,4 @@
+import '../../core/cached_avatar.dart';
 import '../../core/maintenance.dart';
 import 'dart:async';
 
@@ -148,7 +149,7 @@ class _LivesScreenState extends State<LivesScreen> {
                                 width: 64,
                                 height: 72,
                                 child: (l.hostPhotoUrl ?? '').isNotEmpty
-                                    ? Image.network(l.hostPhotoUrl!,
+                                    ? CachedImage(l.hostPhotoUrl!,
                                         fit: BoxFit.cover,
                                         errorBuilder: (_, __, ___) => Container(
                                             color: scheme.primaryContainer,

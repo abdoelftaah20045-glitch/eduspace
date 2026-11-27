@@ -1,3 +1,4 @@
+import '../../core/cached_avatar.dart';
 import '../../core/maintenance.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -393,7 +394,7 @@ class _ProfileAvatarState extends State<_ProfileAvatar> {
                           child: Icon(Icons.person,
                               size: 64,
                               color: Theme.of(context).colorScheme.primary))
-                      : Image.network(url,
+                      : CachedImage(url,
                           fit: BoxFit.cover,
                           errorBuilder: (_, __, ___) => Container(
                               color: Theme.of(context)

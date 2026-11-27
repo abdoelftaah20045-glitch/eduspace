@@ -1,6 +1,9 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
 
 import 'html_text.dart';
 
@@ -16,12 +19,68 @@ class DecodingHttpClient extends http.BaseClient {
   static final _marker =
       RegExp(r'&(#\d|#[xX][0-9a-fA-F]|amp;|lt;|gt;|quot;|apos;|nbsp;)');
 
+  static Directory? _dir;
+
+  Future<File?> _file(http.BaseRequest request) async {
+    try {
+      _dir ??= Directory('${(await getTemporaryDirectory()).path}/api_cache');
+      if (!_dir!.existsSync()) _dir!.createSync(recursive: true);
+      // Cache is per signed-in user (id from the access token).
+      var who = 'anon';
+      final auth = request.headers['Authorization'] ?? '';
+      final parts = auth.replaceFirst('Bearer ', '').split('.');
+      if (parts.length == 3) {
+        try {
+          final m = jsonDecode(
+              utf8.decode(base64Url.decode(base64Url.normalize(parts[1]))));
+          who = '${m['sub'] ?? 'anon'}';
+        } catch (_) {}
+      }
+      final key = '$who|${request.url}'.hashCode.toRadixString(16);
+      return File('${_dir!.path}/${who.hashCode.toRadixString(16)}_$key');
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<http.StreamedResponse?> _fromCache(http.BaseRequest request) async {
+    try {
+      final f = await _file(request);
+      if (f == null || !f.existsSync()) return null;
+      final m = jsonDecode(await f.readAsString()) as Map<String, dynamic>;
+      final body = utf8.encode(m['b'] as String);
+      return http.StreamedResponse(Stream.value(body), 200,
+          contentLength: body.length,
+          request: request,
+          headers: {
+            'content-type': 'application/json; charset=utf-8',
+            if (m['r'] != null) 'content-range': '${m['r']}',
+            'x-from-cache': '1',
+          });
+    } catch (_) {
+      return null;
+    }
+  }
+
   @override
   Future<http.StreamedResponse> send(http.BaseRequest request) async {
-    final res = await _inner.send(request);
+    final isRest = request.url.path.contains('/rest/v1/');
+    final isGet = request.method == 'GET';
+    http.StreamedResponse res;
+    try {
+      res = isRest && isGet
+          ? await _inner.send(request).timeout(const Duration(seconds: 15))
+          : await _inner.send(request);
+    } catch (e) {
+      if (isRest && isGet) {
+        final c = await _fromCache(request);
+        if (c != null) return c;
+      }
+      rethrow;
+    }
     try {
       final type = res.headers['content-type'] ?? '';
-      if (!request.url.path.contains('/rest/v1/') || !type.contains('json')) {
+      if (!isRest || !type.contains('json')) {
         return res;
       }
       final bytes = await res.stream.toBytes();
@@ -33,6 +92,17 @@ class DecodingHttpClient extends http.BaseClient {
         }
       } catch (_) {
         out = bytes;
+      }
+      if (isGet && res.statusCode == 200 && out.length < 1500000) {
+        // Remember the last good answer for weak or missing connections.
+        try {
+          final f = await _file(request);
+          await f?.writeAsString(jsonEncode(
+              {'b': utf8.decode(out), 'r': res.headers['content-range']}));
+        } catch (_) {}
+      } else if (isGet && res.statusCode >= 500) {
+        final c = await _fromCache(request);
+        if (c != null) return c;
       }
       final headers = Map<String, String>.from(res.headers)
         ..remove('content-encoding')

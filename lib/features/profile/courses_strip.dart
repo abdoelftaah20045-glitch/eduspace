@@ -1,3 +1,4 @@
+import '../../core/cached_avatar.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/l10n.dart';
@@ -95,7 +96,7 @@ class _CoursesStripState extends State<CoursesStrip> {
                                 ? Container(
                                     color: scheme.primaryContainer,
                                     child: const Icon(Icons.menu_book))
-                                : Image.network(c.coverUrl!,
+                                : CachedImage(c.coverUrl!,
                                     fit: BoxFit.cover,
                                     errorBuilder: (_, __, ___) => Container(
                                         color: scheme.primaryContainer)),

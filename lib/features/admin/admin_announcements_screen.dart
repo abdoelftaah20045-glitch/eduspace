@@ -1,3 +1,4 @@
+import '../../core/cached_avatar.dart';
 import '../../core/admin_search.dart';
 import '../../core/search_norm.dart';
 import 'package:file_picker/file_picker.dart';
@@ -344,7 +345,7 @@ class _AnnouncementSheetState extends State<_AnnouncementSheet> {
                           padding: const EdgeInsets.all(4),
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(8),
-                            child: Image.network(_images[i],
+                            child: CachedImage(_images[i],
                                 width: 64, height: 64, fit: BoxFit.cover),
                           ),
                         ),

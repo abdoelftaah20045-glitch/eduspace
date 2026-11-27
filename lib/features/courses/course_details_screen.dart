@@ -1,3 +1,4 @@
+import '../../core/cached_avatar.dart';
 import '../../core/maintenance.dart';
 import 'price_view.dart';
 import '../home/home_widgets.dart';
@@ -347,7 +348,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
           child: Stack(fit: StackFit.expand, children: [
             Container(color: navy),
             if (course.coverUrl != null && course.coverUrl!.isNotEmpty)
-              Image.network(course.coverUrl!,
+              CachedImage(course.coverUrl!,
                   fit: BoxFit.cover,
                   errorBuilder: (_, __, ___) => const SizedBox.shrink())
             else
@@ -379,16 +380,11 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
               if ((course.instructorName ?? '').isNotEmpty) ...[
                 const SizedBox(height: 10),
                 Row(children: [
-                  CircleAvatar(
+                  CachedAvatar(
+                    url: course.instructorPhotoUrl,
                     radius: 13,
                     backgroundColor: Colors.white24,
-                    backgroundImage:
-                        (course.instructorPhotoUrl ?? '').isNotEmpty
-                            ? NetworkImage(course.instructorPhotoUrl!)
-                            : null,
-                    child: (course.instructorPhotoUrl ?? '').isEmpty
-                        ? Icon(Icons.person, size: 16, color: onNavy)
-                        : null,
+                    fallback: Icon(Icons.person, size: 16, color: onNavy),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
@@ -608,14 +604,11 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
           Card(
             margin: const EdgeInsets.symmetric(horizontal: 16),
             child: ListTile(
-              leading: CircleAvatar(
+              leading: CachedAvatar(
+                url: course.instructorPhotoUrl,
+                radius: 20,
                 backgroundColor: scheme.primaryContainer,
-                backgroundImage: (course.instructorPhotoUrl ?? '').isNotEmpty
-                    ? NetworkImage(course.instructorPhotoUrl!)
-                    : null,
-                child: (course.instructorPhotoUrl ?? '').isEmpty
-                    ? const Icon(Icons.person)
-                    : null,
+                fallback: const Icon(Icons.person),
               ),
               title: Text(course.instructorName!,
                   style: const TextStyle(fontWeight: FontWeight.w700)),

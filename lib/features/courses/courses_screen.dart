@@ -1,3 +1,4 @@
+import '../../core/cached_avatar.dart';
 import '../../core/maintenance.dart';
 import 'price_view.dart';
 import 'package:flutter/material.dart';
@@ -349,7 +350,7 @@ class CourseCard extends StatelessWidget {
                         aspectRatio: 1,
                         child: course.coverUrl != null &&
                                 course.coverUrl!.isNotEmpty
-                            ? Image.network(course.coverUrl!,
+                            ? CachedImage(course.coverUrl!,
                                 fit: BoxFit.cover,
                                 errorBuilder: (_, __, ___) =>
                                     _Thumb(color: palette))

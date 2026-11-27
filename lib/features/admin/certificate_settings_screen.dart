@@ -1,3 +1,4 @@
+import '../../core/cached_avatar.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -185,7 +186,7 @@ class _CertificateSettingsScreenState extends State<CertificateSettingsScreen> {
                 borderRadius: BorderRadius.circular(8),
                 child: AspectRatio(
                   aspectRatio: 960 / 680,
-                  child: Image.network(_template, fit: BoxFit.cover,
+                  child: CachedImage(_template, fit: BoxFit.cover,
                       errorBuilder: (_, __, ___) =>
                           const Center(child: Icon(Icons.broken_image))),
                 ),

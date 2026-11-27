@@ -1,3 +1,4 @@
+import '../../core/cached_avatar.dart';
 import '../courses/price_view.dart';
 import 'package:flutter/material.dart';
 
@@ -120,7 +121,7 @@ class FeaturedCourseCard extends StatelessWidget {
               color: scheme.primaryContainer,
               child: (c.coverUrl ?? '').isEmpty
                   ? Icon(Icons.menu_book, color: scheme.primary)
-                  : Image.network(c.coverUrl!,
+                  : CachedImage(c.coverUrl!,
                       fit: BoxFit.cover,
                       errorBuilder: (_, __, ___) =>
                           Icon(Icons.menu_book, color: scheme.primary)),
@@ -203,19 +204,15 @@ class TopMentors extends StatelessWidget {
           return SizedBox(
             width: 70,
             child: Column(children: [
-              CircleAvatar(
+              CachedAvatar(
+                url: photo,
                 radius: 29,
                 backgroundColor: scheme.primaryContainer,
-                backgroundImage: (photo ?? '').isNotEmpty
-                    ? NetworkImage(photo!)
-                    : null,
-                child: (photo ?? '').isEmpty
-                    ? Text(e.key.characters.first.toUpperCase(),
-                        style: TextStyle(
-                            fontWeight: FontWeight.w800,
-                            color: scheme.primary,
-                            fontSize: 20))
-                    : null,
+                fallback: Text(e.key.characters.first.toUpperCase(),
+                    style: TextStyle(
+                        fontWeight: FontWeight.w800,
+                        color: scheme.primary,
+                        fontSize: 20)),
               ),
               const SizedBox(height: 6),
               Text(e.key,

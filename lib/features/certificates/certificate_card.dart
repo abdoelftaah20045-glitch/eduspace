@@ -1,3 +1,4 @@
+import '../../core/cached_avatar.dart';
 import 'dart:math' as math;
 
 import 'package:barcode/barcode.dart' as bc;
@@ -77,7 +78,7 @@ class CertificateCard extends StatelessWidget {
     final children = <Widget>[];
     if (tpl.isNotEmpty) {
       children.add(Positioned.fill(
-        child: Image.network(tpl,
+        child: CachedImage(tpl,
             fit: BoxFit.cover,
             errorBuilder: (_, __, ___) => Container(color: Colors.white)),
       ));

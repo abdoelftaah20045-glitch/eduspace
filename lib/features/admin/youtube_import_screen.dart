@@ -1,3 +1,4 @@
+import '../../core/cached_avatar.dart';
 import 'dart:async';
 import 'dart:convert';
 
@@ -509,7 +510,7 @@ class _YoutubeImportScreenState extends State<YoutubeImportScreen> {
                       ),
                       ClipRRect(
                         borderRadius: BorderRadius.circular(8),
-                        child: Image.network(p.thumb,
+                        child: CachedImage(p.thumb,
                             width: 96,
                             height: 54,
                             fit: BoxFit.cover,

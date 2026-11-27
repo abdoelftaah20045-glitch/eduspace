@@ -1,3 +1,4 @@
+import 'cached_avatar.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -67,7 +68,7 @@ class _ImageCarouselState extends State<ImageCarousel> {
                 controller: _page,
                 itemCount: widget.urls.length,
                 onPageChanged: (i) => setState(() => _index = i),
-                itemBuilder: (_, i) => Image.network(
+                itemBuilder: (_, i) => CachedImage(
                   widget.urls[i],
                   fit: BoxFit.cover,
                   width: double.infinity,

@@ -1,3 +1,4 @@
+import '../../core/cached_avatar.dart';
 import '../../core/security.dart';
 import '../../core/maintenance.dart';
 import 'dart:async';
@@ -248,7 +249,7 @@ class _HomeTabState extends State<_HomeTab> {
               child: Container(
                 color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 child: (c.coverUrl != null && c.coverUrl!.isNotEmpty)
-                    ? Image.network(c.coverUrl!,
+                    ? CachedImage(c.coverUrl!,
                         fit: BoxFit.contain,
                         width: double.infinity,
                         errorBuilder: (_, __, ___) => Container(

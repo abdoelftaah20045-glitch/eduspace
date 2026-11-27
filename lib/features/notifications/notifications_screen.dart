@@ -1,3 +1,4 @@
+import '../../core/cached_avatar.dart';
 import '../../core/maintenance.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -122,7 +123,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 padding: const EdgeInsets.symmetric(vertical: 6),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(8),
-                  child: Image.network(n.images.first,
+                  child: CachedImage(n.images.first,
                       height: 90, width: 160, fit: BoxFit.cover,
                       errorBuilder: (_, __, ___) => const SizedBox.shrink()),
                 ),

@@ -1,3 +1,4 @@
+import '../../core/cached_avatar.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
@@ -152,7 +153,7 @@ class _AdminNotifyScreenState extends State<AdminNotifyScreen> {
               Stack(children: [
                 ClipRRect(
                     borderRadius: BorderRadius.circular(8),
-                    child: Image.network(u, width: 80, height: 80, fit: BoxFit.cover)),
+                    child: CachedImage(u, width: 80, height: 80, fit: BoxFit.cover)),
                 PositionedDirectional(
                   top: 0,
                   end: 0,

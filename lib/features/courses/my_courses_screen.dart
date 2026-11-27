@@ -1,3 +1,4 @@
+import '../../core/cached_avatar.dart';
 import '../../core/maintenance.dart';
 import 'package:flutter/material.dart';
 
@@ -140,7 +141,7 @@ class _MyCoursesScreenState extends State<MyCoursesScreen> {
                                         child: Container(
                                           color: scheme.primaryContainer,
                                           child: (c.coverUrl ?? '').isNotEmpty
-                                              ? Image.network(c.coverUrl!,
+                                              ? CachedImage(c.coverUrl!,
                                                   fit: BoxFit.cover,
                                                   errorBuilder: (_, __, ___) =>
                                                       const Icon(
