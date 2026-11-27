@@ -65,11 +65,11 @@ Deno.serve(async (req: Request) => {
     const body = await req.json();
     const lessonId = String(body.lesson_id ?? '');
     const publish = body.publish === true;
-    const count = Math.min(10, Math.max(3, Number(body.count ?? 6)));
+    let count = Math.min(10, Math.max(3, Number(body.count ?? 6)));
     if (!lessonId) return json({ error: 'lesson_id' });
 
     const { data: lesson } = await db.from('lessons')
-      .select('id, title, content, course_id').eq('id', lessonId).maybeSingle();
+      .select('id, title, content, course_id, media_url, duration_seconds').eq('id', lessonId).maybeSingle();
     if (!lesson) return json({ error: 'lesson_not_found_or_no_access' });
     const { data: course } = await db.from('courses')
       .select('id, title, field, tenant_id').eq('id', lesson.course_id).maybeSingle();
@@ -82,6 +82,17 @@ Deno.serve(async (req: Request) => {
     const desc = decode(lesson.content ?? '').trim().slice(0, 3500);
     const cTitle = decode(course.title ?? '').trim();
     const field = decode(course.field ?? '').trim();
+    const ym = String(lesson.media_url ?? '').match(/(?:youtu\.be\/|[?&]v=|embed\/|shorts\/)([A-Za-z0-9_-]{11})/);
+    const videoUrl = ym ? `https://www.youtube.com/watch?v=${ym[1]}` : null;
+    const mins = Math.round(Number(lesson.duration_seconds ?? 0) / 60);
+    // More questions for longer videos (about one per 3 minutes, 4 to 15).
+    const vcount = Math.min(15, Math.max(4, Math.ceil((mins || 12) / 3)));
+    const vprompt =
+      `Course: ${cTitle}${field ? ' (' + field + ')' : ''}\nLesson title: ${title}\n\n` +
+      `Watch this video. Write ${vcount} multiple-choice questions that test ONLY what the speaker actually explains in it, spread across the video from start to end and covering each main point. ` +
+      `Write in the language of the video/lesson title (Arabic stays Arabic). Do not ask about the channel, timestamps or anything not said in the video. ` +
+      `Each question has exactly 4 options, exactly one correct (index 0-3), and a one-sentence explanation based on the video.`;
+    let grounded = false;
     const prompt =
       `Course: ${cTitle}${field ? ' (' + field + ')' : ''}\nLesson title: ${title}\nLesson description:\n${desc || '(none)'}\n\n` +
       `Write ${count} multiple-choice practice questions for a student who studied this lesson topic. ` +
@@ -111,24 +122,28 @@ Deno.serve(async (req: Request) => {
     let qs: any[] | null = null;
     const errs: string[] = [];
     const started = Date.now();
-    for (const model of (await pickModels(key)).slice(0, 3)) {
+    const models = (await pickModels(key)).slice(0, 3);
+    for (const mode of (videoUrl ? ['video', 'text'] : ['text'])) {
+    const isVideo = mode === 'video';
+    if (qs) break;
+    for (const model of models) {
       for (let attempt = 0; attempt < 2 && !qs; attempt++) {
-        if (Date.now() - started > 100000) break;
+        if (Date.now() - started > (isVideo ? 140000 : 100000)) break;
         try {
           const r = await fetch(`${BASE}/models/${model}:generateContent?key=${key}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              contents: [{ role: 'user', parts: [{ text: prompt }] }],
-              generationConfig: { responseMimeType: 'application/json', responseSchema: schema, temperature: 0.3, maxOutputTokens: 4000 },
+              contents: [{ role: 'user', parts: isVideo ? [{ fileData: { fileUri: videoUrl!, mimeType: 'video/*' } }, { text: vprompt }] : [{ text: prompt }] }],
+              generationConfig: { responseMimeType: 'application/json', responseSchema: schema, temperature: 0.3, maxOutputTokens: 6000 },
             }),
-            signal: AbortSignal.timeout(60000),
+            signal: AbortSignal.timeout(isVideo ? 110000 : 60000),
           });
           const j = await r.json();
           const t = (j?.candidates?.[0]?.content?.parts ?? []).filter((p: any) => !p.thought)
             .map((p: any) => p.text ?? '').join('');
           if (t) {
-            qs = JSON.parse(t).questions ?? [];
+            qs = JSON.parse(t).questions ?? []; grounded = isVideo;
           } else {
             errs.push(`${model}: ${r.status} ${String(j?.error?.message ?? 'empty').slice(0, 80)}`);
             if (r.status === 429) { await sleep(8000); continue; }
@@ -141,6 +156,7 @@ Deno.serve(async (req: Request) => {
         }
       }
       if (qs) break;
+    }
     }
     if (qs === null) return json({ error: 'gemini', detail: errs.join(' | ').slice(0, 400) });
     const good = qs.filter((q) =>
@@ -155,7 +171,7 @@ Deno.serve(async (req: Request) => {
       lesson_id: lesson.id,
       tenant_id: course.tenant_id,
       title: `تدريب: ${title}`.slice(0, 200),
-      description: 'اختبار تدريبي مولّد بالذكاء الاصطناعي من عنوان الدرس ووصفه. للتدريب فقط.',
+      description: grounded ? 'اختبار تدريبي مولّد بالذكاء الاصطناعي من محتوى الفيديو. للتدريب فقط وقد يحتوي على أخطاء.' : 'اختبار تدريبي مولّد بالذكاء الاصطناعي من عنوان الدرس ووصفه. للتدريب فقط.',
       status: publish ? 'published' : 'draft',
       pass_grade: Math.ceil(good.length * 0.6),
       max_attempts: 3,
@@ -178,7 +194,7 @@ Deno.serve(async (req: Request) => {
         })));
       await db.from('exam_questions').insert({ exam_id: exam.id, question_id: row.id, sort_order: order++ });
     }
-    return json({ ok: true, exam_id: exam.id, questions: order, status: publish ? 'published' : 'draft' });
+    return json({ ok: true, exam_id: exam.id, questions: order, grounded, status: publish ? 'published' : 'draft' });
   } catch (e) {
     return json({ error: 'handler', detail: String(e).slice(0, 300) });
   }

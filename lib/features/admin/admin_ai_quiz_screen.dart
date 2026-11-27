@@ -97,7 +97,7 @@ class _AdminAiQuizScreenState extends State<AdminAiQuizScreen> {
         try {
           final res = await _c.functions
               .invoke('quiz-gen', body: {'lesson_id': l['id'], 'publish': _publish, 'count': 6})
-              .timeout(const Duration(seconds: 150));
+              .timeout(const Duration(seconds: 200));
           final d = res.data;
           if (d is Map && d['ok'] == true) {
             _made++;
@@ -125,7 +125,7 @@ class _AdminAiQuizScreenState extends State<AdminAiQuizScreen> {
         _done++;
         if (mounted) setState(() {});
         // Free tier allows only a few requests per minute.
-        await Future<void>.delayed(const Duration(seconds: 6));
+        await Future<void>.delayed(const Duration(seconds: 8));
       }
     } catch (e) {
       if (mounted) setState(() => _error = '$e');
@@ -143,7 +143,7 @@ class _AdminAiQuizScreenState extends State<AdminAiQuizScreen> {
           child: Padding(
             padding: EdgeInsets.all(14),
             child: Text(
-                'بيعمل اختبار تدريبي (6 أسئلة اختيار من متعدد) لكل درس معندوش اختبار، من عنوان الدرس ووصفه واسم الكورس. دي أسئلة تدريب على الموضوع مش اختبار على كلام المدرّس في الفيديو، وبتتولد بالذكاء الاصطناعي المجاني فممكن يبقى فيها أخطاء، فالأفضل مراجعتها. بيتحفظوا مسودة لحد ما تنشرهم، أو فعّل النشر المباشر. سيب الشاشة مفتوحة أثناء التشغيل.'),
+                'بيعمل اختبار تدريبي (6 أسئلة اختيار من متعدد) لكل درس معندوش اختبار. لو الفيديو يوتيوب عام، الذكاء الاصطناعي بيشوف الفيديو نفسه وبيسأل في اللي اتشرح فعلاً (عدد الأسئلة حسب طول الفيديو)، ولو مش متاح بيرجع لعنوان الدرس ووصفه. الحد المجاني حوالي 8 ساعات فيديو في اليوم، وبتتولد بالذكاء الاصطناعي المجاني فممكن يبقى فيها أخطاء، فالأفضل مراجعتها. بيتحفظوا مسودة لحد ما تنشرهم، أو فعّل النشر المباشر. سيب الشاشة مفتوحة أثناء التشغيل.'),
           ),
         ),
         SwitchListTile(
