@@ -18,20 +18,26 @@ ThemeData _base(ColorScheme scheme) {
       backgroundColor: scheme.surface,
     ),
     cardTheme: CardThemeData(
-      elevation: 3,
-      shadowColor: Colors.black38,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      elevation: 0,
+      shadowColor: Colors.transparent,
+      shape: RoundedRectangleBorder(
+          side: BorderSide(color: scheme.outlineVariant),
+          borderRadius: BorderRadius.circular(8)),
       margin: const EdgeInsets.symmetric(vertical: 6),
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: scheme.surfaceContainerHighest.withValues(alpha: 0.5),
+      fillColor: scheme.surface,
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
-        borderSide: BorderSide.none,
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide(color: scheme.outline),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide(color: scheme.outlineVariant),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(8),
         borderSide: BorderSide(color: scheme.primary, width: 2),
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -39,14 +45,14 @@ ThemeData _base(ColorScheme scheme) {
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
         padding: const EdgeInsets.symmetric(vertical: 16),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        elevation: 2,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        elevation: 0,
       ),
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
         padding: const EdgeInsets.symmetric(vertical: 14),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
     ),
     snackBarTheme: SnackBarThemeData(
@@ -78,6 +84,7 @@ ThemeData buildLightTheme() {
       centerTitle: true,
       elevation: 0,
       scrolledUnderElevation: 1,
+      surfaceTintColor: Colors.transparent,
       backgroundColor: _lightBg,
       foregroundColor: Color(0xFF0F172A),
     ),
@@ -117,9 +124,11 @@ ThemeData buildDarkTheme() {
     ),
     cardTheme: CardThemeData(
       color: surf,
-      elevation: 2,
-      shadowColor: Colors.black26,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      elevation: 0,
+      shadowColor: Colors.transparent,
+      shape: RoundedRectangleBorder(
+          side: const BorderSide(color: Color(0xFF3A4660)),
+          borderRadius: BorderRadius.circular(8)),
       margin: const EdgeInsets.symmetric(vertical: 6),
     ),
     dividerColor: const Color(0xFF3A4660),
