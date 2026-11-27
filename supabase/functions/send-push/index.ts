@@ -46,6 +46,11 @@ Deno.serve(async (req) => {
     if (!course_id) return new Response('missing course_id', { status: 400 });
     const db = createClient(
       Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+    // Only the database trigger knows this secret (part44_push_secret.sql).
+    const { data: sec } = await db.from('quiz_auto_secret').select('secret').limit(1).maybeSingle();
+    if (!sec || !sec.secret || req.headers.get('x-push-secret') !== sec.secret) {
+      return new Response('forbidden', { status: 403 });
+    }
     // Claim: only a published course that asked for notification, once.
     const { data: claimed } = await db.from('courses')
       .update({ push_sent_at: new Date().toISOString() })
