@@ -53,6 +53,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
   List<String> _scopes = const [];
   int _supportWaiting = 0;
   String? _accessWarn;
+  int _pendingJoin = 0;
 
   @override
   void initState() {
@@ -82,6 +83,14 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
 
   Future<void> _load() async {
     _checkAccess();
+    Supabase.instance.client
+        .from('tenant_memberships')
+        .select('id')
+        .eq('tenant_id', TenantContext.id)
+        .eq('status', 'pending')
+        .then((rows) {
+      if (mounted) setState(() => _pendingJoin = rows.length);
+    }).catchError((_) {});
     SupportRepository.awaitingAdminCount().then((n) {
       if (mounted) setState(() => _supportWaiting = n);
     }).catchError((_) {});
@@ -297,6 +306,34 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                 ),
               ),
             ),
+            if (_pendingJoin > 0)
+              InkWell(
+                onTap: () => Navigator.of(context)
+                    .push(MaterialPageRoute(
+                        builder: (_) => const TenantMembersScreen()))
+                    .then((_) => _load()),
+                child: Container(
+                  margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFF3E0),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: const Color(0xFFF29900)),
+                  ),
+                  child: Row(children: [
+                    const Icon(Icons.person_add_alt_1,
+                        color: Color(0xFFF57C00)),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text('${s.t('pending_requests')} ($_pendingJoin)',
+                          style: const TextStyle(
+                              fontWeight: FontWeight.w800,
+                              color: Color(0xFF7A4A00))),
+                    ),
+                    const Icon(Icons.chevron_right, color: Color(0xFF7A4A00)),
+                  ]),
+                ),
+              ),
             if (_accessWarn != null)
               Container(
                 margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),

@@ -138,12 +138,41 @@ class _TenantMembersScreenState extends State<TenantMembersScreen> {
                             child: InviteCodeTile(code: _inviteCode!));
                       }
                       final mi = _inviteCode == null ? i : i - 1;
+                      if (mi == 0 &&
+                          members.isNotEmpty &&
+                          members[0]['status'] == 'pending') {
+                        final n = members
+                            .where((x) => x['status'] == 'pending')
+                            .length;
+                        return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding:
+                                    const EdgeInsets.fromLTRB(4, 8, 4, 8),
+                                child: Text('${s.t('pending_requests')} ($n)',
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.w800,
+                                        fontSize: 16)),
+                              ),
+                              _memberCard(context, s, members[0]),
+                            ]);
+                      }
                       if (mi >= members.length) {
                         return Padding(
                             padding: const EdgeInsets.all(32),
                             child: Center(child: Text(s.t('no_members'))));
                       }
                       final m = members[mi];
+                      return _memberCard(context, s, m);
+                    },
+                  )
+                : const SizedBox.shrink(),
+      ),
+    );
+  }
+
+  Widget _memberCard(BuildContext context, S s, Map<String, dynamic> m) {
                       final profile = m['profiles'];
                       final name = profile is Map
                           ? (profile['full_name'] as String? ?? '')
@@ -190,11 +219,6 @@ class _TenantMembersScreenState extends State<TenantMembersScreen> {
                                 ),
                         ),
                       );
-                    },
-                  )
-                : const SizedBox.shrink(),
-      ),
-    );
   }
 
   Future<void> _addMember() async {
