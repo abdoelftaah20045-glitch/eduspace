@@ -15,6 +15,7 @@ import '../lives/lives_screen.dart';
 import '../qbank/question_bank_screen.dart';
 import '../schedule/schedule_screen.dart';
 import '../support/support_screen.dart';
+import 'hero_banner.dart';
 
 /// Where a block or tile can lead. Stored as text so admins can set it.
 /// 'screen:courses' | 'screen:lives' | ... | 'course:<id>' | 'https://...'
@@ -84,7 +85,7 @@ class _HomeBlockState extends State<HomeBlock> {
   @override
   void initState() {
     super.initState();
-    if (_type == 'courses' || _type == 'categories' || _type == 'numbered' || _type == 'chips') _fetch();
+    if (_type == 'courses' || _type == 'categories' || _type == 'numbered' || _type == 'chips' || _type == 'hero') _fetch();
   }
 
   Future<void> _fetch() async {
@@ -118,6 +119,8 @@ class _HomeBlockState extends State<HomeBlock> {
     final b = widget.block;
     final title = '${b['title'] ?? ''}';
     switch (_type) {
+      case 'hero':
+        return _hero(context);
       case 'banner':
         return _banner(context, b);
       case 'tiles':
@@ -140,6 +143,33 @@ class _HomeBlockState extends State<HomeBlock> {
         );
     }
     return const SizedBox.shrink();
+  }
+
+  Widget _hero(BuildContext context) {
+    final source = RemoteUi.homeBlocksSet ? RemoteUi.homeBlocks : defaultHomeBlocks;
+    final slides = <HeroSlide>[];
+    for (final x in source) {
+      if (x['type'] == 'banner' && x['enabled'] != false && '${x['image'] ?? ''}'.isNotEmpty) {
+        slides.add(HeroSlide(
+            title: '${x['title'] ?? ''}',
+            image: '${x['image']}',
+            onTap: () => openHomeLink(context, '${x['link'] ?? ''}')));
+      }
+    }
+    final cs = [...(_courses ?? const <Course>[])]
+      ..sort((a, c) => (c.ratingAvg ?? 0).compareTo(a.ratingAvg ?? 0));
+    final ar = Localizations.localeOf(context).languageCode == 'ar';
+    for (final c in cs.take(5)) {
+      if ((c.coverUrl ?? '').isEmpty) continue;
+      slides.add(HeroSlide(
+          title: c.title,
+          subtitle: c.instructorName ?? '',
+          image: c.coverUrl,
+          cta: ar ? 'ابدأ الآن' : 'Start now',
+          onTap: () => openHomeLink(context, 'course:${c.id}')));
+    }
+    if (slides.isEmpty) return const SizedBox.shrink();
+    return HeroBanner(slides: slides);
   }
 
   Widget _banner(BuildContext context, Map<String, dynamic> b) {
@@ -484,9 +514,15 @@ class _HomeBlockState extends State<HomeBlock> {
 /// A block's `at` is the number of built-in sections before it (0 = top).
 List<Widget> mergeHomeBlocks(List<List<Widget>> sections) {
   final source = RemoteUi.homeBlocksSet ? RemoteUi.homeBlocks : defaultHomeBlocks;
+  final hasHero = true; // the hero carousel is always on top, banners feed into it
   final blocks = [
+    if (!source.any((b) => b['type'] == 'hero'))
+      <String, dynamic>{'id': 'auto_hero', 'type': 'hero', 'at': 0},
     for (final b in source)
-      if (b['enabled'] != false) b,
+      if (b['enabled'] != false &&
+          b['type'] != 'categories' &&
+          !(hasHero && b['type'] == 'banner'))
+        b,
   ];
   int at(Map<String, dynamic> b) =>
       (b['at'] is num) ? (b['at'] as num).toInt() : 999;
@@ -502,9 +538,9 @@ List<Widget> mergeHomeBlocks(List<List<Widget>> sections) {
 
 /// Fuller Home out of the box, until the admin saves his own layout.
 const List<Map<String, dynamic>> defaultHomeBlocks = [
+  {'id': 'd_hero', 'type': 'hero', 'at': 0},
   {'id': 'd_chips', 'type': 'chips', 'at': 0},
   {'id': 'd_best', 'type': 'numbered', 'title': 'الأفضل اليوم', 'at': 5, 'rows': 10, 'source': 'rated'},
-  {'id': 'd_cats', 'type': 'categories', 'title': 'تصفح بالأقسام', 'at': 6, 'rows': 12},
   {'id': 'd_new', 'type': 'courses', 'title': 'أحدث الكورسات', 'at': 6, 'rows': 8, 'style': 'row', 'source': 'latest'},
   {'id': 'd_free', 'type': 'courses', 'title': 'كورسات مجانية', 'at': 6, 'rows': 8, 'style': 'row', 'source': 'free'},
 ];
