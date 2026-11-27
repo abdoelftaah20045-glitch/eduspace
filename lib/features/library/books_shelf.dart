@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 import 'book_files.dart';
+import 'library_screen.dart';
 import 'book_links.dart';
 import 'data/library_repo.dart';
 
@@ -331,6 +332,14 @@ class _BooksShelfScreenState extends State<BooksShelfScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(ar ? 'المكتبة' : 'Library'),
+        actions: [
+          IconButton(
+            tooltip: ar ? 'الملفات والمرفقات' : 'Files',
+            icon: const Icon(Icons.folder_open),
+            onPressed: () => Navigator.of(context)
+                .push(MaterialPageRoute(builder: (_) => const LibraryScreen())),
+          ),
+        ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(56),
           child: Padding(

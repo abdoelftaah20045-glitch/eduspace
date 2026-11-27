@@ -28,6 +28,7 @@ import '../notifications/notifications_screen.dart';
 import '../profile/profile_screen.dart';
 import '../certificates/my_certificates_screen.dart';
 import '../library/library_screen.dart';
+import '../library/books_shelf.dart';
 import '../lives/lives_screen.dart';
 import '../qbank/question_bank_screen.dart';
 import '../schedule/schedule_screen.dart';
@@ -73,8 +74,9 @@ class _HomeShellState extends State<HomeShell> {
     // hidden or reordered by the admin (ui_layout: tab.my / tab.courses / tab.exams).
     final mid = <(String, Widget, IconData, String)>[
       ('my', const MyCoursesScreen(), Icons.school_outlined, s.t('my_courses')),
-      ('courses', const CoursesScreen(), Icons.menu_book_outlined, s.t('tab_courses')),
+      ('courses', const CoursesScreen(), Icons.video_library_outlined, s.t('tab_courses')),
       ('exams', const ExamsScreen(), Icons.quiz_outlined, s.t('tab_exams')),
+      ('library', const BooksShelfScreen(), Icons.menu_book_rounded, s.t('library_label')),
     ];
     final order = {for (var i = 0; i < mid.length; i++) mid[i].$1: RemoteUi.order('tab.${mid[i].$1}', i)};
     final shownMid = mid.where((t) => RemoteUi.visible('tab.${t.$1}')).toList()

@@ -72,6 +72,7 @@ const _tabItems = [
   _Item('tab.my', 'my_courses'),
   _Item('tab.courses', 'tab_courses'),
   _Item('tab.exams', 'tab_exams'),
+  _Item('tab.library', 'library_label'),
 ];
 const _profileItems = [
   _Item('profile.edit', 'edit_profile'),
