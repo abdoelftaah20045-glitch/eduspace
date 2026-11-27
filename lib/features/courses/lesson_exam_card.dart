@@ -8,8 +8,10 @@ import '../exams/exam_instructions_screen.dart';
 /// under the lesson. Shows nothing when the lesson has no exam, or when the
 /// column does not exist yet.
 class LessonExamCard extends StatefulWidget {
-  const LessonExamCard({super.key, required this.lessonId});
+  const LessonExamCard({super.key, required this.lessonId, this.locked = false, this.lockedText = ''});
   final String lessonId;
+  final bool locked;
+  final String lockedText;
 
   @override
   State<LessonExamCard> createState() => _LessonExamCardState();
@@ -43,6 +45,15 @@ class _LessonExamCardState extends State<LessonExamCard> {
     final e = _exam;
     if (e == null) return const SizedBox.shrink();
     final scheme = Theme.of(context).colorScheme;
+    if (widget.locked) {
+      return Card(
+        child: ListTile(
+          leading: const Icon(Icons.lock_outline),
+          title: const Text('اختبار الدرس', style: TextStyle(fontWeight: FontWeight.w800)),
+          subtitle: Text(widget.lockedText),
+        ),
+      );
+    }
     return Card(
       color: scheme.primaryContainer,
       child: ListTile(

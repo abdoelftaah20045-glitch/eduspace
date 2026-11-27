@@ -6,6 +6,8 @@ import 'lesson_assignment_card.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../admin/data/admin_repo.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/storage_urls.dart';
@@ -43,18 +45,111 @@ class _LessonScreenState extends State<LessonScreen> {
       !_isVideo || (_dur > 0 && _seen.length >= _required);
   int get _shownPct => _dur <= 0 ? 0 : (_seen.length * 100 ~/ _dur).clamp(0, 100);
 
+  // Real watch time: only seconds actually played count. Skipping ahead does
+  // not credit the skipped part; pauses and replays add nothing. Progress is
+  // sent to the server every 10 s (and kept there), so closing the app keeps it.
+  int? _lastPos;
+  DateTime? _lastAt;
+  final Set<int> _pending = {};
+  Timer? _flushTimer;
+  bool _serverTracking = true;
+  bool _admin = false;
+
   void _onTick(int pos, int dur) {
     if (dur > 0) _dur = dur;
-    if (_seen.add(pos) && mounted) {
+    if (pos == _lastPos) return;
+    final now = DateTime.now();
+    var added = false;
+    final lp = _lastPos;
+    final la = _lastAt;
+    if (lp != null && la != null) {
+      final gapMs = now.difference(la).inMilliseconds;
+      final step = pos - lp;
+      // Played continuously: position moved forward no faster than 2.5x real time.
+      if (step > 0 && gapMs > 0 && gapMs < 4000 && step <= (gapMs / 1000 * 2.5).ceil() + 1) {
+        for (var p = lp + 1; p <= pos; p++) {
+          if (_seen.add(p)) {
+            _pending.add(p);
+            added = true;
+          }
+        }
+      }
+    }
+    if (_seen.add(pos)) {
+      _pending.add(pos);
+      added = true;
+    }
+    _lastPos = pos;
+    _lastAt = now;
+    if (added && mounted) {
       _sinceSave++;
       if (_sinceSave >= 5) {
         _sinceSave = 0;
-        CoursesRepository.saveProgress(lesson.id,
-                positionSeconds: pos, watchedSeconds: _seen.length)
-            .catchError((_) {});
+        CoursesRepository.saveProgress(lesson.id, positionSeconds: pos).catchError((_) {});
       }
       setState(() {});
     }
+  }
+
+  String _rangesText(Iterable<int> secs) {
+    final l = secs.toList()..sort();
+    final parts = <String>[];
+    var i = 0;
+    while (i < l.length) {
+      var j = i;
+      while (j + 1 < l.length && l[j + 1] == l[j] + 1) {
+        j++;
+      }
+      parts.add('[${l[i]},${l[j] + 1})');
+      i = j + 1;
+    }
+    return '{${parts.join(',')}}';
+  }
+
+  /// Sends the newly watched seconds; the server decides completion.
+  Future<void> _flushWatch() async {
+    if (!_isVideo || !_serverTracking || _pending.isEmpty || _admin) return;
+    final sent = Set<int>.from(_pending);
+    try {
+      final r = await Supabase.instance.client.rpc('record_watch', params: {
+        'p_lesson': lesson.id,
+        'p_ranges': _rangesText(sent),
+        'p_duration': _dur,
+      });
+      _pending.removeAll(sent);
+      if (r is Map && r['done'] == true && !_completed && mounted) {
+        setState(() => _completed = true);
+      }
+    } catch (e) {
+      final m = '$e';
+      if (m.contains('record_watch') && (m.contains('PGRST202') || m.contains('Could not find'))) {
+        _serverTracking = false; // SQL part40 not run yet: old client-side rule
+      }
+    }
+  }
+
+  Future<void> _restoreWatch() async {
+    try {
+      final uid = Supabase.instance.client.auth.currentUser?.id;
+      if (uid == null || !_isVideo) return;
+      final r = await Supabase.instance.client
+          .from('lesson_watch')
+          .select('seen,duration')
+          .eq('lesson_id', lesson.id)
+          .eq('user_id', uid)
+          .maybeSingle();
+      if (r == null || !mounted) return;
+      for (final m in RegExp(r'\[(\d+),(\d+)\)').allMatches('${r['seen']}')) {
+        final a = int.parse(m.group(1)!);
+        final b = int.parse(m.group(2)!);
+        for (var x = a; x < b && x < 100000; x++) {
+          _seen.add(x);
+        }
+      }
+      final d = (r['duration'] as num?)?.toInt() ?? 0;
+      if (_dur == 0 && d > 0) _dur = d;
+      setState(() {});
+    } catch (_) {}
   }
 
   /// Players that cannot report play time: count seconds on screen against
@@ -69,9 +164,15 @@ class _LessonScreenState extends State<LessonScreen> {
 
   Lesson get lesson => widget.lesson;
 
+  bool get _locked => _isVideo && !_completed && !_admin;
+  String get _lockedText =>
+      'بيفتح بعد ما تخلّص الفيديو (مشاهدة فعلية $_pct%). وصلت: $_shownPct%.';
+
   @override
   void dispose() {
     _fallback?.cancel();
+    _flushTimer?.cancel();
+    _flushWatch();
     WidgetsBinding.instance.addPostFrameCallback((_) => aiFabHidden.value--);
     super.dispose();
   }
@@ -80,6 +181,11 @@ class _LessonScreenState extends State<LessonScreen> {
   void initState() {
     super.initState();
     _completed = lesson.completed;
+    AdminRepository.isAdmin().then((v) {
+      if (mounted) setState(() => _admin = v);
+    }).catchError((_) {});
+    _restoreWatch();
+    _flushTimer = Timer.periodic(const Duration(seconds: 10), (_) => _flushWatch());
     WidgetsBinding.instance.addPostFrameCallback((_) => aiFabHidden.value++);
     _touchProgress();
   }
@@ -95,6 +201,8 @@ class _LessonScreenState extends State<LessonScreen> {
   Future<void> _markComplete() async {
     setState(() => _saving = true);
     try {
+      await _flushWatch();
+      if (_completed) return;
       await CoursesRepository.saveProgress(lesson.id,
           completed: true, watchedSeconds: _isVideo ? _seen.length : null);
       if (!mounted) return;
@@ -187,8 +295,8 @@ class _LessonScreenState extends State<LessonScreen> {
                 ],
                 const SizedBox(height: 16),
                 LessonFiles(lessonId: lesson.id),
-                LessonExamCard(lessonId: lesson.id),
-                LessonAssignmentCard(lessonId: lesson.id),
+                LessonExamCard(lessonId: lesson.id, locked: _locked, lockedText: _lockedText),
+                LessonAssignmentCard(lessonId: lesson.id, locked: _locked, lockedText: _lockedText),
                 const SizedBox(height: 16),
               ],
             ),

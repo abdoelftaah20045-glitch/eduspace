@@ -10,8 +10,10 @@ import '../../core/tenant.dart';
 /// organization default, 24 h). Shows nothing when the lesson has none, or
 /// when the SQL for it has not been run yet.
 class LessonAssignmentCard extends StatefulWidget {
-  const LessonAssignmentCard({super.key, required this.lessonId});
+  const LessonAssignmentCard({super.key, required this.lessonId, this.locked = false, this.lockedText = ''});
   final String lessonId;
+  final bool locked;
+  final String lockedText;
 
   @override
   State<LessonAssignmentCard> createState() => _LessonAssignmentCardState();
@@ -92,6 +94,10 @@ class _LessonAssignmentCardState extends State<LessonAssignmentCard> {
   Future<void> _window() async {
     final r = await _c.rpc('assignment_window', params: {'p_assignment': _a!['id']});
     if (r is! Map || !mounted) return;
+    if (r['locked'] == true) {
+      _snack('خلّص الفيديو الأول.');
+      return;
+    }
     setState(() {
       _started = DateTime.tryParse('${r['started_at']}')?.toLocal();
       _due = DateTime.tryParse('${r['due_at']}')?.toLocal();
@@ -141,7 +147,11 @@ class _LessonAssignmentCardState extends State<LessonAssignmentCard> {
       _snack('اتسلّم التكليف.');
       await _load();
     } catch (e) {
-      _snack('$e'.contains('assignment_closed') ? 'الميعاد خلص ومينفعش التسليم.' : 'حصل خطأ، حاول تاني.');
+      _snack('$e'.contains('assignment_closed')
+          ? 'الميعاد خلص ومينفعش التسليم.'
+          : '$e'.contains('lesson_not_completed')
+              ? 'خلّص الفيديو الأول.'
+              : 'حصل خطأ، حاول تاني.');
     }
     if (mounted) setState(() => _busy = false);
   }
@@ -158,6 +168,16 @@ class _LessonAssignmentCardState extends State<LessonAssignmentCard> {
   Widget build(BuildContext context) {
     final a = _a;
     if (a == null) return const SizedBox.shrink();
+    if (widget.locked) {
+      return Card(
+        margin: const EdgeInsets.only(top: 8),
+        child: ListTile(
+          leading: const Icon(Icons.lock_outline),
+          title: const Text('تكليف الدرس', style: TextStyle(fontWeight: FontWeight.w800)),
+          subtitle: Text(widget.lockedText),
+        ),
+      );
+    }
     final scheme = Theme.of(context).colorScheme;
     final graded = _sub?['status'] == 'graded';
     final submitted = _sub != null;

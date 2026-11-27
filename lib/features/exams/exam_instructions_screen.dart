@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../admin/data/admin_repo.dart';
 
 import '../../core/l10n.dart';
 import 'data/exam_models.dart';
@@ -22,6 +23,7 @@ class ExamInstructionsScreen extends StatefulWidget {
 class _ExamInstructionsScreenState extends State<ExamInstructionsScreen> {
   int? _questionCount;
   double? _totalPoints;
+  bool _needLesson = false;
   DateTime? _retryAt; // lesson exams: attempts used up, retry after this time
 
   Future<void> _checkCooldown() async {
@@ -29,6 +31,16 @@ class _ExamInstructionsScreenState extends State<ExamInstructionsScreen> {
       final c = Supabase.instance.client;
       final ex = await c.from('exams').select('lesson_id').eq('id', widget.exam.id).maybeSingle();
       if (ex == null || ex['lesson_id'] == null) return;
+      final uid0 = c.auth.currentUser?.id;
+      if (uid0 != null && !await AdminRepository.isAdmin()) {
+        final lp = await c
+            .from('lesson_progress')
+            .select('completed')
+            .eq('lesson_id', ex['lesson_id'])
+            .eq('user_id', uid0)
+            .maybeSingle();
+        if ((lp == null || lp['completed'] != true) && mounted) setState(() => _needLesson = true);
+      }
       final since = DateTime.now().toUtc().subtract(const Duration(hours: 12));
       final rows = await c
           .from('exam_attempts')
@@ -167,6 +179,12 @@ class _ExamInstructionsScreenState extends State<ExamInstructionsScreen> {
           _rule(s, 'rule_timer', Icons.alarm),
           _rule(s, 'rule_no_pause', Icons.pause_circle_outline),
           _rule(s, 'rule_attempts', Icons.replay_circle_filled_outlined),
+          if (_needLesson)
+            const Padding(
+              padding: EdgeInsets.only(top: 12),
+              child: Text('الاختبار بيفتح بعد ما تخلّص فيديو الدرس.',
+                  style: TextStyle(fontWeight: FontWeight.w800, color: Color(0xFFE53935))),
+            ),
           if (_retryAt != null)
             Padding(
               padding: const EdgeInsets.only(top: 12),
@@ -188,7 +206,7 @@ class _ExamInstructionsScreenState extends State<ExamInstructionsScreen> {
             icon: const Icon(Icons.play_arrow),
             label: Text(s.t('agree_start'),
                 style: const TextStyle(fontWeight: FontWeight.bold)),
-            onPressed: _retryAt != null
+            onPressed: (_retryAt != null || _needLesson)
                 ? null
                 : () {
               Navigator.of(context).pushReplacement(
