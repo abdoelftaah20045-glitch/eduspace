@@ -60,29 +60,30 @@ class _MyCoursesScreenState extends State<MyCoursesScreen> {
       appBar: AppBar(title: Text(s.t('my_courses'))),
       body: Column(children: [
         Container(
-          margin: const EdgeInsets.fromLTRB(16, 4, 16, 8),
-          padding: const EdgeInsets.all(4),
           decoration: BoxDecoration(
-              color: scheme.surfaceContainerHighest.withValues(alpha: .5),
-              borderRadius: BorderRadius.circular(24)),
+              border: Border(
+                  bottom: BorderSide(color: scheme.outlineVariant))),
           child: Row(children: [
             for (var i = 0; i < tabs.length; i++)
               Expanded(
-                child: GestureDetector(
+                child: InkWell(
                   onTap: () => setState(() => _tab = i),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 180),
-                    padding: const EdgeInsets.symmetric(vertical: 10),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
                     decoration: BoxDecoration(
-                        color: _tab == i ? scheme.primary : Colors.transparent,
-                        borderRadius: BorderRadius.circular(20)),
+                        border: Border(
+                            bottom: BorderSide(
+                                width: 3,
+                                color: _tab == i
+                                    ? scheme.primary
+                                    : Colors.transparent))),
                     child: Center(
                       child: Text(tabs[i],
                           style: TextStyle(
                               fontWeight: FontWeight.w700,
-                              fontSize: 13,
+                              fontSize: 14,
                               color: _tab == i
-                                  ? scheme.onPrimary
+                                  ? scheme.primary
                                   : scheme.onSurfaceVariant)),
                     ),
                   ),
@@ -115,86 +116,101 @@ class _MyCoursesScreenState extends State<MyCoursesScreen> {
                             final c = shown[i];
                             final p = (c.progressPercent ?? 0).clamp(0, 100);
                             return InkWell(
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: BorderRadius.circular(8),
                               onTap: () => Navigator.of(context)
                                   .push(MaterialPageRoute(
                                       builder: (_) =>
                                           CourseDetailsScreen(courseId: c.id)))
                                   .then((_) => _load()),
                               child: Container(
-                                margin: const EdgeInsets.only(bottom: 12),
-                                padding: const EdgeInsets.all(10),
+                                margin: const EdgeInsets.only(bottom: 14),
+                                clipBehavior: Clip.antiAlias,
                                 decoration: BoxDecoration(
                                   color: scheme.surface,
-                                  borderRadius: BorderRadius.circular(16),
-                                  boxShadow: [
-                                    BoxShadow(
-                                        color:
-                                            Colors.black.withValues(alpha: .07),
-                                        blurRadius: 10,
-                                        offset: const Offset(0, 4)),
-                                  ],
+                                  borderRadius: BorderRadius.circular(8),
+                                  border:
+                                      Border.all(color: scheme.outlineVariant),
                                 ),
-                                child: Row(children: [
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(10),
-                                    child: SizedBox(
-                                      width: 96,
-                                      height: 54,
-                                      child: Container(
-                                        color: scheme.primaryContainer,
-                                        child: (c.coverUrl ?? '').isNotEmpty
-                                            ? Image.network(c.coverUrl!,
-                                                fit: BoxFit.contain,
-                                                errorBuilder: (_, __, ___) =>
-                                                    const Icon(Icons.menu_book))
-                                            : const Icon(Icons.menu_book),
+                                child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      AspectRatio(
+                                        aspectRatio: 16 / 7,
+                                        child: Container(
+                                          color: scheme.primaryContainer,
+                                          child: (c.coverUrl ?? '').isNotEmpty
+                                              ? Image.network(c.coverUrl!,
+                                                  fit: BoxFit.cover,
+                                                  errorBuilder: (_, __, ___) =>
+                                                      const Icon(
+                                                          Icons.menu_book))
+                                              : const Icon(Icons.menu_book),
+                                        ),
                                       ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(c.title,
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: const TextStyle(
-                                                fontWeight: FontWeight.w800)),
-                                        const SizedBox(height: 2),
-                                        Text(
-                                            '${c.instructorName ?? ''}${c.hours != null && c.hours! > 0 ? '  |  ${c.hours} ${s.t('hours')}' : ''}',
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: TextStyle(
-                                                fontSize: 11,
-                                                color:
-                                                    scheme.onSurfaceVariant)),
-                                        const SizedBox(height: 8),
-                                        Row(children: [
-                                          Expanded(
-                                            child: LinearProgressIndicator(
+                                      Padding(
+                                        padding: const EdgeInsets.all(14),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            if ((c.instructorName ?? '')
+                                                .isNotEmpty)
+                                              Text(c.instructorName!,
+                                                  maxLines: 1,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  style: TextStyle(
+                                                      fontSize: 12,
+                                                      color: scheme
+                                                          .onSurfaceVariant)),
+                                            const SizedBox(height: 4),
+                                            Text(c.title,
+                                                maxLines: 2,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: const TextStyle(
+                                                    fontWeight: FontWeight.w700,
+                                                    fontSize: 16)),
+                                            const SizedBox(height: 10),
+                                            LinearProgressIndicator(
                                               value: p / 100,
-                                              minHeight: 6,
+                                              minHeight: 4,
                                               borderRadius:
                                                   BorderRadius.circular(4),
                                               color: p >= 100
                                                   ? const Color(0xFF16A34A)
                                                   : scheme.primary,
                                             ),
-                                          ),
-                                          const SizedBox(width: 8),
-                                          Text('$p%',
-                                              style: const TextStyle(
-                                                  fontSize: 11,
-                                                  fontWeight: FontWeight.w700)),
-                                        ]),
-                                      ],
-                                    ),
-                                  ),
-                                ]),
+                                            const SizedBox(height: 8),
+                                            Row(children: [
+                                              Expanded(
+                                                  child: Text(
+                                                      p >= 100
+                                                          ? s.t('completed')
+                                                          : '$p%',
+                                                      style: TextStyle(
+                                                          fontSize: 12,
+                                                          fontWeight:
+                                                              FontWeight.w600,
+                                                          color: p >= 100
+                                                              ? const Color(
+                                                                  0xFF16A34A)
+                                                              : scheme
+                                                                  .onSurfaceVariant))),
+                                              Text(
+                                                  p >= 100
+                                                      ? ''
+                                                      : s.t('continue_learning'),
+                                                  style: TextStyle(
+                                                      fontSize: 13,
+                                                      fontWeight:
+                                                          FontWeight.w700,
+                                                      color: scheme.primary)),
+                                            ]),
+                                          ],
+                                        ),
+                                      ),
+                                    ]),
                               ),
                             );
                           },
