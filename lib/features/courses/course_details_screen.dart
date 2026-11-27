@@ -3,6 +3,7 @@ import '../../core/maintenance.dart';
 import 'price_view.dart';
 import '../home/home_widgets.dart';
 import 'package:flutter/material.dart';
+import 'lesson_exam_card.dart';
 
 import '../payments/payment_screen.dart';
 import '../discussion/discussion_screen.dart';
@@ -811,7 +812,7 @@ class _SectionTile extends StatelessWidget {
                 ? ' · ${(lesson.durationSeconds! / 60).ceil()} ${s.t('minutes')}'
                 : '';
             final isCurrent = lesson.id == currentId && lesson.accessible;
-            return Container(
+            final tile = Container(
               margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
               decoration: isCurrent
                   ? BoxDecoration(
@@ -849,6 +850,17 @@ class _SectionTile extends StatelessWidget {
                           : const Icon(Icons.lock_outline),
               onTap: () => onLessonTap(lesson),
             ));
+            if (lesson.type != 'video') return tile;
+            return Column(children: [
+              tile,
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: LessonExamCard(
+                    lessonId: lesson.id,
+                    locked: !lesson.completed,
+                    lockedText: 'خلّص مشاهدة الفيديو الأول عشان الاختبار يفتح'),
+              ),
+            ]);
           }),
       ],
     );

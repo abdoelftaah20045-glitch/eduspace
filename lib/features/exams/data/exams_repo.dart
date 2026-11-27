@@ -19,6 +19,7 @@ class ExamsRepository {
         .select()
         .eq('status', 'published')
         .eq('tenant_id', TenantContext.id)
+        .filter('lesson_id', 'is', null)
         .order('created_at', ascending: false)
         .limit(50);
     final attempts = await _c
