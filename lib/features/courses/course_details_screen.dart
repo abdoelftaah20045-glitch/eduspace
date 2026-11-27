@@ -92,7 +92,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
   void _openLesson(Lesson lesson) {
     if (!lesson.accessible) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('الدرس ده مقفول. اعدّي اختبار الدرس اللي قبله الأول (أو سجّل في الكورس).')));
+          content: Text('الدرس ده مقفول. كمّل مشاهدة الفيديو اللي قبله واعدّي اختباره الأول (أو سجّل في الكورس).')));
       return;
     }
     Navigator.of(context)

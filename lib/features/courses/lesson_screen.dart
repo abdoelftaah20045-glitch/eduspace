@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../admin/data/admin_repo.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'lesson_links.dart';
 
 import '../../core/storage_urls.dart';
 import 'package:video_player/video_player.dart';
@@ -291,7 +292,7 @@ class _LessonScreenState extends State<LessonScreen> {
                         ?.copyWith(fontWeight: FontWeight.w800)),
                 if (lesson.content.isNotEmpty && lesson.type != 'text') ...[
                   const SizedBox(height: 12),
-                  Text(lesson.content),
+                  LessonDescription(text: lesson.content),
                 ],
                 const SizedBox(height: 16),
                 LessonFiles(lessonId: lesson.id),
