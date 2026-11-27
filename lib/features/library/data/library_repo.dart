@@ -19,6 +19,9 @@ class LibraryItem {
     this.author = '',
     this.coverUrl,
     this.kind = 'file',
+    this.license = '',
+    this.source = '',
+    this.language = '',
     required this.createdAt,
   });
 
@@ -35,6 +38,9 @@ class LibraryItem {
   final String author;
   final String? coverUrl;
   final String kind;
+  final String license;
+  final String source;
+  final String language;
   final DateTime createdAt;
 
   factory LibraryItem.fromMap(Map<String, dynamic> m) {
@@ -53,6 +59,9 @@ class LibraryItem {
       author: (m['author'] as String?) ?? '',
       coverUrl: (m['cover_url'] as String?),
       kind: (m['kind'] as String?) ?? 'file',
+      license: (m['license'] as String?) ?? '',
+      source: (m['source'] as String?) ?? '',
+      language: (m['language'] as String?) ?? '',
       createdAt:
           DateTime.tryParse((m['created_at'] ?? '').toString())?.toLocal() ??
               DateTime.now(),
@@ -150,6 +159,30 @@ class LibraryRepository {
         .select('id')
         .single();
     return row['id'] as String;
+  }
+
+  static Future<List<String>> fetchFeatured() async {
+    try {
+      final st = await _c
+          .from('tenant_settings')
+          .select('setting_value')
+          .eq('tenant_id', TenantContext.id)
+          .eq('setting_key', 'books_featured')
+          .maybeSingle();
+      final v = st?['setting_value'];
+      if (v is Map && v['ids'] is List) {
+        return (v['ids'] as List).map((e) => e.toString()).toList();
+      }
+    } catch (_) {}
+    return const [];
+  }
+
+  static Future<void> setFeatured(List<String> ids) async {
+    await _c.from('tenant_settings').upsert({
+      'tenant_id': TenantContext.id,
+      'setting_key': 'books_featured',
+      'setting_value': {'ids': ids},
+    }, onConflict: 'tenant_id,setting_key');
   }
 
   static Future<void> delete(String id) async {

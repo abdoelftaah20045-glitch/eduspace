@@ -9,9 +9,9 @@ import 'file_import_screen.dart' show parseTable;
 
 bool _ar(BuildContext c) => Localizations.localeOf(c).languageCode == 'ar';
 
-const kBooksTemplate = 'title,author,category,link,cover_url\n'
-    'Book title,Author name,Medicine,https://drive.google.com/file/d/FILE_ID/view,\n'
-    'Another book,,General,https://archive.org/details/ITEM_ID,\n';
+const kBooksTemplate = 'title,author,category,link,cover_url,language\n'
+    'Book title,Author name,Medicine,https://drive.google.com/file/d/FILE_ID/view,,ar\n'
+    'Another book,,General,https://archive.org/details/ITEM_ID,,en\n';
 
 /// Admin: books are only a title + external link (Drive, Archive.org,
 /// Dropbox, direct PDF). No file is stored in the app or on the server.
@@ -24,6 +24,7 @@ class AdminBooksScreen extends StatefulWidget {
 
 class _AdminBooksScreenState extends State<AdminBooksScreen> {
   List<LibraryItem>? _books;
+  List<String> _featured = [];
   bool _busy = false;
 
   @override
@@ -35,8 +36,12 @@ class _AdminBooksScreenState extends State<AdminBooksScreen> {
   Future<void> _load() async {
     try {
       final all = await LibraryRepository.fetchItems(limit: 500);
+      final feat = await LibraryRepository.fetchFeatured();
       if (mounted) {
-        setState(() => _books = all.where((b) => b.kind == 'book').toList());
+        setState(() {
+          _books = all.where((b) => b.kind == 'book').toList();
+          _featured = List<String>.from(feat);
+        });
       }
     } catch (_) {
       if (mounted) setState(() => _books = const []);
@@ -106,8 +111,24 @@ class _AdminBooksScreenState extends State<AdminBooksScreen> {
     await _load();
   }
 
-  Future<void> _insert(
-      String title, String author, String cat, String link, String cover) async {
+  Future<void> _toggleFeatured(LibraryItem b) async {
+    final next = List<String>.from(_featured);
+    if (next.contains(b.id)) {
+      next.remove(b.id);
+    } else {
+      next.add(b.id);
+    }
+    try {
+      await LibraryRepository.setFeatured(next);
+      if (mounted) setState(() => _featured = next);
+    } catch (_) {
+      _snack('Error');
+    }
+  }
+
+  Future<void> _insert(String title, String author, String cat, String link,
+      String cover,
+      {String language = ''}) async {
     final l = BookLinks.resolve(link, coverOverride: cover);
     await LibraryRepository.create({
       'title': title.trim(),
@@ -117,6 +138,10 @@ class _AdminBooksScreenState extends State<AdminBooksScreen> {
       'author': author.trim(),
       'cover_url': l.coverUrl,
       'kind': 'book',
+      'language': language.isNotEmpty
+          ? language
+          : (RegExp(r'[\u0600-\u06FF]').hasMatch(title) ? 'ar' : 'en'),
+      'source': Uri.tryParse(link.trim())?.host ?? '',
     });
   }
 
@@ -153,6 +178,7 @@ class _AdminBooksScreenState extends State<AdminBooksScreen> {
       final iC = col(['category', 'التصنيف']);
       final iL = col(['link', 'url', 'book_url', 'file_url', 'الرابط']);
       final iV = col(['cover_url', 'cover', 'الغلاف']);
+      final iG = col(['language', 'lang', 'اللغة']);
       if (iT < 0 || iL < 0) {
         _snack(ar
             ? 'الأعمدة المطلوبة: title و link'
@@ -170,7 +196,15 @@ class _AdminBooksScreenState extends State<AdminBooksScreen> {
           continue;
         }
         try {
-          await _insert(t, cell(r, iA), cell(r, iC), l, cell(r, iV));
+          var lg = cell(r, iG).toLowerCase();
+          if (lg.startsWith('ar') || lg.contains('عرب')) {
+            lg = 'ar';
+          } else if (lg.startsWith('en') || lg.contains('انجل') || lg.contains('إنجل')) {
+            lg = 'en';
+          } else {
+            lg = '';
+          }
+          await _insert(t, cell(r, iA), cell(r, iC), l, cell(r, iV), language: lg);
           existing.add(l);
           added++;
         } catch (_) {
@@ -271,9 +305,21 @@ class _AdminBooksScreenState extends State<AdminBooksScreen> {
                                     .join(' · '),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis),
-                            trailing: IconButton(
-                              icon: const Icon(Icons.delete_outline),
-                              onPressed: () => _delete(b),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  tooltip: ar ? 'مميز في الواجهة' : 'Feature on top',
+                                  icon: Icon(_featured.contains(b.id)
+                                      ? Icons.star
+                                      : Icons.star_border),
+                                  onPressed: () => _toggleFeatured(b),
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.delete_outline),
+                                  onPressed: () => _delete(b),
+                                ),
+                              ],
                             ),
                             onTap: () => Navigator.of(context).push(
                                 MaterialPageRoute(

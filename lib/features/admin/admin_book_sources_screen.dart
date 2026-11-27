@@ -154,7 +154,7 @@ class _AdminBookSourcesScreenState extends State<AdminBookSourcesScreen> {
         final uri = Uri.https('openstax.org', '/apps/cms/api/v2/pages/', {
           'type': 'books.Book',
           'fields':
-              'title,cover_url,book_state,webview_rex_link,license_name',
+              'title,cover_url,book_state,webview_rex_link,license_name,high_resolution_pdf_url',
           'limit': '200',
         });
         final r = await http.get(uri).timeout(const Duration(seconds: 25));
@@ -165,10 +165,11 @@ class _AdminBookSourcesScreenState extends State<AdminBookSourcesScreen> {
           final link = (d['webview_rex_link'] ?? '').toString();
           if (d['book_state'] != 'live' || link.isEmpty) continue;
           if (!t.toLowerCase().contains(ql) && ql != 'all') continue;
+          final pdf = (d['high_resolution_pdf_url'] ?? '').toString();
           out.add(_Found(
             title: t,
             author: 'OpenStax',
-            link: link,
+            link: pdf.isNotEmpty ? pdf : link,
             cover: null,
             license: (d['license_name'] ?? 'Creative Commons').toString(),
             source: 'openstax.org',
@@ -210,6 +211,7 @@ class _AdminBookSourcesScreenState extends State<AdminBookSourcesScreen> {
             'kind': 'book',
             'license': f.license,
             'source': f.source,
+            'language': f.lang.toLowerCase().startsWith('ar') ? 'ar' : 'en',
           });
           have.add(f.link);
           added++;
