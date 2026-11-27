@@ -6,6 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/l10n.dart';
 import '../../core/tenant.dart';
 import 'import_job.dart';
+import 'server_import.dart';
 
 /// One place to see every running import with live progress and a Stop button.
 class ImportsScreen extends StatefulWidget {
@@ -19,6 +20,7 @@ class _ImportsScreenState extends State<ImportsScreen> {
   SupabaseClient get _c => Supabase.instance.client;
   Map<String, dynamic>? _books;
   bool _booksMissing = false;
+  List<Map<String, dynamic>> _jobs = const [];
   Timer? _t;
 
   @override
@@ -36,6 +38,13 @@ class _ImportsScreenState extends State<ImportsScreen> {
   }
 
   Future<void> _poll() async {
+    try {
+      final j = await ServerImport.list();
+      if (mounted) setState(() => _jobs = j);
+      if (j.any((x) => x['status'] == 'running' || x['status'] == 'queued')) {
+        ServerImport.kick();
+      }
+    } catch (_) {}
     try {
       final r = await _c.rpc('book_import_progress', params: {'t': TenantContext.id});
       if (!mounted) return;
@@ -73,6 +82,41 @@ class _ImportsScreenState extends State<ImportsScreen> {
               if (x is Map && x['enabled'] == true) Map<String, dynamic>.from(x),
           ];
           return ListView(padding: const EdgeInsets.all(16), children: [
+            for (final j in _jobs)
+              Card(
+                child: ListTile(
+                  title: Text('${j['title'] == '' ? j['kind'] : j['title']}',
+                      maxLines: 1, overflow: TextOverflow.ellipsis),
+                  subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 6),
+                        LinearProgressIndicator(
+                            value: ((j['total'] as num?) ?? 0) > 0
+                                ? ((j['cursor'] as num?) ?? 0) / (j['total'] as num)
+                                : 0),
+                        const SizedBox(height: 4),
+                        Text(
+                            '${j['status']}  ·  ${j['done']}/${j['total']}${((j['failed'] as num?) ?? 0) > 0 ? '  ·  فشل ${j['failed']}' : ''}',
+                            style: const TextStyle(fontSize: 12)),
+                      ]),
+                  trailing: (j['status'] == 'running' || j['status'] == 'queued')
+                      ? OutlinedButton(
+                          onPressed: () async {
+                            await ServerImport.stop('${j['id']}');
+                            _poll();
+                          },
+                          child: Text(s.t('bg_stop')))
+                      : (j['status'] == 'stopped' || j['status'] == 'error')
+                          ? FilledButton(
+                              onPressed: () async {
+                                await ServerImport.start('${j['id']}');
+                                _poll();
+                              },
+                              child: const Text('كمّل'))
+                          : const Icon(Icons.check_circle_outline),
+                ),
+              ),
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(14),

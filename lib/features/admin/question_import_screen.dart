@@ -1,3 +1,4 @@
+import 'server_import.dart';
 import 'dart:convert';
 
 import 'package:file_picker/file_picker.dart';
@@ -51,6 +52,29 @@ class _QuestionImportScreenState extends State<QuestionImportScreen> {
     if (items == null) return;
     final good = items.where((q) => q.problem == null).toList();
     setState(() => _saving = true);
+    final jobId = await ServerImport.enqueue(
+      kind: 'questions',
+      title: 'أسئلة (${good.length})',
+      params: {if (widget.examId != null) 'exam_id': widget.examId},
+      items: [
+        for (final q in good)
+          {
+            'type': q.type,
+            'body': q.body.trim(),
+            'points': q.points,
+            'explanation': q.explanation,
+            'options': q.type == 'essay' ? const [] : q.toOptionMaps(),
+          },
+      ],
+    );
+    if (jobId != null) {
+      if (!mounted) return;
+      setState(() => _saving = false);
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('اتحفظت في الخلفية على السيرفر، تابعها من "الواردات". مش لازم تفضل في الصفحة.')));
+      Navigator.of(context).pop(true);
+      return;
+    }
     var saved = 0;
     for (final q in good) {
       try {

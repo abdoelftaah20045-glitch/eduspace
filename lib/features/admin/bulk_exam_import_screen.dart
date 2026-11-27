@@ -1,3 +1,4 @@
+import 'server_import.dart';
 import 'dart:convert';
 
 import 'package:file_picker/file_picker.dart';
@@ -175,6 +176,44 @@ class _BulkExamImportScreenState extends State<BulkExamImportScreen> {
       _busy = true;
       _error = null;
     });
+    final jobId = await ServerImport.enqueue(
+      kind: 'exams',
+      title: 'اختبارات الدروس (${todo.length})',
+      params: {
+        'pass_pct': passPct,
+        'attempts': attempts,
+        if (minutes != null) 'minutes': minutes,
+      },
+      items: [
+        for (final g in todo)
+          {
+            'course_id': g.lesson!['course_id'],
+            'lesson_id': g.lesson!['id'],
+            'title': 'اختبار: ${g.lesson!['title']}',
+            'questions': [
+              for (final b in g.qs.where((q) => q.q.problem == null))
+                {
+                  'type': b.q.type,
+                  'body': b.q.body.trim(),
+                  'points': b.q.points,
+                  'explanation': b.q.explanation,
+                  'options': b.q.type == 'essay' ? const [] : b.q.toOptionMaps(),
+                },
+            ],
+          },
+      ],
+    );
+    if (jobId != null) {
+      if (!mounted) return;
+      setState(() {
+        _busy = false;
+        _status = '';
+        _groups = null;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('اتحفظت في الخلفية على السيرفر، تابعها من "الواردات". مش لازم تفضل في الصفحة.')));
+      return;
+    }
     var exams = 0;
     var questions = 0;
     var failed = 0;
