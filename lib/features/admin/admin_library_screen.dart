@@ -1,3 +1,5 @@
+import '../../core/admin_search.dart';
+import '../../core/search_norm.dart';
 import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
@@ -30,6 +32,10 @@ class AdminLibraryScreen extends StatefulWidget {
 
 class _AdminLibraryScreenState extends State<AdminLibraryScreen> {
   List<LibraryItem>? _items;
+  String _q = '';
+  List<LibraryItem> get _shown => (_items ?? const <LibraryItem>[])
+      .where((a) => matchesSearch(_q, [a.title, a.category, a.courseTitle]))
+      .toList();
 
   @override
   void initState() {
@@ -92,11 +98,13 @@ class _AdminLibraryScreenState extends State<AdminLibraryScreen> {
         icon: const Icon(Icons.add),
         label: Text(s.t('add_file')),
       ),
-      body: RefreshIndicator(
+      body: Column(children: [
+        AdminSearchField(onChanged: (v) => setState(() => _q = v)),
+        Expanded(child: RefreshIndicator(
         onRefresh: _load,
         child: _items == null
             ? const Center(child: CircularProgressIndicator())
-            : _items!.isEmpty
+            : _shown.isEmpty
                 ? ListView(
                     padding: const EdgeInsets.all(32),
                     children: [
@@ -106,9 +114,9 @@ class _AdminLibraryScreenState extends State<AdminLibraryScreen> {
                   )
                 : ListView.builder(
                     padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
-                    itemCount: _items!.length,
+                    itemCount: _shown.length,
                     itemBuilder: (context, i) {
-                      final item = _items![i];
+                      final item = _shown[i];
                       return Card(
                         clipBehavior: Clip.antiAlias,
                         child: ListTile(
@@ -129,7 +137,8 @@ class _AdminLibraryScreenState extends State<AdminLibraryScreen> {
                       );
                     },
                   ),
-      ),
+      )),
+      ]),
     );
   }
 }

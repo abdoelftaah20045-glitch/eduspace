@@ -1,3 +1,5 @@
+import '../../core/admin_search.dart';
+import '../../core/search_norm.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -21,6 +23,7 @@ class _AdminAssignmentsScreenState extends State<AdminAssignmentsScreen> {
   List<Map<String, dynamic>> _courses = const [];
   String? _courseId;
   List<Assignment>? _items;
+  String _q = '';
   bool _error = false;
 
   @override
@@ -119,6 +122,7 @@ class _AdminAssignmentsScreenState extends State<AdminAssignmentsScreen> {
               },
             ),
           ),
+          AdminSearchField(onChanged: (v) => setState(() => _q = v)),
           Expanded(
             child: _error
                 ? Center(
@@ -128,13 +132,13 @@ class _AdminAssignmentsScreenState extends State<AdminAssignmentsScreen> {
                   ]))
                 : _items == null
                 ? const Center(child: CircularProgressIndicator())
-                : _items!.isEmpty
+                : _items!.where((x) => matchesSearch(_q, [x.title])).isEmpty
                     ? Center(child: Text(_courses.isEmpty ? s.t('no_courses_yet') : s.t('no_assignments')))
                     : ListView.builder(
                         padding: const EdgeInsets.fromLTRB(16, 0, 16, 96),
-                        itemCount: _items!.length,
+                        itemCount: _items!.where((x) => matchesSearch(_q, [x.title])).length,
                         itemBuilder: (context, i) {
-                          final a = _items![i];
+                          final a = _items!.where((x) => matchesSearch(_q, [x.title])).toList()[i];
                           return Card(
                             clipBehavior: Clip.antiAlias,
                             child: ListTile(

@@ -1,3 +1,5 @@
+import '../../core/admin_search.dart';
+import '../../core/search_norm.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/html_text.dart';
@@ -16,6 +18,7 @@ class ImportReviewScreen extends StatefulWidget {
 }
 
 class _ImportReviewScreenState extends State<ImportReviewScreen> {
+  String _sq = '';
   final _job = ImportJob.instance;
   final Set<String> _busy = {};
 
@@ -179,7 +182,8 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
                         style: Theme.of(context).textTheme.bodySmall),
                   ),
                 const SizedBox(height: 8),
-                for (final r in q)
+                AdminSearchField(onChanged: (v) => setState(() => _sq = v)),
+                for (final r in q.where((x) => matchesSearch(_sq, [x.note, x.category])))
                   Card(
                     child: Padding(
                       padding: const EdgeInsets.all(12),

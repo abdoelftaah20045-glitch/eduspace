@@ -1,3 +1,4 @@
+import '../../core/search_norm.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/l10n.dart';
@@ -199,10 +200,12 @@ class _AdminCoursesScreenState extends State<AdminCoursesScreen> {
     final courses = all
         ?.where((c) =>
             (_statusFilter == null || c['status'] == _statusFilter) &&
-            (_query.isEmpty ||
-                ((c['title'] as String?) ?? '')
-                    .toLowerCase()
-                    .contains(_query.toLowerCase())))
+            matchesSearch(_query, [
+              c['title']?.toString(),
+              c['instructor_name']?.toString(),
+              c['field']?.toString(),
+              c['description']?.toString(),
+            ]))
         .toList();
     return Scaffold(
       appBar: AppBar(title: Text(s.t('admin_courses')), actions: [

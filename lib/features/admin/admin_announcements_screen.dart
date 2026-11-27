@@ -1,3 +1,5 @@
+import '../../core/admin_search.dart';
+import '../../core/search_norm.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -19,6 +21,10 @@ class AdminAnnouncementsScreen extends StatefulWidget {
 
 class _AdminAnnouncementsScreenState extends State<AdminAnnouncementsScreen> {
   List<Map<String, dynamic>>? _items;
+  String _q = '';
+  List<Map<String, dynamic>> get _shown => (_items ?? const <Map<String, dynamic>>[])
+      .where((a) => matchesSearch(_q, [a['title']?.toString(), a['body']?.toString()]))
+      .toList();
 
   SupabaseClient get _c => Supabase.instance.client;
 
@@ -108,11 +114,13 @@ class _AdminAnnouncementsScreenState extends State<AdminAnnouncementsScreen> {
         icon: const Icon(Icons.add),
         label: Text(s.t('new_announcement')),
       ),
-      body: RefreshIndicator(
+      body: Column(children: [
+        AdminSearchField(onChanged: (v) => setState(() => _q = v)),
+        Expanded(child: RefreshIndicator(
         onRefresh: _load,
         child: _items == null
             ? const Center(child: CircularProgressIndicator())
-            : _items!.isEmpty
+            : _shown.isEmpty
                 ? ListView(
                     padding: const EdgeInsets.all(32),
                     children: [
@@ -128,9 +136,9 @@ class _AdminAnnouncementsScreenState extends State<AdminAnnouncementsScreen> {
                   )
                 : ListView.builder(
                     padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
-                    itemCount: _items!.length,
+                    itemCount: _shown.length,
                     itemBuilder: (context, i) {
-                      final a = _items![i];
+                      final a = _shown[i];
                       final starts =
                           DateTime.tryParse((a['starts_at'] ?? '').toString())
                               ?.toLocal();
@@ -162,7 +170,8 @@ class _AdminAnnouncementsScreenState extends State<AdminAnnouncementsScreen> {
                       );
                     },
                   ),
-      ),
+      )),
+      ]),
     );
   }
 }

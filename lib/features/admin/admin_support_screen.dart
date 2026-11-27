@@ -1,3 +1,5 @@
+import '../../core/admin_search.dart';
+import '../../core/search_norm.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -15,6 +17,10 @@ class AdminSupportScreen extends StatefulWidget {
 
 class _AdminSupportScreenState extends State<AdminSupportScreen> {
   List<SupportTicket>? _tickets;
+  String _q = '';
+  List<SupportTicket> get _shown => (_tickets ?? const <SupportTicket>[])
+      .where((t) => matchesSearch(_q, [t.subject, t.studentName]))
+      .toList();
 
   @override
   void initState() {
@@ -37,11 +43,13 @@ class _AdminSupportScreenState extends State<AdminSupportScreen> {
     final tickets = _tickets;
     return Scaffold(
       appBar: AppBar(title: Text(s.t('support'))),
-      body: RefreshIndicator(
+      body: Column(children: [
+        AdminSearchField(onChanged: (v) => setState(() => _q = v)),
+        Expanded(child: RefreshIndicator(
         onRefresh: _load,
         child: tickets == null
             ? const Center(child: CircularProgressIndicator())
-            : tickets.isEmpty
+            : _shown.isEmpty
                 ? ListView(
                     padding: const EdgeInsets.all(32),
                     children: [
@@ -51,9 +59,9 @@ class _AdminSupportScreenState extends State<AdminSupportScreen> {
                   )
                 : ListView.builder(
                     padding: const EdgeInsets.all(16),
-                    itemCount: tickets.length,
+                    itemCount: _shown.length,
                     itemBuilder: (context, i) {
-                      final t = tickets[i];
+                      final t = _shown[i];
                       return Card(
                         clipBehavior: Clip.antiAlias,
                         child: ListTile(
@@ -80,7 +88,8 @@ class _AdminSupportScreenState extends State<AdminSupportScreen> {
                       );
                     },
                   ),
-      ),
+      )),
+      ]),
     );
   }
 }

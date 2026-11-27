@@ -1,3 +1,5 @@
+import '../../core/admin_search.dart';
+import '../../core/search_norm.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/l10n.dart';
@@ -13,6 +15,7 @@ class AdminCategoriesScreen extends StatefulWidget {
 
 class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
   List<Map<String, dynamic>>? _items;
+  String _q = '';
   bool _failed = false;
 
   static const _kinds = ['category', 'level', 'tag'];
@@ -109,14 +112,20 @@ class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
     );
   }
 
-  Widget _list(S s, List<Map<String, dynamic>> rows, String kind) {
+  Widget _list(S s, List<Map<String, dynamic>> allRows, String kind) {
+    final rows = allRows
+        .where((r) => matchesSearch(_q, [r['name'] as String?]))
+        .toList();
     return Scaffold(
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _add(kind),
         icon: const Icon(Icons.add),
         label: Text(s.t('add_item')),
       ),
-      body: rows.isEmpty
+      body: Column(children: [
+        AdminSearchField(onChanged: (v) => setState(() => _q = v)),
+        Expanded(
+          child: rows.isEmpty
           ? Center(child: Text(s.t('no_items')))
           : ListView.builder(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 90),
@@ -150,6 +159,8 @@ class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
                 );
               },
             ),
+        ),
+      ]),
     );
   }
 }

@@ -1,3 +1,5 @@
+import '../../core/admin_search.dart';
+import '../../core/search_norm.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/l10n.dart';
@@ -16,6 +18,10 @@ class AdminExamsScreen extends StatefulWidget {
 
 class _AdminExamsScreenState extends State<AdminExamsScreen> {
   List<Map<String, dynamic>>? _exams;
+  String _q = '';
+  List<Map<String, dynamic>> get _shown => (_exams ?? const <Map<String, dynamic>>[])
+      .where((e) => matchesSearch(_q, [e['title']?.toString()]))
+      .toList();
 
   @override
   void initState() {
@@ -77,11 +83,13 @@ class _AdminExamsScreenState extends State<AdminExamsScreen> {
         icon: const Icon(Icons.add),
         label: Text(s.t('new_exam')),
       ),
-      body: RefreshIndicator(
+      body: Column(children: [
+        AdminSearchField(onChanged: (v) => setState(() => _q = v)),
+        Expanded(child: RefreshIndicator(
         onRefresh: _load,
         child: _exams == null
             ? const Center(child: CircularProgressIndicator())
-            : _exams!.isEmpty
+            : _shown.isEmpty
                 ? ListView(
                     padding: const EdgeInsets.all(32),
                     children: [
@@ -97,9 +105,9 @@ class _AdminExamsScreenState extends State<AdminExamsScreen> {
                   )
                 : ListView.builder(
                     padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
-                    itemCount: _exams!.length,
+                    itemCount: _shown.length,
                     itemBuilder: (context, i) {
-                      final e = _exams![i];
+                      final e = _shown[i];
                       final status = (e['status'] as String?) ?? 'draft';
                       return Card(
                         clipBehavior: Clip.antiAlias,
@@ -172,7 +180,8 @@ class _AdminExamsScreenState extends State<AdminExamsScreen> {
                       );
                     },
                   ),
-      ),
+      )),
+      ]),
     );
   }
 }

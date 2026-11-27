@@ -1,3 +1,5 @@
+import '../../core/admin_search.dart';
+import '../../core/search_norm.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/l10n.dart';
@@ -17,6 +19,12 @@ class _AdminEnrollmentsScreenState extends State<AdminEnrollmentsScreen> {
   List<Map<String, dynamic>> _courses = const [];
   String? _courseId;
   List<Map<String, dynamic>>? _enrollments;
+  String _q = '';
+  List<Map<String, dynamic>> get _shown => (_enrollments ?? const <Map<String, dynamic>>[]).where((e) {
+        final pr = e['profiles'];
+        final m = pr is Map ? pr : const {};
+        return matchesSearch(_q, [m['full_name']?.toString(), m['email']?.toString(), m['phone']?.toString()]);
+      }).toList();
   bool _error = false;
 
   @override
@@ -120,6 +128,7 @@ class _AdminEnrollmentsScreenState extends State<AdminEnrollmentsScreen> {
               },
             ),
           ),
+          AdminSearchField(onChanged: (v) => setState(() => _q = v)),
           Expanded(
             child: _error
                 ? Center(
@@ -129,13 +138,13 @@ class _AdminEnrollmentsScreenState extends State<AdminEnrollmentsScreen> {
                   ]))
                 : _enrollments == null
                 ? const Center(child: CircularProgressIndicator())
-                : _enrollments!.isEmpty
+                : _shown.isEmpty
                     ? Center(child: Text(_courses.isEmpty ? s.t('no_courses_yet') : s.t('empty_questions')))
                     : ListView.builder(
                         padding: const EdgeInsets.fromLTRB(16, 0, 16, 96),
-                        itemCount: _enrollments!.length,
+                        itemCount: _shown.length,
                         itemBuilder: (context, i) {
-                          final e = _enrollments![i];
+                          final e = _shown[i];
                           final profile = e['profiles'];
                           final name = profile is Map
                               ? ((profile['full_name'] as String?)

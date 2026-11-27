@@ -1,3 +1,5 @@
+import '../../core/admin_search.dart';
+import '../../core/search_norm.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/intl.dart';
@@ -16,6 +18,10 @@ class AdminLivesScreen extends StatefulWidget {
 
 class _AdminLivesScreenState extends State<AdminLivesScreen> {
   List<LiveSession>? _items;
+  String _q = '';
+  List<LiveSession> get _shown => (_items ?? const <LiveSession>[])
+      .where((e) => matchesSearch(_q, [e.title]))
+      .toList();
 
   @override
   void initState() {
@@ -106,11 +112,13 @@ class _AdminLivesScreenState extends State<AdminLivesScreen> {
         icon: const Icon(Icons.add),
         label: Text(s.t('new_live')),
       ),
-      body: RefreshIndicator(
+      body: Column(children: [
+        AdminSearchField(onChanged: (v) => setState(() => _q = v)),
+        Expanded(child: RefreshIndicator(
         onRefresh: _load,
         child: _items == null
             ? const Center(child: CircularProgressIndicator())
-            : _items!.isEmpty
+            : _shown.isEmpty
                 ? ListView(
                     padding: const EdgeInsets.all(32),
                     children: [
@@ -120,9 +128,9 @@ class _AdminLivesScreenState extends State<AdminLivesScreen> {
                   )
                 : ListView.builder(
                     padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
-                    itemCount: _items!.length,
+                    itemCount: _shown.length,
                     itemBuilder: (context, i) {
-                      final l = _items![i];
+                      final l = _shown[i];
                       return Card(
                         clipBehavior: Clip.antiAlias,
                         child: ListTile(
@@ -169,7 +177,8 @@ class _AdminLivesScreenState extends State<AdminLivesScreen> {
                       );
                     },
                   ),
-      ),
+      )),
+      ]),
     );
   }
 }
