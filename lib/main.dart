@@ -1,6 +1,5 @@
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'core/updater.dart';
-import 'core/code_push.dart';
 import 'core/course_watch.dart';
 import 'core/l10n.dart';
 import 'features/admin/import_job.dart';
@@ -74,7 +73,6 @@ Future<void> main() async {
   } else {
     runApp(const EduSpaceApp());
   }
-  CodePush.instance.start();
   Future<void>.delayed(const Duration(seconds: 5), Updater.checkOnLaunch);
   // An import that did not finish (app closed, no internet) continues by itself.
   Future<void>.delayed(const Duration(seconds: 4), () {
