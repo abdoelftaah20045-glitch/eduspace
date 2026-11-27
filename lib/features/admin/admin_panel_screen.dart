@@ -34,6 +34,7 @@ import '../tenancy/super_admin_screen.dart';
 import '../tenancy/tenant_members_screen.dart';
 import 'admin_events_screen.dart';
 import 'youtube_import_screen.dart';
+import '../ai/ai_fab.dart' show aiFabHidden;
 import 'file_import_screen.dart';
 import 'admin_limits_screen.dart';
 import 'admin_moderation_screen.dart';
@@ -60,10 +61,17 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => aiFabHidden.value++);
     PaidCourses.load().then((_) {
       if (mounted) setState(() {});
     });
     _load();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.addPostFrameCallback((_) => aiFabHidden.value--);
+    super.dispose();
   }
 
   Future<void> _checkAccess() async {

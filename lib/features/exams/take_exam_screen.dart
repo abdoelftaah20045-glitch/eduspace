@@ -275,6 +275,10 @@ class _QuestionCard extends StatelessWidget {
     final s = S.of(context);
     final chosen = selected[question.id] ?? <String>{};
     return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+          side: BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
+          borderRadius: BorderRadius.circular(8)),
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Column(
@@ -453,17 +457,8 @@ class _ScoreBox extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 22, horizontal: 16),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [hero.withValues(alpha: .85), hero]),
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-              color: hero.withValues(alpha: .35),
-              blurRadius: 20,
-              offset: const Offset(0, 10)),
-        ],
+        color: hero,
+        borderRadius: BorderRadius.circular(8),
       ),
       child: Column(
         children: [

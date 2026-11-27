@@ -94,7 +94,7 @@ class _ExamReviewScreenState extends State<ExamReviewScreen> {
                             : const Color(0xFFFFEBEE),
                         margin: const EdgeInsets.only(bottom: 14),
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16)),
+                            borderRadius: BorderRadius.circular(8)),
                         child: ListTile(
                           leading: Icon(
                             passed
@@ -140,7 +140,7 @@ class _ExamReviewScreenState extends State<ExamReviewScreen> {
                     return Card(
                       margin: const EdgeInsets.only(bottom: 12),
                       shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16)),
+                          borderRadius: BorderRadius.circular(8)),
                       child: Padding(
                         padding: const EdgeInsets.all(14),
                         child: Column(

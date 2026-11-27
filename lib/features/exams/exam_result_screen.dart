@@ -80,11 +80,8 @@ class ExamResultScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [col, col.withValues(alpha: .75)]),
-              borderRadius: BorderRadius.circular(22),
+              color: col,
+              borderRadius: BorderRadius.circular(8),
             ),
             child: Column(children: [
               SizedBox(
@@ -121,6 +118,10 @@ class ExamResultScreen extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Card(
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+                side: BorderSide(color: theme.colorScheme.outlineVariant),
+                borderRadius: BorderRadius.circular(8)),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
               child: Column(children: [

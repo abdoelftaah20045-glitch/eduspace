@@ -42,7 +42,7 @@ class _ExamInstructionsScreenState extends State<ExamInstructionsScreen> {
         padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 6),
         decoration: BoxDecoration(
           color: color.withValues(alpha: .08),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(8),
         ),
         child: Column(
           children: [
@@ -152,7 +152,7 @@ class _ExamInstructionsScreenState extends State<ExamInstructionsScreen> {
             style: FilledButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 14),
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16)),
+                  borderRadius: BorderRadius.circular(8)),
             ),
             icon: const Icon(Icons.play_arrow),
             label: Text(s.t('agree_start'),
