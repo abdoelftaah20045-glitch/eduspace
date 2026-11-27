@@ -226,13 +226,28 @@ class AdminToolsRepository {
 
   // ---------- course status (A07) ----------
 
-  static Future<void> setCourseStatus(String id, String status) async {
-    await _c.from('courses').update({
+  static Future<void> setCourseStatus(String id, String status,
+      {bool notify = false}) async {
+    final base = {
       'status': status,
       'updated_at': DateTime.now().toIso8601String(),
-    }).eq('id', id);
+    };
+    if (notify && status == 'published') {
+      try {
+        await _c
+            .from('courses')
+            .update({...base, 'notify_on_publish': true}).eq('id', id);
+      } catch (_) {
+        // Column not there yet (SQL part 29 not run): publish without notify.
+        await _c.from('courses').update(base).eq('id', id);
+      }
+    } else {
+      await _c.from('courses').update(base).eq('id', id);
+    }
     await log('course.status',
-        entity: 'course', entityId: id, details: {'status': status});
+        entity: 'course',
+        entityId: id,
+        details: {'status': status, if (notify) 'notify': true});
   }
 
   // ---------- targeted notifications (A26) ----------

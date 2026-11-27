@@ -39,10 +39,49 @@ class _AdminCoursesScreenState extends State<AdminCoursesScreen> {
     }
   }
 
+  /// Asks whether to notify users. Returns null when cancelled.
+  Future<bool?> _askNotify(String title, String body, bool initial) {
+    final s = S.of(context);
+    var notify = initial;
+    return showDialog<bool>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setD) => AlertDialog(
+          title: Text(title),
+          content: Column(mainAxisSize: MainAxisSize.min, children: [
+            if (body.isNotEmpty) Text(body),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: Text(s.t('course_notify_users')),
+              value: notify,
+              onChanged: (v) => setD(() => notify = v),
+            ),
+          ]),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: Text(s.t('cancel'))),
+            FilledButton(
+                onPressed: () => Navigator.pop(ctx, notify),
+                child: Text(s.t('course_publish'))),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> _setStatus(Map<String, dynamic> c, String status) async {
     final s = S.of(context);
+    var notify = false;
+    if (status == 'published') {
+      final r = await _askNotify(
+          s.t('course_publish'), c['title'] as String? ?? '', true);
+      if (r == null) return;
+      notify = r;
+    }
     try {
-      await AdminToolsRepository.setCourseStatus(c['id'] as String, status);
+      await AdminToolsRepository.setCourseStatus(c['id'] as String, status,
+          notify: notify);
       if (!mounted) return;
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(s.t('course_status_done'))));
@@ -52,6 +91,27 @@ class _AdminCoursesScreenState extends State<AdminCoursesScreen> {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(s.t('generic_error'))));
     }
+  }
+
+  Future<void> _bulkPublish(List<Map<String, dynamic>> shown) async {
+    final s = S.of(context);
+    final drafts = shown.where((c) => c['status'] == 'draft').toList();
+    if (drafts.isEmpty) return;
+    final r = await _askNotify(s.t('bulk_publish'),
+        '${s.t('bulk_publish_body')}: ${drafts.length}', false);
+    if (r == null) return;
+    var ok = 0;
+    for (final c in drafts) {
+      try {
+        await AdminToolsRepository.setCourseStatus(c['id'] as String, 'published',
+            notify: r);
+        ok++;
+      } catch (_) {}
+    }
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${s.t('course_status_done')}: $ok/${drafts.length}')));
+    _load();
   }
 
   Future<void> _delete(Map<String, dynamic> course) async {
@@ -137,7 +197,14 @@ class _AdminCoursesScreenState extends State<AdminCoursesScreen> {
                     .contains(_query.toLowerCase())))
         .toList();
     return Scaffold(
-      appBar: AppBar(title: Text(s.t('admin_courses'))),
+      appBar: AppBar(title: Text(s.t('admin_courses')), actions: [
+        if (courses != null && courses.any((c) => c['status'] == 'draft'))
+          IconButton(
+            tooltip: s.t('bulk_publish'),
+            icon: const Icon(Icons.publish),
+            onPressed: () => _bulkPublish(courses),
+          ),
+      ]),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           Navigator.of(context)

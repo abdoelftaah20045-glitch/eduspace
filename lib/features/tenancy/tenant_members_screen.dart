@@ -177,7 +177,7 @@ class _TenantMembersScreenState extends State<TenantMembersScreen> {
                                     _loadError == null
                                         ? s.t('no_members')
                                         : '${s.t('no_members')}\n${_short(_loadError!)}',
-                                    textAlign: TextAlign.center))));
+                                    textAlign: TextAlign.center)));
                       }
                       final m = members[mi];
                       return _memberCard(context, s, m);
