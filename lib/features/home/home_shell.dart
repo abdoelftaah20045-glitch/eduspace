@@ -321,7 +321,7 @@ class _HomeTabState extends State<_HomeTab> with WidgetsBindingObserver {
       Color color, Widget page) {
     return Pressable(
       radius: 18,
-      shadowColor: color,
+      shadowColor: Theme.of(context).colorScheme.primary,
       onTap: () => Navigator.of(context)
           .push(MaterialPageRoute(builder: (_) => page))
           .then((_) => _load()),
@@ -330,13 +330,11 @@ class _HomeTabState extends State<_HomeTab> with WidgetsBindingObserver {
           width: 40,
           height: 40,
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [color.withValues(alpha: .75), color]),
+            color: Theme.of(context).colorScheme.primaryContainer,
             borderRadius: BorderRadius.circular(14),
           ),
-          child: Icon(icon, color: Colors.white, size: 24),
+          child: Icon(icon,
+              color: Theme.of(context).colorScheme.primary, size: 24),
         ),
         const SizedBox(height: 6),
         Text(label,
@@ -542,6 +540,7 @@ class _HomeTabState extends State<_HomeTab> with WidgetsBindingObserver {
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: tilesList.length,
+                padding: const EdgeInsetsDirectional.only(end: 16),
                 separatorBuilder: (_, __) => const SizedBox(width: 10),
                 itemBuilder: (_, i) => SizedBox(width: 68, child: tilesList[i]),
               ),

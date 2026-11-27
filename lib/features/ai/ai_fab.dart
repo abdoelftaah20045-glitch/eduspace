@@ -69,7 +69,7 @@ class _AiOverlayState extends State<AiOverlay>
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     const d = 40.0;
-    final pos = _pos ?? Offset(size.width - d - 6, size.height * .62);
+    final pos = _pos ?? Offset(size.width - d - 6, size.height - d - 150);
     final clamped = Offset(
       pos.dx.clamp(6.0, size.width - d - 6),
       pos.dy.clamp(MediaQuery.of(context).padding.top + 8, size.height - d - 8),

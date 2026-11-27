@@ -412,7 +412,12 @@ class _HomeBlockState extends State<HomeBlock> {
           for (final name in names.take(n.clamp(1, 40)))
             ActionChip(
               backgroundColor: scheme.primaryContainer,
-              label: Text('$name (${counts[name]})'),
+              side: BorderSide.none,
+              labelStyle: TextStyle(
+                  color: scheme.onPrimaryContainer,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 13),
+              label: Text('$name  \u00b7  ${counts[name]}'),
               onPressed: () => Navigator.of(context).push(
                   MaterialPageRoute(builder: (_) => const CoursesScreen())),
             ),
@@ -462,28 +467,11 @@ class _HomeBlockState extends State<HomeBlock> {
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             itemCount: list.length,
-            separatorBuilder: (_, __) => const SizedBox(width: 6),
+            padding: const EdgeInsetsDirectional.only(end: 16),
+            separatorBuilder: (_, __) => const SizedBox(width: 10),
             itemBuilder: (_, i) => SizedBox(
-              width: 210,
-              child: Stack(children: [
-                Positioned(
-                  left: 0,
-                  bottom: -14,
-                  child: Text('${i + 1}',
-                      style: TextStyle(
-                          fontSize: 110,
-                          height: 1,
-                          fontWeight: FontWeight.w900,
-                          color: scheme.primary.withValues(alpha: .25))),
-                ),
-                Positioned(
-                  right: 0,
-                  top: 0,
-                  bottom: 0,
-                  width: 150,
-                  child: _card(context, list[i]),
-                ),
-              ]),
+              width: 160,
+              child: _card(context, list[i]),
             ),
           ),
         ),

@@ -155,10 +155,17 @@ class FeaturedCourseCard extends StatelessWidget {
                         fontSize: 12, fontWeight: FontWeight.w700)),
                 const Spacer(),
                 c.price <= 0
-                    ? Text(price,
-                        style: TextStyle(
-                            fontWeight: FontWeight.w800,
-                            color: scheme.primary))
+                    ? Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 3),
+                        decoration: BoxDecoration(
+                            color: scheme.primary,
+                            borderRadius: BorderRadius.circular(20)),
+                        child: Text(price,
+                            style: TextStyle(
+                                fontWeight: FontWeight.w800,
+                                fontSize: 12,
+                                color: scheme.onPrimary)))
                     : PriceView(course: c, size: 14),
               ]),
             ]),
@@ -193,7 +200,7 @@ class TopMentors extends StatelessWidget {
     if (seen.isEmpty) return const SizedBox.shrink();
     final list = seen.entries.take(10).toList();
     return SizedBox(
-      height: 92,
+      height: 108,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: list.length,
@@ -202,7 +209,7 @@ class TopMentors extends StatelessWidget {
           final e = list[i];
           final photo = photos[e.key] ?? e.value.instructorPhotoUrl;
           return SizedBox(
-            width: 70,
+            width: 80,
             child: Column(children: [
               CachedAvatar(
                 url: photo,
@@ -216,9 +223,10 @@ class TopMentors extends StatelessWidget {
               ),
               const SizedBox(height: 6),
               Text(e.key,
-                  maxLines: 1,
+                  maxLines: 2,
+                  textAlign: TextAlign.center,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 11.5)),
+                  style: const TextStyle(fontSize: 11.5, height: 1.2)),
             ]),
           );
         },
