@@ -73,9 +73,9 @@ jobs:
           GRADLE=android/app/build.gradle
           [ -f android/app/build.gradle.kts ] && GRADLE=android/app/build.gradle.kts
           echo "Gradle file: $GRADLE"
-          # file_picker's flutter_plugin_android_lifecycle requires compileSdk 36+
-          sed -i 's/compileSdk = flutter.compileSdkVersion/compileSdk = 36/' "$GRADLE"
-          sed -i 's/compileSdk flutter.compileSdkVersion/compileSdk 36/' "$GRADLE"
+          # file_picker's flutter_plugin_android_lifecycle requires compileSdk 37+
+          sed -i 's/compileSdk = flutter.compileSdkVersion/compileSdk = 37/' "$GRADLE"
+          sed -i 's/compileSdk flutter.compileSdkVersion/compileSdk 37/' "$GRADLE"
           # Deki application id (namespace stays as generated; the manifest uses relative class names).
           sed -i 's/applicationId = "com.example.eduspace_app"/applicationId = "com.deki.app"/; s/applicationId "com.example.eduspace_app"/applicationId "com.deki.app"/' "$GRADLE"
           grep -n 'applicationId' "$GRADLE"
