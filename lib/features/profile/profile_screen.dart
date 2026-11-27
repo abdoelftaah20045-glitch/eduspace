@@ -75,64 +75,50 @@ class ProfileScreen extends StatelessWidget {
           return ListView(
             padding: const EdgeInsets.all(16),
             children: [
-              // Gradient identity header (reference: profile header cards).
+              // Coursera-style flat identity header.
               Container(
-                padding: const EdgeInsets.symmetric(
-                    vertical: 28, horizontal: 16),
+                padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: AlignmentDirectional.topStart,
-                    end: AlignmentDirectional.bottomEnd,
-                    colors: [scheme.primary, Color.lerp(scheme.primary, Colors.black, .2)!],
-                  ),
-                  borderRadius: BorderRadius.circular(24),
-                  boxShadow: [
-                    BoxShadow(
-                      color: scheme.primary.withValues(alpha: .3),
-                      blurRadius: 18,
-                      offset: const Offset(0, 8),
-                    ),
-                  ],
+                  color: scheme.surface,
+                  border: Border.all(color: scheme.outlineVariant),
+                  borderRadius: BorderRadius.circular(8),
                 ),
-                child: Column(
+                child: Row(
                   children: [
-                    Container(
-                      padding: const EdgeInsets.all(3),
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
+                    _ProfileAvatar(
+                        avatarUrl: profile?['avatar_url'] as String?),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            name,
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          if ((profile?['institution'] as String? ?? '')
+                              .isNotEmpty)
+                            Text(
+                              profile!['institution'] as String,
+                              style: TextStyle(
+                                color: scheme.onSurfaceVariant,
+                                fontSize: 13,
+                              ),
+                            ),
+                          if (email.isNotEmpty)
+                            Text(
+                              email,
+                              style: TextStyle(
+                                color: scheme.onSurfaceVariant,
+                                fontSize: 13,
+                              ),
+                            ),
+                        ],
                       ),
-                      child: _ProfileAvatar(
-                          avatarUrl: profile?['avatar_url'] as String?),
                     ),
-                    const SizedBox(height: 12),
-                    Text(
-                      name,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    if ((profile?['institution'] as String? ?? '').isNotEmpty)
-                      Text(
-                        profile!['institution'] as String,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: .85),
-                          fontSize: 13,
-                        ),
-                      ),
-                    if (email.isNotEmpty)
-                      Text(
-                        email,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: .85),
-                          fontSize: 13,
-                        ),
-                      ),
                   ],
                 ),
               ),
@@ -230,9 +216,9 @@ class ProfileScreen extends StatelessWidget {
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   child: Card(
                     color: Theme.of(context).colorScheme.primary,
-                    elevation: 2,
+                    elevation: 0,
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16)),
+                        borderRadius: BorderRadius.circular(8)),
                     child: ListTile(
                       leading: Icon(Icons.admin_panel_settings,
                           color: Theme.of(context).colorScheme.onPrimary,
