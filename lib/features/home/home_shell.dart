@@ -17,6 +17,7 @@ import '../../core/tenant.dart';
 import '../../core/widgets.dart';
 import 'home_blocks.dart';
 import 'home_books.dart';
+import 'home_extras.dart';
 import '../courses/course_details_screen.dart';
 import '../courses/courses_screen.dart';
 import '../courses/data/course_models.dart';
@@ -488,8 +489,26 @@ class _HomeTabState extends State<_HomeTab> with WidgetsBindingObserver {
               const SizedBox(height: 24),
             ],
       ],
+      'home.plan': [
+            if (RemoteUi.visible('home.plan'))
+              HomePlanCard(
+                  continueTitle: item?.lesson.title,
+                  onContinue: item == null
+                      ? null
+                      : () => Navigator.of(context).push(MaterialPageRoute(
+                          builder: (_) => LessonScreen(lesson: item.lesson)))),
+      ],
       'home.books': [
             if (RemoteUi.visible('home.books')) const HomeBooks(),
+      ],
+      'home.new_courses': [
+            if (RemoteUi.visible('home.new_courses')) const HomeNewCourses(),
+      ],
+      'home.exams': [
+            if (RemoteUi.visible('home.exams')) const HomeSuggestedExams(),
+      ],
+      'home.quote': [
+            if (RemoteUi.visible('home.quote')) const HomeQuote(),
       ],
       'home.discover': [
             if (_trending.isNotEmpty && RemoteUi.visible('home.discover')) ...[
