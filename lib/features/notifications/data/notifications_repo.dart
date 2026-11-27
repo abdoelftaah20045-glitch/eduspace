@@ -1,3 +1,4 @@
+import '../../../core/html_text.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/tenant.dart';
@@ -23,8 +24,8 @@ class AppNotification {
 
   factory AppNotification.fromMap(Map<String, dynamic> m) => AppNotification(
         id: m['id'] as String,
-        title: (m['title'] as String?) ?? '',
-        body: (m['body'] as String?) ?? '',
+        title: decodeHtml(m['title'] as String?),
+        body: decodeHtml(m['body'] as String?),
         type: (m['type'] as String?) ?? 'general',
         isRead: (m['is_read'] as bool?) ?? false,
         createdAt:
@@ -55,8 +56,8 @@ class Announcement {
 
   factory Announcement.fromMap(Map<String, dynamic> m) => Announcement(
         id: m['id'] as String,
-        title: (m['title'] as String?) ?? '',
-        body: (m['body'] as String?) ?? '',
+        title: decodeHtml(m['title'] as String?),
+        body: decodeHtml(m['body'] as String?),
         images: [
           if (m['images'] is List)
             for (final u in m['images'] as List) u.toString(),

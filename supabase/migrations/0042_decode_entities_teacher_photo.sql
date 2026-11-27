@@ -75,3 +75,31 @@ from (
 ) p
 where c.tenant_id = p.tenant_id and c.instructor_name = p.instructor_name
   and coalesce(c.instructor_photo_url, '') = '';
+
+-- Notifications: repair the ones already created ...
+update public.notifications set
+  title = public._decode_html(title),
+  body = public._decode_html(body)
+where title like '%&%' or body like '%&%';
+
+-- ... and decode the text when the new-course trigger creates them.
+create or replace function public.notify_new_course()
+returns trigger
+language plpgsql security definer set search_path = public
+as $$
+begin
+  if new.status = 'published'
+     and coalesce(new.notify_on_publish, false)
+     and new.notified_at is null
+     and (tg_op = 'INSERT' or old.status is distinct from 'published') then
+    new.notified_at := now();
+    insert into public.notifications (user_id, title, body, type, data, tenant_id)
+    select m.user_id, 'كورس جديد / New course',
+           coalesce(public._decode_html(new.title), ''),
+           'new_course', jsonb_build_object('course_id', new.id), new.tenant_id
+      from public.tenant_memberships m
+     where m.tenant_id = new.tenant_id and m.status = 'active';
+  end if;
+  return new;
+end;
+$$;
