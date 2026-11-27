@@ -732,6 +732,8 @@ class S {
     'admin_sub_splash': {'ar': 'الألوان والشعار ومدة الأنيميشن', 'en': 'Colors, slogan and animation speed', 'fr': 'Splash', 'es': 'Splash', 'de': 'Splash'},
     'bulk_exams': {'ar': 'استيراد اختبارات بالجملة', 'en': 'Bulk exam import', 'fr': 'Bulk exam import', 'es': 'Bulk exam import', 'de': 'Bulk exam import'},
     'admin_sub_bulk_exams': {'ar': 'اختبار لكل فيديو من ملف أو شيت، يتصحح تلقائيًا', 'en': 'One auto-graded exam per video from a file or sheet', 'fr': 'Bulk', 'es': 'Bulk', 'de': 'Bulk'},
+    'ai_quiz': {'ar': 'اختبارات تدريبية تلقائية', 'en': 'Auto practice quizzes', 'fr': 'Auto quizzes', 'es': 'Auto quizzes', 'de': 'Auto quizzes'},
+    'admin_sub_ai_quiz': {'ar': 'اختبار لكل درس بالذكاء الاصطناعي المجاني', 'en': 'A practice quiz per lesson with free AI', 'fr': 'Auto', 'es': 'Auto', 'de': 'Auto'},
     'res_title': {'ar': 'نتيجة الامتحان', 'en': 'Exam result', 'fr': 'Résultat de l\'examen', 'es': 'Resultado del examen', 'de': 'Prüfungsergebnis'},
     'res_total': {'ar': 'عدد الأسئلة', 'en': 'Total questions', 'fr': 'Total des questions', 'es': 'Total de preguntas', 'de': 'Fragen gesamt'},
     'res_time_taken': {'ar': 'الوقت المستغرق', 'en': 'Time taken', 'fr': 'Temps écoulé', 'es': 'Tiempo empleado', 'de': 'Benötigte Zeit'},

@@ -1,0 +1,185 @@
+// Deki practice-quiz generator (Google Gemini free tier). One lesson per call.
+// Runs with the CALLER's login, so database policies decide: only an admin of
+// the lesson's organization can read the lesson and create the exam.
+// Grounding: lesson title + description (+ chapters in it) + course title and
+// field. No captions are fetched. Questions test the topic, not what the
+// speaker said at a given minute.
+//
+// Secret needed (same as ai-assistant): GEMINI_API_KEY
+// SUPABASE_URL and SUPABASE_ANON_KEY are provided automatically.
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+const cors = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+const json = (o: unknown) =>
+  new Response(JSON.stringify(o), { headers: { ...cors, 'Content-Type': 'application/json' } });
+const BASE = 'https://generativelanguage.googleapis.com/v1beta';
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+async function pickModels(key: string): Promise<string[]> {
+  const fixed = ['gemini-flash-latest', 'gemini-flash-lite-latest'];
+  try {
+    const r = await fetch(`${BASE}/models?pageSize=200&key=${key}`, { signal: AbortSignal.timeout(6000) });
+    const j = await r.json();
+    const ver = (n: string) => parseFloat((n.match(/gemini-(\d+(?:\.\d+)?)/) ?? [])[1] ?? '0');
+    const listed: string[] = (j?.models ?? [])
+      .filter((m: any) => (m.supportedGenerationMethods ?? []).includes('generateContent'))
+      .map((m: any) => String(m.name).replace('models/', ''))
+      .filter((n: string) => /flash/.test(n) && !/(image|tts|live|audio|embed|robotics|computer|preview|exp)/.test(n))
+      .sort((a: string, b: string) => ver(b) - ver(a) || a.length - b.length);
+    const full = listed.filter((n) => !/lite/.test(n)).slice(0, 1);
+    const lite = listed.filter((n) => /lite/.test(n)).slice(0, 1);
+    return [...new Set([...full, ...lite, ...fixed])];
+  } catch (_) {
+    return fixed;
+  }
+}
+
+const decode = (x: string): string => {
+  let r = x ?? '';
+  for (let i = 0; i < 5 && r.includes('&'); i++) {
+    const n = r
+      .replace(/&#(\d{1,7});/g, (_m, d) => String.fromCodePoint(parseInt(d, 10)))
+      .replace(/&#[xX]([0-9a-fA-F]{1,6});/g, (_m, h) => String.fromCodePoint(parseInt(h, 16)))
+      .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"')
+      .replace(/&apos;/g, "'").replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&');
+    if (n === r) break;
+    r = n;
+  }
+  return r;
+};
+
+Deno.serve(async (req: Request) => {
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: cors });
+  try {
+    const key = Deno.env.get('GEMINI_API_KEY');
+    if (!key) return json({ error: 'no_key' });
+    const auth = req.headers.get('Authorization') ?? '';
+    const db = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_ANON_KEY')!, {
+      global: { headers: { Authorization: auth } },
+    });
+    const { data: u } = await db.auth.getUser();
+    if (!u?.user) return json({ error: 'auth' });
+    const body = await req.json();
+    const lessonId = String(body.lesson_id ?? '');
+    const publish = body.publish === true;
+    const count = Math.min(10, Math.max(3, Number(body.count ?? 6)));
+    if (!lessonId) return json({ error: 'lesson_id' });
+
+    const { data: lesson } = await db.from('lessons')
+      .select('id, title, content, course_id').eq('id', lessonId).maybeSingle();
+    if (!lesson) return json({ error: 'lesson_not_found_or_no_access' });
+    const { data: course } = await db.from('courses')
+      .select('id, title, field, tenant_id').eq('id', lesson.course_id).maybeSingle();
+    if (!course) return json({ error: 'course' });
+
+    const { data: have } = await db.from('exams').select('id').eq('lesson_id', lessonId).limit(1);
+    if (have && have.length) return json({ skipped: 'has_exam' });
+
+    const title = decode(lesson.title ?? '').trim();
+    const desc = decode(lesson.content ?? '').trim().slice(0, 3500);
+    const cTitle = decode(course.title ?? '').trim();
+    const field = decode(course.field ?? '').trim();
+    const prompt =
+      `Course: ${cTitle}${field ? ' (' + field + ')' : ''}\nLesson title: ${title}\nLesson description:\n${desc || '(none)'}\n\n` +
+      `Write ${count} multiple-choice practice questions for a student who studied this lesson topic. ` +
+      `Rules: write in the same language as the lesson title (Arabic stays Arabic). Test understanding of the topic named in the title and the outline/chapters in the description if any. ` +
+      `Use only well-established, textbook-level facts. Do NOT ask what the speaker said, about timestamps, the channel, or anything you cannot know from the text. ` +
+      `If the title and description are too vague to write good questions, return an empty list. ` +
+      `Each question has exactly 4 options, exactly one correct (index 0-3), and a one-sentence explanation.`;
+    const schema = {
+      type: 'OBJECT',
+      properties: {
+        questions: {
+          type: 'ARRAY',
+          items: {
+            type: 'OBJECT',
+            properties: {
+              question: { type: 'STRING' },
+              options: { type: 'ARRAY', items: { type: 'STRING' } },
+              correct: { type: 'INTEGER' },
+              explanation: { type: 'STRING' },
+            },
+            required: ['question', 'options', 'correct', 'explanation'],
+          },
+        },
+      },
+      required: ['questions'],
+    };
+    let qs: any[] | null = null;
+    const errs: string[] = [];
+    const started = Date.now();
+    for (const model of (await pickModels(key)).slice(0, 3)) {
+      for (let attempt = 0; attempt < 2 && !qs; attempt++) {
+        if (Date.now() - started > 100000) break;
+        try {
+          const r = await fetch(`${BASE}/models/${model}:generateContent?key=${key}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{ role: 'user', parts: [{ text: prompt }] }],
+              generationConfig: { responseMimeType: 'application/json', responseSchema: schema, temperature: 0.3, maxOutputTokens: 4000 },
+            }),
+            signal: AbortSignal.timeout(60000),
+          });
+          const j = await r.json();
+          const t = (j?.candidates?.[0]?.content?.parts ?? []).filter((p: any) => !p.thought)
+            .map((p: any) => p.text ?? '').join('');
+          if (t) {
+            qs = JSON.parse(t).questions ?? [];
+          } else {
+            errs.push(`${model}: ${r.status} ${String(j?.error?.message ?? 'empty').slice(0, 80)}`);
+            if (r.status === 429) { await sleep(8000); continue; }
+            if (r.status === 503) { await sleep(1500); continue; }
+            break;
+          }
+        } catch (e) {
+          errs.push(`${model}: ${String(e).slice(0, 60)}`);
+          break;
+        }
+      }
+      if (qs) break;
+    }
+    if (qs === null) return json({ error: 'gemini', detail: errs.join(' | ').slice(0, 400) });
+    const good = qs.filter((q) =>
+      q && typeof q.question === 'string' && q.question.trim() && Array.isArray(q.options) &&
+      q.options.length === 4 && q.options.every((o: any) => typeof o === 'string' && o.trim()) &&
+      Number.isInteger(q.correct) && q.correct >= 0 && q.correct <= 3 &&
+      new Set(q.options.map((o: string) => o.trim())).size === 4);
+    if (good.length < 3) return json({ skipped: 'too_vague', got: good.length });
+
+    const { data: exam, error: e1 } = await db.from('exams').insert({
+      course_id: course.id,
+      lesson_id: lesson.id,
+      tenant_id: course.tenant_id,
+      title: `تدريب: ${title}`.slice(0, 200),
+      description: 'اختبار تدريبي مولّد بالذكاء الاصطناعي من عنوان الدرس ووصفه. للتدريب فقط.',
+      status: publish ? 'published' : 'draft',
+      pass_grade: Math.ceil(good.length * 0.6),
+      max_attempts: 3,
+      created_by: u.user.id,
+    }).select('id').single();
+    if (e1 || !exam) return json({ error: 'exam_insert', detail: String(e1?.message ?? '') });
+    let order = 0;
+    for (const q of good) {
+      const { data: row, error: e2 } = await db.from('questions').insert({
+        tenant_id: course.tenant_id,
+        type: 'mcq',
+        body: q.question.trim(),
+        points: 1,
+        explanation: String(q.explanation ?? '').trim() || null,
+      }).select('id').single();
+      if (e2 || !row) continue;
+      await db.from('question_options').insert(
+        q.options.map((o: string, i: number) => ({
+          question_id: row.id, body: o.trim(), is_correct: i === q.correct, sort_order: i,
+        })));
+      await db.from('exam_questions').insert({ exam_id: exam.id, question_id: row.id, sort_order: order++ });
+    }
+    return json({ ok: true, exam_id: exam.id, questions: order, status: publish ? 'published' : 'draft' });
+  } catch (e) {
+    return json({ error: 'handler', detail: String(e).slice(0, 300) });
+  }
+});
