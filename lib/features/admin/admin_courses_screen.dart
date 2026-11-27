@@ -268,11 +268,12 @@ class _AdminCoursesScreenState extends State<AdminCoursesScreen> {
         icon: const Icon(Icons.add),
         label: Text(s.t('new_course')),
       ),
-      body: courses == null
+      body: Column(children: [
+        Padding(padding: const EdgeInsets.fromLTRB(16, 12, 16, 0), child: _filters(s)),
+        Expanded(child: courses == null
           ? const Center(child: CircularProgressIndicator())
           : courses.isEmpty
               ? ListView(padding: const EdgeInsets.all(16), children: [
-                  _filters(s),
                   const SizedBox(height: 40),
                   if (_loadError != null && (all ?? const []).isEmpty) ...[
                     Center(child: Text(s.t('generic_error'))),
@@ -292,10 +293,9 @@ class _AdminCoursesScreenState extends State<AdminCoursesScreen> {
                   onRefresh: _load,
                   child: ListView.builder(
                     padding: const EdgeInsets.all(16),
-                    itemCount: courses.length + 1,
+                    itemCount: courses.length,
                     itemBuilder: (context, i) {
-                      if (i == 0) return _filters(s);
-                      final c = courses[i - 1];
+                      final c = courses[i];
                       final status = c['status'] as String? ?? 'draft';
                       final price = (c['price'] as num?)?.toDouble() ?? 0;
                       return Card(
@@ -368,7 +368,8 @@ class _AdminCoursesScreenState extends State<AdminCoursesScreen> {
                       );
                     },
                   ),
-                ),
+                )),
+      ]),
     );
   }
 }

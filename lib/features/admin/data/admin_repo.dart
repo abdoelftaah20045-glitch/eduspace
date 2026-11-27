@@ -50,13 +50,21 @@ class AdminRepository {
 
   /// Every course regardless of status, newest first.
   static Future<List<Map<String, dynamic>>> fetchAllCourses() async {
-    final rows = await _c
-        .from('courses')
-        .select()
-        .eq('tenant_id', TenantContext.id)
-        .order('created_at', ascending: false)
-        .limit(100);
-    return rows;
+    // Page through every course (the old fixed limit hid everything past the newest 100).
+    final out = <Map<String, dynamic>>[];
+    const page = 500;
+    for (var from = 0; from < 10000; from += page) {
+      final rows = await _c
+          .from('courses')
+          .select()
+          .eq('tenant_id', TenantContext.id)
+          .order('created_at', ascending: false)
+          .order('id')
+          .range(from, from + page - 1);
+      out.addAll(List<Map<String, dynamic>>.from(rows));
+      if (rows.length < page) break;
+    }
+    return out;
   }
 
   /// Upload an assignment attachment to the private course-media bucket;
