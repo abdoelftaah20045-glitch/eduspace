@@ -8,9 +8,13 @@ const json = (o: unknown) =>
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const BASE = "https://generativelanguage.googleapis.com/v1beta";
 
-// Newest flash model this key can use, from Google's own list.
+// Models that answered 403 (no access for this key) or 429 per day are skipped for a while.
+const badUntil = new Map<string, number>();
+const isBad = (m: string) => (badUntil.get(m) ?? 0) > Date.now();
+
+// Stable 2.5 flash models first (free tier), then newer listed ones. Only names Google lists for this key.
 async function pickModels(key: string): Promise<string[]> {
-  const fixed = ["gemini-3.8-flash", "gemini-flash-latest", "gemini-flash-lite-latest"];
+  const fixed = ["gemini-2.5-flash-lite", "gemini-2.5-flash", "gemini-flash-lite-latest", "gemini-flash-latest"];
   try {
     const r = await fetch(`${BASE}/models?pageSize=200&key=${key}`, { signal: AbortSignal.timeout(6000) });
     const j = await r.json();
@@ -18,11 +22,12 @@ async function pickModels(key: string): Promise<string[]> {
     const listed: string[] = (j?.models ?? [])
       .filter((m: any) => (m.supportedGenerationMethods ?? []).includes("generateContent"))
       .map((m: any) => String(m.name).replace("models/", ""))
-      .filter((n: string) => /flash/.test(n) && !/(image|tts|live|audio|embed|robotics|computer|preview|exp)/.test(n))
-      .sort((a: string, b: string) => ver(b) - ver(a) || a.length - b.length);
-    const lite = listed.filter((n) => /lite/.test(n)).slice(0, 1);
-    const full = listed.filter((n) => !/lite/.test(n)).slice(0, 1);
-    return [...new Set([...lite, ...full, ...fixed])];
+      .filter((n: string) => /flash/.test(n) && !/(image|tts|live|audio|embed|robotics|computer|preview|exp)/.test(n));
+    const pref = ["gemini-2.5-flash-lite", "gemini-2.5-flash"].filter((n) => listed.includes(n));
+    const rest = listed.filter((n) => !pref.includes(n)).sort((a, b) => ver(b) - ver(a) || a.length - b.length);
+    const all = [...new Set([...pref, ...rest, ...(listed.length ? [] : fixed)])];
+    const ok = all.filter((m) => !isBad(m));
+    return (ok.length ? ok : all).slice(0, 5);
   } catch (_) {
     console.error("listModels failed");
     return fixed;
@@ -76,6 +81,8 @@ Deno.serve(async (req: Request) => {
         const text = parts.filter((p: any) => !p.thought).map((p: any) => p.text ?? "").join("").trim();
         if (text) return json({ text });
         errs.push(`${model}: ${r.status} ${String(j?.error?.message ?? "empty").slice(0, 80)}`);
+        if (r.status === 403 || r.status === 404) badUntil.set(model, Date.now() + 6 * 3600000);
+        if (r.status === 429 && /per ?day|daily/i.test(JSON.stringify(j?.error ?? ""))) badUntil.set(model, Date.now() + 3 * 3600000);
         if (r.status === 400 && attempt === 0) continue; // thinking setting not accepted
         if (r.status === 503 && attempt === 0) {
           await sleep(1200);

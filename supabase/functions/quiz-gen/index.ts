@@ -18,8 +18,12 @@ const json = (o: unknown) =>
 const BASE = 'https://generativelanguage.googleapis.com/v1beta';
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+// Models that answered 403 (no access for this key) or ran out of daily quota are skipped for a while.
+const badUntil = new Map<string, number>();
+const isBad = (m: string) => (badUntil.get(m) ?? 0) > Date.now();
+
 async function pickModels(key: string): Promise<string[]> {
-  const fixed = ['gemini-flash-latest', 'gemini-flash-lite-latest'];
+  const fixed = ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-flash-latest', 'gemini-flash-lite-latest'];
   try {
     const r = await fetch(`${BASE}/models?pageSize=200&key=${key}`, { signal: AbortSignal.timeout(6000) });
     const j = await r.json();
@@ -27,14 +31,30 @@ async function pickModels(key: string): Promise<string[]> {
     const listed: string[] = (j?.models ?? [])
       .filter((m: any) => (m.supportedGenerationMethods ?? []).includes('generateContent'))
       .map((m: any) => String(m.name).replace('models/', ''))
-      .filter((n: string) => /flash/.test(n) && !/(image|tts|live|audio|embed|robotics|computer|preview|exp)/.test(n))
-      .sort((a: string, b: string) => ver(b) - ver(a) || a.length - b.length);
-    const full = listed.filter((n) => !/lite/.test(n)).slice(0, 1);
-    const lite = listed.filter((n) => /lite/.test(n)).slice(0, 1);
-    return [...new Set([...full, ...lite, ...fixed])];
+      .filter((n: string) => /flash/.test(n) && !/(image|tts|live|audio|embed|robotics|computer|preview|exp)/.test(n));
+    // Stable 2.5 family first (free tier, video input), then the rest newest first. Only names Google actually lists.
+    const pref = ['gemini-2.5-flash', 'gemini-2.5-flash-lite'].filter((n) => listed.includes(n));
+    const rest = listed.filter((n) => !pref.includes(n)).sort((a, b) => ver(b) - ver(a) || a.length - b.length);
+    const all = [...new Set([...pref, ...rest, ...(listed.length ? [] : fixed)])];
+    const ok = all.filter((m) => !isBad(m));
+    return (ok.length ? ok : all).slice(0, 6);
   } catch (_) {
     return fixed;
   }
+}
+
+// Reads Google's 429 body: per-day quota (stop using that model today) or per-minute (wait the given delay).
+function quotaInfo(j: any): { perDay: boolean; waitMs: number } {
+  const details: any[] = j?.error?.details ?? [];
+  let perDay = /per ?day|daily/i.test(String(j?.error?.message ?? ''));
+  let waitMs = 20000;
+  for (const d of details) {
+    for (const v of d?.violations ?? []) if (/PerDay/i.test(String(v?.quotaId ?? ''))) perDay = true;
+    const rd = String(d?.retryDelay ?? '');
+    const m = rd.match(/(\d+(?:\.\d+)?)s/);
+    if (m) waitMs = Math.min(45000, Math.ceil(parseFloat(m[1]) * 1000) + 1000);
+  }
+  return { perDay, waitMs };
 }
 
 const decode = (x: string): string => {
@@ -110,8 +130,8 @@ Deno.serve(async (req: Request) => {
           await db.from('quiz_auto_skip').upsert({ lesson_id: lessonId, tenant_id: tenantId, reason: String(res.skipped), created_at: new Date().toISOString() });
         }
         if (res.quota) {
-          upd.paused_until = new Date(Date.now() + 2 * 3600000).toISOString();
-          upd.last_error = 'quota: paused 2h, retries by itself (free daily video limit)';
+          upd.paused_until = new Date(Date.now() + 60 * 60000).toISOString();
+          upd.last_error = 'quota: paused 1h, retries by itself (free Gemini limit)';
         } else if (res.error) {
           upd.paused_until = new Date(Date.now() + 20 * 60000).toISOString();
           upd.last_error = `${res.error} ${res.detail ?? ''}`.slice(0, 300);
@@ -182,7 +202,9 @@ Deno.serve(async (req: Request) => {
     let qs: any[] | null = null;
     const errs: string[] = [];
     const started = Date.now();
-    const models = (await pickModels(key)).slice(0, 3);
+    const models = await pickModels(key);
+    let videoErr = false;
+    let accessErr = false;
     for (const mode of (videoUrl ? ['video'] : [] as string[])) {
     const isVideo = mode === 'video';
     if (qs) break;
@@ -206,10 +228,18 @@ Deno.serve(async (req: Request) => {
           if (t) {
             const parsed = JSON.parse(t); qs = parsed.questions ?? []; extra = parsed; grounded = isVideo;
           } else {
-            errs.push(`${model}: ${r.status} ${String(j?.error?.message ?? 'empty').slice(0, 80)}`);
-            if (isVideo && (r.status === 429 || /quota|limit|hours/i.test(String(j?.error?.message ?? '')))) quotaHit = true;
-            if (r.status === 429) { await sleep(8000); continue; }
-            if (r.status === 503) { await sleep(1500); continue; }
+            const em = String(j?.error?.message ?? 'empty');
+            errs.push(`${model}: ${r.status} ${em.slice(0, 80)}`);
+            if (r.status === 429) {
+              quotaHit = true;
+              const qi = quotaInfo(j);
+              if (qi.perDay) { badUntil.set(model, Date.now() + 6 * 3600000); break; }
+              if (attempt === 0 && Date.now() - started + qi.waitMs < 120000) { await sleep(qi.waitMs); continue; }
+              break;
+            }
+            if (r.status === 403 || r.status === 404) { accessErr = true; badUntil.set(model, Date.now() + 6 * 3600000); break; }
+            if (r.status === 400 && /video|youtube|private|unavailable|could not (fetch|access|process)/i.test(em)) { videoErr = true; break; }
+            if (r.status === 503 || r.status === 500) { await sleep(1500); continue; }
             break;
           }
         } catch (e) {
@@ -222,8 +252,10 @@ Deno.serve(async (req: Request) => {
     }
     if (qs === null) {
       if (!videoUrl) return await finish({ skipped: 'no_youtube_link' });
-      if (quotaHit) return await finish({ quota: true, detail: errs.join(' | ').slice(0, 300) });
-      return await finish({ skipped: 'video_unavailable', detail: errs.join(' | ').slice(0, 200) });
+      if (quotaHit && !videoErr) return await finish({ quota: true, retry: true, detail: errs.join(' | ').slice(0, 300) });
+      if (videoErr) return await finish({ skipped: 'video_unavailable', detail: errs.join(' | ').slice(0, 200) });
+      if (accessErr) return await finish({ error: 'model_access', retry: true, detail: errs.join(' | ').slice(0, 300) });
+      return await finish({ error: 'gemini', retry: true, detail: errs.join(' | ').slice(0, 300) });
     }
     if (qs === null) return await finish({ error: 'gemini', detail: errs.join(' | ').slice(0, 400) });
     const good = qs.filter((q) =>

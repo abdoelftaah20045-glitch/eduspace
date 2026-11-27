@@ -28,6 +28,8 @@ class _AdminAiQuizScreenState extends State<AdminAiQuizScreen> {
   int _made = 0;
   int _skipped = 0;
   int _failed = 0;
+  int _retry = 0;
+  int _quotaStreak = 0;
   String _current = '';
   String? _error;
   final List<String> _log = [];
@@ -147,7 +149,7 @@ class _AdminAiQuizScreenState extends State<AdminAiQuizScreen> {
     setState(() {
       _running = true;
       _stop = false;
-      _done = _made = _skipped = _failed = 0;
+      _done = _made = _skipped = _failed = _retry = _quotaStreak = 0;
       _log.clear();
       _error = null;
       _current = 'بجهز قائمة الدروس...';
@@ -192,6 +194,19 @@ class _AdminAiQuizScreenState extends State<AdminAiQuizScreen> {
           final d = res.data;
           if (d is Map && d['ok'] == true) {
             _made++;
+            _quotaStreak = 0;
+          } else if (d is Map && (d['quota'] == true || d['retry'] == true)) {
+            // Free-tier limit or a temporary problem: retry later, not a failure.
+            _retry++;
+            _log.add('هيتعاد لاحقاً: ${l['title']}');
+            if (d['quota'] == true) {
+              _quotaStreak++;
+              if (_quotaStreak >= 3) {
+                setState(() => _error = 'وصلت للحد المجاني لـ Gemini (في الدقيقة أو اليوم). وقفت، واللي فاضل هيتعمل لما تشغّله تاني أو بالتشغيل التلقائي.');
+                break;
+              }
+              await Future<void>.delayed(const Duration(seconds: 65));
+            }
           } else if (d is Map && d['skipped'] != null) {
             _skipped++;
             _log.add('تخطي: ${l['title']} (${d['skipped']})');
@@ -216,7 +231,7 @@ class _AdminAiQuizScreenState extends State<AdminAiQuizScreen> {
         _done++;
         if (mounted) setState(() {});
         // Free tier allows only a few requests per minute.
-        await Future<void>.delayed(const Duration(seconds: 8));
+        await Future<void>.delayed(const Duration(seconds: 12));
       }
     } catch (e) {
       if (mounted) setState(() => _error = '$e');
@@ -280,16 +295,16 @@ class _AdminAiQuizScreenState extends State<AdminAiQuizScreen> {
           LinearProgressIndicator(value: _total == 0 ? null : _done / _total),
           Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Text('$_done / $_total  •  اتعمل $_made  •  اتخطى $_skipped  •  فشل $_failed\n$_current')),
+              child: Text('$_done / $_total  •  اتعمل $_made  •  اتخطى $_skipped  •  هيتعاد $_retry  •  فشل $_failed\n$_current')),
           OutlinedButton(onPressed: () => setState(() => _stop = true), child: const Text('إيقاف')),
         ] else
           FilledButton(
               onPressed: _picked.isEmpty ? null : _run,
               child: Text('ابدأ التوليد (${_picked.length} كورس)')),
-        if (!_running && (_made + _skipped + _failed) > 0)
+        if (!_running && (_made + _skipped + _failed + _retry) > 0)
           Padding(
             padding: const EdgeInsets.only(top: 12),
-            child: Text('خلص: اتعمل $_made اختبار، اتخطى $_skipped، فشل $_failed',
+            child: Text('خلص: اتعمل $_made اختبار، اتخطى $_skipped (فيديو مش متاح)، هيتعاد لاحقاً $_retry، فشل $_failed',
                 style: const TextStyle(fontWeight: FontWeight.w800)),
           ),
         for (final l in _log.take(60)) Text(l, style: const TextStyle(fontSize: 12)),
