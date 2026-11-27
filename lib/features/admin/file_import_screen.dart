@@ -212,7 +212,7 @@ class _FileImportScreenState extends State<FileImportScreen> {
 
   Future<void> _pick() async {
     final s = S.of(context);
-    final picked = await FilePicker.pickFiles(withData: true);
+    final picked = await FilePicker.pickFiles();
     if (picked.isEmpty || !mounted) return;
     final f = picked.first;
     try {
