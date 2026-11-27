@@ -12,6 +12,7 @@ import '../../core/l10n.dart';
 import '../../core/paid_courses.dart';
 import 'admin_faq_screen.dart';
 import 'admin_layout_screen.dart';
+import 'admin_splash_screen.dart';
 import 'admin_home_builder_screen.dart';
 import 'admin_look_screen.dart';
 import 'admin_texts_screen.dart';
@@ -148,6 +149,8 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
           const Color(0xFF00897B), const AdminLayoutScreen()),
       ('home_builder', 'admin_sub_home_builder', Icons.dashboard_customize_outlined,
           const Color(0xFF5E35B1), const AdminHomeBuilderScreen()),
+      ('splash_editor', 'admin_sub_splash', Icons.dashboard_customize_outlined,
+          const Color(0xFF00897B), const AdminSplashScreen()),
       ('ui_faq', 'admin_sub_faq', Icons.help_outline,
           const Color(0xFFF29900), const AdminFaqScreen()),
       ('ui_look', 'admin_sub_look', Icons.palette_outlined,

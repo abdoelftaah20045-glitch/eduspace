@@ -4,6 +4,7 @@ import '../ai/ai_fab.dart';
 
 import '../../core/app_lockup.dart';
 import '../../core/l10n.dart';
+import '../../core/remote_ui.dart';
 import '../auth/auth_gate.dart';
 
 /// Animated splash: logo scales and fades in over a brand gradient,
@@ -26,8 +27,22 @@ class _SplashScreenState extends State<SplashScreen>
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 2800),
-    )..forward();
-    Future.delayed(const Duration(milliseconds: 3200), _goNext);
+    );
+    _boot();
+  }
+
+  Future<void> _boot() async {
+    await RemoteUi.loadSplashCache().timeout(const Duration(milliseconds: 400),
+        onTimeout: () {});
+    if (!mounted) return;
+    final secs = (RemoteUi.splash['seconds'] is num)
+        ? (RemoteUi.splash['seconds'] as num).toDouble().clamp(1.5, 8.0)
+        : 2.8;
+    _controller.duration = Duration(milliseconds: (secs * 1000).round());
+    setState(() {});
+    _controller.forward();
+    Future.delayed(
+        Duration(milliseconds: (secs * 1000).round() + 400), _goNext);
   }
 
   void _goNext() {
@@ -52,7 +67,16 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   Widget build(BuildContext context) {
     final s = S.of(context);
-    final slogan = s.t('splash_tagline');
+    final sp = RemoteUi.splash;
+    final customSlogan = '${sp['slogan'] ?? ''}'.trim();
+    final slogan = sp['show_slogan'] == false
+        ? ''
+        : (customSlogan.isNotEmpty ? customSlogan : s.t('splash_tagline'));
+    final bg1 = RemoteUi.hexColor('${sp['bg1'] ?? ''}') ?? const Color(0xFFEFF6FF);
+    final bg2 = RemoteUi.hexColor('${sp['bg2'] ?? ''}') ?? const Color(0xFFDBEAFE);
+    final sloganColor =
+        RemoteUi.hexColor('${sp['slogan_color'] ?? ''}') ?? const Color(0xFFD96A43);
+    final fade = sp['anim'] == 'fade';
     final h = MediaQuery.of(context).size.height;
     // Logo: falls from above and lands with a bounce and a small squash.
     final drop = CurvedAnimation(
@@ -78,11 +102,11 @@ class _SplashScreenState extends State<SplashScreen>
     );
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topRight,
             end: Alignment.bottomLeft,
-            colors: [Color(0xFFEFF6FF), Color(0xFFDBEAFE)],
+            colors: [bg1, bg2],
           ),
         ),
         child: Center(
@@ -92,15 +116,18 @@ class _SplashScreenState extends State<SplashScreen>
               AnimatedBuilder(
                 animation: _controller,
                 builder: (_, child) {
-                  final y = (1 - drop.value) * -(h * 0.6);
-                  final q = squash.value;
+                  final y = fade ? 0.0 : (1 - drop.value) * -(h * 0.6);
+                  final q = fade ? 0.0 : squash.value;
                   return Transform.translate(
                     offset: Offset(0, y),
-                    child: Transform(
+                    child: Opacity(
+                      opacity: fade ? drop.value.clamp(0.0, 1.0) : 1.0,
+                      child: Transform(
                       alignment: Alignment.bottomCenter,
                       transform: Matrix4.diagonal3Values(
                           1 + 0.10 * q, 1 - 0.14 * q, 1),
                       child: child,
+                    ),
                     ),
                   );
                 },
@@ -117,8 +144,8 @@ class _SplashScreenState extends State<SplashScreen>
                     child: Text(
                       shown,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: Color(0xFFD96A43),
+                      style: TextStyle(
+                        color: sloganColor,
                         fontFamily: 'Marhey',
                         fontSize: 22,
                       ),

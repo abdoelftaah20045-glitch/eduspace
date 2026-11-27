@@ -1,4 +1,8 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -23,6 +27,36 @@ class RemoteUi {
   /// True once the admin saved a Home layout (even an empty one).
   static bool homeBlocksSet = false;
 
+  /// Splash settings (ui_splash). Cached on disk so the splash, which runs
+  /// before sign-in, can use them on the next launch.
+  static Map<String, dynamic> splash = {};
+
+  static Future<File> _splashFile() async => File(
+      '${(await getApplicationSupportDirectory()).path}/ui_splash.json');
+
+  static Future<void> loadSplashCache() async {
+    try {
+      final f = await _splashFile();
+      if (f.existsSync()) {
+        final m = jsonDecode(await f.readAsString());
+        if (m is Map) splash = Map<String, dynamic>.from(m);
+      }
+    } catch (_) {}
+  }
+
+  static Future<void> saveSplashCache() async {
+    try {
+      await (await _splashFile()).writeAsString(jsonEncode(splash));
+    } catch (_) {}
+  }
+
+  static Color? hexColor(String? h) {
+    final x = h?.replaceAll('#', '').trim();
+    if (x == null || x.length != 6) return null;
+    final v = int.tryParse(x, radix: 16);
+    return v == null ? null : Color(0xFF000000 | v);
+  }
+
   /// Admin-set number (ui_limits) or the built-in default.
   static num limit(String key, num def) => limits[key] ?? def;
 
@@ -39,7 +73,7 @@ class RemoteUi {
           .from('tenant_settings')
           .select('setting_key, setting_value')
           .eq('tenant_id', TenantContext.id)
-          .inFilter('setting_key', ['ui_texts', 'ui_layout', 'ui_faq', 'ui_look', 'ui_limits', 'ui_events', 'ui_home', 'branding']);
+          .inFilter('setting_key', ['ui_texts', 'ui_layout', 'ui_faq', 'ui_look', 'ui_limits', 'ui_events', 'ui_home', 'ui_splash', 'branding']);
       for (final r in rows) {
         final v = r['setting_value'];
         if (v is! Map) continue;
@@ -55,6 +89,11 @@ class RemoteUi {
           brandName = (v['display_name'] ?? '').toString().trim();
           welcomeText = (v['welcome'] ?? '').toString().trim();
           version.value++;
+          continue;
+        }
+        if (r['setting_key'] == 'ui_splash') {
+          splash = Map<String, dynamic>.from(v);
+          saveSplashCache();
           continue;
         }
         if (r['setting_key'] == 'ui_home') {
