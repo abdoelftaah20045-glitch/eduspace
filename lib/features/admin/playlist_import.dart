@@ -85,7 +85,32 @@ class PlaylistImport {
     }
 
     onProgress?.call('${p.title}: ${s.t('yt_saving')}');
+    var createdHere = false;
     if (courseId.isEmpty) {
+      // A previous run may have died right after creating the course and
+      // before its first lesson: reuse that empty draft instead of making
+      // a duplicate.
+      try {
+        final cand = await db
+            .from('courses')
+            .select('id')
+            .eq('title', p.title)
+            .eq('instructor_name', p.channel)
+            .eq('status', 'draft')
+            .limit(5);
+        for (final c in cand as List) {
+          final id = '${(c as Map)['id']}';
+          final any =
+              await db.from('lessons').select('id').eq('course_id', id).limit(1);
+          if ((any as List).isEmpty) {
+            courseId = id;
+            break;
+          }
+        }
+      } catch (_) {}
+    }
+    if (courseId.isEmpty) {
+      createdHere = true;
       final hours = p.totalSeconds / 3600;
       courseId = await AdminRepository.createCourse({
         'title': p.title,
@@ -101,6 +126,7 @@ class PlaylistImport {
         if (language.isNotEmpty) 'language': language,
       });
     }
+    try {
     if (sectionId.isEmpty) {
       final sections = await AdminRepository.fetchSections(courseId);
       if (sections.isEmpty) {
@@ -130,5 +156,19 @@ class PlaylistImport {
       await db.from('lessons').insert(rows.skip(i).take(50).toList());
     }
     return rows.length;
+    } catch (e) {
+      // Do not leave an empty draft course behind when we created it.
+      if (createdHere) {
+        try {
+          final any = await db
+              .from('lessons')
+              .select('id')
+              .eq('course_id', courseId)
+              .limit(1);
+          if ((any as List).isEmpty) await AdminRepository.deleteCourse(courseId);
+        } catch (_) {}
+      }
+      rethrow;
+    }
   }
 }
