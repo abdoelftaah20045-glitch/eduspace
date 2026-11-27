@@ -51,11 +51,27 @@ Deno.serve(async (req) => {
       .update({ push_sent_at: new Date().toISOString() })
       .eq('id', course_id).eq('status', 'published')
       .not('notified_at', 'is', null).is('push_sent_at', null)
-      .select('id, title, tenant_id');
+      .select('id, title, tenant_id, instructor_name');
     if (!claimed || claimed.length === 0) {
       return new Response('nothing to send', { status: 200 });
     }
     const course = claimed[0];
+    const decode = (x: string): string => {
+      let r = x ?? '';
+      for (let i = 0; i < 5 && r.includes('&'); i++) {
+        const n = r
+          .replace(/&#(\d{1,7});/g, (_m, d) => String.fromCodePoint(parseInt(d, 10)))
+          .replace(/&#[xX]([0-9a-fA-F]{1,6});/g, (_m, h) => String.fromCodePoint(parseInt(h, 16)))
+          .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"')
+          .replace(/&apos;/g, "'").replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&');
+        if (n === r) break;
+        r = n;
+      }
+      return r;
+    };
+    const teacher = decode(course.instructor_name ?? '').trim();
+    const body = 'تم إضافة كورس ' + decode(course.title ?? '') +
+      (teacher ? ' للمدرس ' + teacher : '');
     const { data: members } = await db.from('tenant_memberships')
       .select('user_id').eq('tenant_id', course.tenant_id).eq('status', 'active');
     const ids = (members ?? []).map((m: { user_id: string }) => m.user_id);
@@ -78,7 +94,7 @@ Deno.serve(async (req) => {
           body: JSON.stringify({
             message: {
               token,
-              notification: { title: 'كورس جديد / New course', body: course.title },
+              notification: { title: 'كورس جديد / New course', body: body },
               data: { type: 'new_course', course_id: course.id },
               android: { priority: 'HIGH' },
             },

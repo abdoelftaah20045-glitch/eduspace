@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../features/notifications/notification_router.dart';
 import 'integrations.dart';
 
 /// Push notifications groundwork (exec guide section 17, Push).
@@ -28,6 +29,19 @@ class PushService {
       await messaging.requestPermission();
       await _saveToken(await messaging.getToken());
       messaging.onTokenRefresh.listen(_saveToken);
+      // Tapping a push opens what it refers to.
+      void open(RemoteMessage m) {
+        final d = <String, dynamic>{...m.data};
+        openNotificationTarget(
+            type: '${d['type'] ?? ''}',
+            title: m.notification?.title ?? '',
+            data: d);
+      }
+      FirebaseMessaging.onMessageOpenedApp.listen(open);
+      final first = await messaging.getInitialMessage();
+      if (first != null) {
+        Future<void>.delayed(const Duration(seconds: 4), () => open(first));
+      }
     } catch (_) {
       // Push must never block app startup; in-app notifications still work.
     }

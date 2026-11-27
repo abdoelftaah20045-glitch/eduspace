@@ -95,7 +95,10 @@ begin
     new.notified_at := now();
     insert into public.notifications (user_id, title, body, type, data, tenant_id)
     select m.user_id, 'كورس جديد / New course',
-           coalesce(public._decode_html(new.title), ''),
+           'تم إضافة كورس ' || coalesce(public._decode_html(new.title), '') ||
+           case when coalesce(new.instructor_name, '') <> ''
+                then ' للمدرس ' || public._decode_html(new.instructor_name)
+                else '' end,
            'new_course', jsonb_build_object('course_id', new.id), new.tenant_id
       from public.tenant_memberships m
      where m.tenant_id = new.tenant_id and m.status = 'active';

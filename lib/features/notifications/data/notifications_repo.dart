@@ -12,8 +12,10 @@ class AppNotification {
     required this.isRead,
     required this.createdAt,
     this.images = const [],
+    this.data,
   });
 
+  final Map<String, dynamic>? data;
   final List<String> images;
   final String id;
   final String title;
@@ -34,6 +36,7 @@ class AppNotification {
         images: (m['data'] is Map && (m['data'] as Map)['images'] is List)
             ? [for (final u in (m['data'] as Map)['images'] as List) u.toString()]
             : const [],
+        data: m['data'] is Map ? Map<String, dynamic>.from(m['data'] as Map) : null,
       );
 }
 

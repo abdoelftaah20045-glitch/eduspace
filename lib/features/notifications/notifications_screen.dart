@@ -6,6 +6,7 @@ import '../../core/empty_illustration.dart';
 import '../../core/image_carousel.dart';
 import '../../core/l10n.dart';
 import 'data/notifications_repo.dart';
+import 'notification_router.dart';
 
 /// In-app notifications: search, All/Unread filter, mark-all-read, grouped
 /// by Today / Yesterday / date (per the user's design reference).
@@ -147,6 +148,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             _load();
           }
           if (!mounted) return;
+          if (openNotificationTarget(
+              context: context, type: n.type, title: n.title, data: n.data)) {
+            return;
+          }
           showModalBottomSheet<void>(
             context: context,
             isScrollControlled: true,
