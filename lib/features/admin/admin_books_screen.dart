@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../library/book_links.dart';
 import '../library/books_shelf.dart';
 import '../library/data/library_repo.dart';
+import 'admin_book_sources_screen.dart';
 import 'file_import_screen.dart' show parseTable;
 
 bool _ar(BuildContext c) => Localizations.localeOf(c).languageCode == 'ar';
@@ -220,6 +221,12 @@ class _AdminBooksScreenState extends State<AdminBooksScreen> {
       appBar: AppBar(
         title: Text(ar ? 'إدارة الكتب' : 'Manage books'),
         actions: [
+          IconButton(
+            tooltip: ar ? 'مصادر مفتوحة' : 'Open sources',
+            icon: const Icon(Icons.search),
+            onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+                builder: (_) => const AdminBookSourcesScreen())),
+          ),
           IconButton(
             tooltip: ar ? 'استيراد من ملف' : 'Import from file',
             icon: const Icon(Icons.upload_file),
