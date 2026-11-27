@@ -22,6 +22,7 @@ class _TenantMembersScreenState extends State<TenantMembersScreen> {
   List<Map<String, dynamic>>? _members;
   String? _inviteCode;
   Map<String, dynamic>? _tenant;
+  String? _loadError;
 
   String get _tenantId => widget.tenantId ?? TenantContext.id;
 
@@ -32,20 +33,29 @@ class _TenantMembersScreenState extends State<TenantMembersScreen> {
   }
 
   Future<void> _load() async {
+    Map<String, dynamic>? tenant;
+    List<Map<String, dynamic>> rows = const [];
+    String? err;
     try {
-      final tenant = await TenancyRepository.fetchTenant(_tenantId);
-      final rows = await TenancyRepository.fetchMemberships(_tenantId);
-      if (mounted) {
-        setState(() {
-          _members = rows;
-          _inviteCode = tenant?['invite_code'] as String?;
-          _tenant = tenant;
-        });
-      }
-    } catch (_) {
-      if (mounted) setState(() => _members = const []);
+      tenant = await TenancyRepository.fetchTenant(_tenantId);
+    } catch (e) {
+      err = 'tenant: $e';
     }
+    try {
+      rows = await TenancyRepository.fetchMemberships(_tenantId);
+    } catch (e) {
+      err = '${err == null ? '' : '$err | '}members: $e';
+    }
+    if (!mounted) return;
+    setState(() {
+      _members = rows;
+      _tenant = tenant ?? _tenant;
+      _inviteCode = (tenant?['invite_code'] as String?) ?? _inviteCode;
+      _loadError = err;
+    });
   }
+
+  String _short(String t) => t.length > 220 ? t.substring(0, 220) : t;
 
   Future<void> _setStatus(String id, String status) async {
     final s = S.of(context);
@@ -118,7 +128,8 @@ class _TenantMembersScreenState extends State<TenantMembersScreen> {
                 await _editTenant();
               } else if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    content: Text(S.of(context).t('generic_error'))));
+                    content: Text(
+                        '${S.of(context).t('generic_error')}: ${_short(_loadError ?? 'tenant not found')}')));
               }
             },
           ),
@@ -161,7 +172,12 @@ class _TenantMembersScreenState extends State<TenantMembersScreen> {
                       if (mi >= members.length) {
                         return Padding(
                             padding: const EdgeInsets.all(32),
-                            child: Center(child: Text(s.t('no_members'))));
+                            child: Center(
+                                child: Text(
+                                    _loadError == null
+                                        ? s.t('no_members')
+                                        : '${s.t('no_members')}\n${_short(_loadError!)}',
+                                    textAlign: TextAlign.center))));
                       }
                       final m = members[mi];
                       return _memberCard(context, s, m);

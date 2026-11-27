@@ -111,7 +111,7 @@ class TenancyRepository {
       String tenantId) async {
     final rows = await _c
         .from('tenant_memberships')
-        .select('id, user_id, status, joined_at, profiles(full_name, email)')
+        .select('id, user_id, status, joined_at, profiles!user_id(full_name, email)')
         .eq('tenant_id', tenantId)
         .order('joined_at', ascending: false);
     final list = List<Map<String, dynamic>>.from(rows);
