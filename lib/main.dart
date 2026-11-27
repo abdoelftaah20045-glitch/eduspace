@@ -4,6 +4,8 @@ import 'core/course_watch.dart';
 import 'core/l10n.dart';
 import 'features/admin/import_job.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'core/decoding_client.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
@@ -41,6 +43,7 @@ Future<void> main() async {
     await Supabase.initialize(
       url: AppConfig.supabaseUrl,
       anonKey: AppConfig.supabaseAnonKey,
+      httpClient: DecodingHttpClient(http.Client()),
       // PKCE flow so email confirmation / recovery links that open the app
       // via the eduspace:// deep link can be exchanged for a session.
       authOptions: const FlutterAuthClientOptions(

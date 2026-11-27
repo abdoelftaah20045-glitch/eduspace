@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/html_text.dart';
 import '../../core/l10n.dart';
 import 'course_content_screen.dart';
 import 'import_job.dart';
@@ -174,7 +175,7 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
                   Padding(
                     padding: const EdgeInsets.only(top: 8),
                     child: Text(
-                        '${_job.done}/${_job.rows.length}  ${_job.progress}',
+                        '${_job.done}/${_job.rows.length}  ${decodeHtml(_job.progress)}',
                         style: Theme.of(context).textTheme.bodySmall),
                   ),
                 const SizedBox(height: 8),
@@ -185,10 +186,10 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(r.note,
+                          Text(decodeHtml(r.note),
                               style:
                                   const TextStyle(fontWeight: FontWeight.w700)),
-                          if (r.category.isNotEmpty) Text(r.category),
+                          if (r.category.isNotEmpty) Text(decodeHtml(r.category)),
                           const SizedBox(height: 8),
                           Wrap(spacing: 8, runSpacing: 4, children: [
                             OutlinedButton.icon(
@@ -196,7 +197,7 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
                                     MaterialPageRoute<void>(
                                         builder: (_) => CourseContentScreen(
                                             courseId: r.courseId,
-                                            courseTitle: r.note))),
+                                            courseTitle: decodeHtml(r.note)))),
                                 icon: const Icon(Icons.visibility_outlined),
                                 label: Text(s.t('imp_preview'))),
                             FilledButton.icon(

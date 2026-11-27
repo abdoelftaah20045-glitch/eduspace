@@ -5,6 +5,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../core/html_text.dart';
 import '../../core/l10n.dart';
 import 'import_job.dart';
 import 'import_review_screen.dart';
@@ -339,7 +340,7 @@ class _FileImportScreenState extends State<FileImportScreen> {
             Text(
                 '$_done/${_job.rows.length}  ${s.t('fi_ok')}: $ok  ${s.t('fi_skipped')}: $skip  ${s.t('fi_errors')}: $err'),
             if (_progress.isNotEmpty)
-              Text(_progress, style: const TextStyle(color: Colors.black54)),
+              Text(decodeHtml(_progress), style: const TextStyle(color: Colors.black54)),
             const SizedBox(height: 8),
             Row(children: [
               Expanded(
@@ -384,7 +385,7 @@ class _FileImportScreenState extends State<FileImportScreen> {
                 },
                 title: Text(r.category.isEmpty ? '-' : r.category),
                 subtitle: Text(
-                    r.note.isEmpty ? r.url : '${r.note}\n${r.url}',
+                    r.note.isEmpty ? r.url : '${decodeHtml(r.note)}\n${r.url}',
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis),
               ),

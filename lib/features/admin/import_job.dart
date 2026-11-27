@@ -52,7 +52,7 @@ class ImportRow {
         '${j['g'] ?? ''}',
         '${j['v'] ?? ''}',
         status: '${j['s'] ?? 'wait'}',
-        note: '${j['n'] ?? ''}',
+        note: decodeHtml('${j['n'] ?? ''}'),
         courseId: '${j['ci'] ?? ''}',
         review: '${j['rv'] ?? ''}',
       );
@@ -248,7 +248,7 @@ class ImportJob extends ChangeNotifier {
             level: row.level,
             language: row.language,
             onProgress: (t) {
-              progress = t;
+              progress = decodeHtml(t);
               notifyListeners();
               BgGuard.update(title,
                   '$done/${rows.length} - ${s.t('bg_err_word')}: $errCount\n$t');
