@@ -37,6 +37,7 @@ import 'youtube_import_screen.dart';
 import '../ai/ai_fab.dart' show aiFabHidden;
 import 'file_import_screen.dart';
 import 'admin_limits_screen.dart';
+import 'admin_integrations_screen.dart';
 import 'admin_moderation_screen.dart';
 import 'data/admin_panel_repo.dart';
 import '../support/data/support_repo.dart';
@@ -155,6 +156,8 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
           const Color(0xFF607D8B), const AdminOrgSettingsScreen()),
       ('mt_admin_title', 'mt_admin_sub', Icons.construction_rounded,
           const Color(0xFFF57C00), const AdminMaintenanceScreen()),
+      ('integrations_label', 'admin_sub_integrations', Icons.extension_outlined,
+          const Color(0xFF3949AB), const AdminIntegrationsScreen()),
       ('audit_label', 'admin_sub_audit', Icons.history, 
           const Color(0xFF8D6E63), const AdminAuditScreen()),
       ('users_label', 'admin_sub_users', Icons.people_outline,
@@ -238,6 +241,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
       'ui_moderation': 'courses',
       'ui_layout': 'settings',
       'audit_label': 'reports',
+      'integrations_label': 'settings',
       'admin_payments': 'students',
       'users_label': 'students',
       'tab_courses': 'courses',

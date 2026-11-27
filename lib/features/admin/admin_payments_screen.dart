@@ -15,7 +15,7 @@ class AdminPaymentsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final s = S.of(context);
     return DefaultTabController(
-      length: 3,
+      length: 4,
       child: Scaffold(
         appBar: AppBar(
           title: Text(s.t('admin_payments')),
@@ -23,12 +23,14 @@ class AdminPaymentsScreen extends StatelessWidget {
             Tab(text: s.t('admin_pay_requests')),
             Tab(text: s.t('pay_coupon')),
             Tab(text: s.t('pay_how')),
+            Tab(text: s.t('admin_subs')),
           ]),
         ),
         body: const TabBarView(children: [
           _RequestsTab(),
           _CouponsTab(),
           _InstructionsTab(),
+          _SubsTab(),
         ]),
       ),
     );
@@ -417,5 +419,214 @@ class _InstructionsTabState extends State<_InstructionsTab> {
         ),
       ]),
     );
+  }
+}
+
+class _SubsTab extends StatefulWidget {
+  const _SubsTab();
+  @override
+  State<_SubsTab> createState() => _SubsTabState();
+}
+
+class _SubsTabState extends State<_SubsTab> {
+  List<Map<String, dynamic>> _plans = [];
+  List<Map<String, dynamic>> _subs = [];
+  bool _loading = true;
+  String _err = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    setState(() {
+      _loading = true;
+      _err = '';
+    });
+    try {
+      final plans = await _c
+          .from('subscription_plans')
+          .select('id, name, months, price, currency, active')
+          .eq('tenant_id', TenantContext.id)
+          .order('created_at');
+      final subs = await _c
+          .from('subscriptions')
+          .select('id, status, ends_at, user_id, subscription_plans(name)')
+          .eq('tenant_id', TenantContext.id)
+          .order('created_at', ascending: false)
+          .limit(100);
+      final ids = subs.map((r) => r['user_id']).toSet().toList();
+      final names = <String, String>{};
+      if (ids.isNotEmpty) {
+        final ps = await _c
+            .from('profiles')
+            .select('id, full_name, email')
+            .inFilter('id', ids);
+        for (final p in ps) {
+          names[p['id'] as String] =
+              (p['full_name'] ?? p['email'] ?? '').toString();
+        }
+      }
+      _plans = [for (final r in plans) Map<String, dynamic>.from(r)];
+      _subs = [
+        for (final r in subs)
+          {...Map<String, dynamic>.from(r), 'who': names[r['user_id']] ?? ''}
+      ];
+    } catch (e) {
+      final t = '$e';
+      _err = t.length > 200 ? t.substring(0, 200) : t;
+    }
+    if (mounted) setState(() => _loading = false);
+  }
+
+  Future<void> _addPlan() async {
+    final s = S.of(context);
+    final name = TextEditingController();
+    final months = TextEditingController(text: '1');
+    final price = TextEditingController(text: '0');
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(s.t('admin_plan_add')),
+        content: Column(mainAxisSize: MainAxisSize.min, children: [
+          TextField(
+              controller: name,
+              decoration: InputDecoration(labelText: s.t('admin_plan_name'))),
+          TextField(
+              controller: months,
+              keyboardType: TextInputType.number,
+              decoration:
+                  InputDecoration(labelText: s.t('admin_plan_months'))),
+          TextField(
+              controller: price,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(labelText: s.t('admin_plan_price'))),
+        ]),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(s.t('cancel'))),
+          FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(s.t('save'))),
+        ],
+      ),
+    );
+    if (ok != true || name.text.trim().isEmpty) return;
+    try {
+      await _c.from('subscription_plans').insert({
+        'tenant_id': TenantContext.id,
+        'name': name.text.trim(),
+        'months': int.tryParse(months.text.trim()) ?? 1,
+        'price': double.tryParse(price.text.trim()) ?? 0,
+      });
+    } catch (e) {
+      _toast('$e');
+    }
+    _load();
+  }
+
+  Future<void> _grant(Map<String, dynamic> plan) async {
+    final s = S.of(context);
+    final email = TextEditingController();
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('${s.t('admin_plan_grant')}: ${plan['name']}'),
+        content: TextField(
+            controller: email,
+            keyboardType: TextInputType.emailAddress,
+            decoration: InputDecoration(labelText: s.t('email'))),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(s.t('cancel'))),
+          FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(s.t('admin_plan_grant'))),
+        ],
+      ),
+    );
+    if (ok != true || email.text.trim().isEmpty) return;
+    try {
+      await _c.rpc('grant_subscription',
+          params: {'p_email': email.text.trim(), 'p_plan': plan['id']});
+    } catch (e) {
+      _toast('${s.t('pay_sql_needed')} $e');
+    }
+    _load();
+  }
+
+  Future<void> _cancel(String id) async {
+    try {
+      await _c.rpc('cancel_subscription', params: {'p_id': id});
+    } catch (e) {
+      _toast('$e');
+    }
+    _load();
+  }
+
+  void _toast(String m) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(m.length > 160 ? m.substring(0, 160) : m)));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final s = S.of(context);
+    if (_loading) return const Center(child: CircularProgressIndicator());
+    if (_err.isNotEmpty) {
+      return Center(
+          child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          Text(_err, textAlign: TextAlign.center),
+          const SizedBox(height: 8),
+          Text(s.t('pay_sql_needed'), textAlign: TextAlign.center),
+          TextButton(onPressed: _load, child: Text(s.t('retry'))),
+        ]),
+      ));
+    }
+    return ListView(padding: const EdgeInsets.all(12), children: [
+      Row(children: [
+        Expanded(
+            child: Text(s.t('admin_plans'),
+                style: const TextStyle(fontWeight: FontWeight.bold))),
+        FilledButton.icon(
+            onPressed: _addPlan,
+            icon: const Icon(Icons.add),
+            label: Text(s.t('admin_plan_add'))),
+      ]),
+      for (final p in _plans)
+        Card(
+          child: ListTile(
+            title: Text('${p['name']}'),
+            subtitle: Text(
+                '${p['months']} ${s.t('admin_plan_months')} - ${p['price']} ${p['currency']}'),
+            trailing: OutlinedButton(
+                onPressed: () => _grant(p),
+                child: Text(s.t('admin_plan_grant'))),
+          ),
+        ),
+      const SizedBox(height: 12),
+      Text(s.t('admin_subs'),
+          style: const TextStyle(fontWeight: FontWeight.bold)),
+      for (final r in _subs)
+        Card(
+          child: ListTile(
+            title: Text('${r['who']}'),
+            subtitle: Text(
+                '${(r['subscription_plans'] is Map) ? r['subscription_plans']['name'] : ''} - ${r['status']} - ${'${r['ends_at']}'.split('T').first}'),
+            trailing: r['status'] == 'active'
+                ? TextButton(
+                    onPressed: () => _cancel(r['id'] as String),
+                    child: Text(s.t('cancel')))
+                : null,
+          ),
+        ),
+    ]);
   }
 }
