@@ -78,6 +78,7 @@ class _HomeShellState extends State<HomeShell> {
             clipBehavior: Clip.antiAlias,
             child: NavigationBar(
         height: 64,
+        labelBehavior: NavigationDestinationLabelBehavior.alwaysHide,
         selectedIndex: _index,
         onDestinationSelected: (i) => setState(() => _index = i),
         destinations: [
@@ -542,6 +543,14 @@ class _HomeTabState extends State<_HomeTab> {
               bottom: false,
               child: Column(children: [
                 Row(children: [
+                  Builder(
+                    builder: (ctx) => IconButton(
+                      tooltip: s.t('tab_account'),
+                      icon: const Icon(Icons.menu_rounded, size: 28),
+                      onPressed: () => Scaffold.of(ctx).openDrawer(),
+                    ),
+                  ),
+                  const SizedBox(width: 2),
                   Builder(
                     builder: (ctx) => GestureDetector(
                       onTap: () => Scaffold.of(ctx).openDrawer(),
