@@ -273,6 +273,17 @@ class _BulkExamImportScreenState extends State<BulkExamImportScreen> {
         const SizedBox(width: 12),
       ]),
       body: ListView(padding: const EdgeInsets.all(16), children: [
+        if (todo > 0) ...[
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton.icon(
+              onPressed: _busy ? null : _save,
+              icon: const Icon(Icons.save_outlined),
+              label: Text('حفظ $todo اختبار'),
+            ),
+          ),
+          const SizedBox(height: 12),
+        ],
         const Card(
           child: Padding(
             padding: EdgeInsets.all(14),

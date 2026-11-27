@@ -316,6 +316,22 @@ class _FileImportScreenState extends State<FileImportScreen> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          if (_job.rows.isNotEmpty) ...[
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: _running
+                    ? _job.stop
+                    : (pending.isEmpty
+                        ? null
+                        : () => _job.start(S.of(context),
+                            retryErrors: !_job.hasPending)),
+                icon: const Icon(Icons.cloud_download_outlined),
+                label: Text(_running ? s.t('bg_stop') : s.t('yt_import_btn')),
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
           Text(s.t('fi_hint')),
           const SizedBox(height: 12),
           Wrap(spacing: 8, runSpacing: 8, children: [

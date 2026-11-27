@@ -113,6 +113,17 @@ class _QuestionImportScreenState extends State<QuestionImportScreen> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          if (good > 0) ...[
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: _saving ? null : _save,
+                icon: const Icon(Icons.save_outlined),
+                label: Text('${s.t('import_save')} ($good)'),
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
           Card(
             child: Padding(
               padding: const EdgeInsets.all(16),

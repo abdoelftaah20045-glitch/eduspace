@@ -428,35 +428,29 @@ class _YoutubeImportScreenState extends State<YoutubeImportScreen> {
               child: Text('${s.t('yt_import_btn')} ($picked)')),
         const SizedBox(width: 12),
       ]),
-      bottomNavigationBar: _lists.isEmpty
-          ? null
-          : SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 10),
-                child: Column(mainAxisSize: MainAxisSize.min, children: [
-                  if (_importing) ...[
-                    const LinearProgressIndicator(),
-                    const SizedBox(height: 6),
-                    Text(_progress,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.bodySmall),
-                    const SizedBox(height: 6),
-                  ],
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton.icon(
-                      onPressed: (_importing || picked == 0) ? null : _import,
-                      icon: const Icon(Icons.cloud_download_outlined),
-                      label: Text('${s.t('yt_import_btn')} ($picked)'),
-                    ),
-                  ),
-                ]),
-              ),
-            ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          if (_lists.isNotEmpty) ...[
+            if (_importing) ...[
+              const LinearProgressIndicator(),
+              const SizedBox(height: 6),
+              Text(_progress,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodySmall),
+              const SizedBox(height: 6),
+            ],
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: (_importing || picked == 0) ? null : _import,
+                icon: const Icon(Icons.cloud_download_outlined),
+                label: Text('${s.t('yt_import_btn')} ($picked)'),
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
           Text(s.t('yt_hint'), style: theme.textTheme.bodyMedium),
           const SizedBox(height: 12),
           TextField(

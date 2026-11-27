@@ -271,12 +271,55 @@ class _AdminAiQuizScreenState extends State<AdminAiQuizScreen> {
     });
   }
 
+  Widget _topAction() {
+    final serverOk = _autoErr == null && _cfg != null;
+    final on = serverOk && _cfg!['enabled'] == true;
+    if (_running) {
+      return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        LinearProgressIndicator(value: _total == 0 ? null : _done / _total),
+        Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Text('$_done / $_total  •  اتعمل $_made  •  اتخطى $_skipped  •  هيتعاد $_retry  •  فشل $_failed\n$_current')),
+        FilledButton(onPressed: () => setState(() => _stop = true), child: const Text('إيقاف')),
+      ]);
+    }
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      SizedBox(
+        width: double.infinity,
+        child: FilledButton(
+          onPressed: serverOk
+              ? (on
+                  ? () => _saveAuto({'enabled': false})
+                  : (_picked.isEmpty
+                      ? null
+                      : () => _saveAuto({
+                            'enabled': true,
+                            'publish': _publish,
+                            'course_ids': _picked.toList(),
+                          })))
+              : (_picked.isEmpty ? null : _run),
+          child: Text(serverOk
+              ? (on ? 'إيقاف التوليد على السيرفر' : 'ابدأ التوليد على السيرفر (${_picked.length} كورس)')
+              : 'ابدأ التوليد (${_picked.length} كورس)'),
+        ),
+      ),
+      if (serverOk)
+        const Padding(
+          padding: EdgeInsets.only(top: 6),
+          child: Text('بيكمل لوحده على السيرفر حتى لو قفلت الصفحة أو التطبيق، ويقف لما تضغط إيقاف.',
+              style: TextStyle(fontSize: 12)),
+        ),
+    ]);
+  }
+
   @override
   Widget build(BuildContext context) {
     final courses = _courses;
     return Scaffold(
       appBar: AppBar(title: const Text('اختبارات تدريبية بالذكاء الاصطناعي')),
       body: ListView(padding: const EdgeInsets.all(16), children: [
+        _topAction(),
+        const SizedBox(height: 8),
         OutlinedButton.icon(
           onPressed: _diagBusy ? null : _diag,
           icon: const Icon(Icons.search),
@@ -292,7 +335,7 @@ class _AdminAiQuizScreenState extends State<AdminAiQuizScreen> {
           child: Padding(
             padding: EdgeInsets.all(14),
             child: Text(
-                'بيعمل اختبار تدريبي (من 10 لـ 20 سؤال حسب طول الفيديو) لكل درس معندوش اختبار. لو الفيديو يوتيوب عام، الذكاء الاصطناعي بيشوف الفيديو نفسه وبيسأل في اللي اتشرح فعلاً (عدد الأسئلة حسب طول الفيديو)، ولو الفيديو مش متاح بيتخطى الدرس ويحاول تاني بعدين (مفيش أسئلة بتتعمل من العنوان). الحد المجاني حوالي 8 ساعات فيديو في اليوم، وبتتولد بالذكاء الاصطناعي المجاني فممكن يبقى فيها أخطاء، فالأفضل مراجعتها. بيتحفظوا مسودة لحد ما تنشرهم، أو فعّل النشر المباشر. سيب الشاشة مفتوحة أثناء التشغيل.'),
+                'بيعمل اختبار تدريبي (من 10 لـ 20 سؤال حسب طول الفيديو) لكل درس معندوش اختبار. لو الفيديو يوتيوب عام، الذكاء الاصطناعي بيشوف الفيديو نفسه وبيسأل في اللي اتشرح فعلاً (عدد الأسئلة حسب طول الفيديو)، ولو الفيديو مش متاح بيتخطى الدرس ويحاول تاني بعدين (مفيش أسئلة بتتعمل من العنوان). الحد المجاني حوالي 8 ساعات فيديو في اليوم، وبتتولد بالذكاء الاصطناعي المجاني فممكن يبقى فيها أخطاء، فالأفضل مراجعتها. بيتحفظوا مسودة لحد ما تنشرهم، أو فعّل النشر المباشر. التوليد على السيرفر بيكمل لوحده حتى لو قفلت الصفحة.'),
           ),
         ),
         SwitchListTile(
@@ -332,17 +375,6 @@ class _AdminAiQuizScreenState extends State<AdminAiQuizScreen> {
                       }),
             ),
         ],
-        const SizedBox(height: 12),
-        if (_running) ...[
-          LinearProgressIndicator(value: _total == 0 ? null : _done / _total),
-          Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Text('$_done / $_total  •  اتعمل $_made  •  اتخطى $_skipped  •  هيتعاد $_retry  •  فشل $_failed\n$_current')),
-          OutlinedButton(onPressed: () => setState(() => _stop = true), child: const Text('إيقاف')),
-        ] else
-          FilledButton(
-              onPressed: _picked.isEmpty ? null : _run,
-              child: Text('ابدأ التوليد (${_picked.length} كورس)')),
         if (!_running && (_made + _skipped + _failed + _retry) > 0)
           Padding(
             padding: const EdgeInsets.only(top: 12),
