@@ -15,6 +15,7 @@ import '../../core/l10n.dart';
 import '../../core/paid_courses.dart';
 import '../../core/tenant.dart';
 import '../../core/widgets.dart';
+import 'home_blocks.dart';
 import '../courses/course_details_screen.dart';
 import '../courses/courses_screen.dart';
 import '../courses/data/course_models.dart';
@@ -159,6 +160,9 @@ class _HomeTabState extends State<_HomeTab> with WidgetsBindingObserver {
   }
 
   Future<void> _load() async {
+    RemoteUi.load().then((_) {
+      if (mounted) setState(() {});
+    });
     try {
       final results = await Future.wait([
         CoursesRepository.fetchContinueLearning(),
@@ -676,7 +680,7 @@ class _HomeTabState extends State<_HomeTab> with WidgetsBindingObserver {
                 padding: EdgeInsets.all(32),
                 child: Center(child: CircularProgressIndicator()),
               ),
-            for (final id in homeIds) ...homeParts[id]!,
+            ...mergeHomeBlocks([for (final id in homeIds) homeParts[id]!]),
           ],
         ),
       ),

@@ -726,6 +726,8 @@ class S {
     'auto_classify_left': {'ar': 'تحتاج مراجعة:', 'en': 'need review:', 'fr': 'à vérifier :', 'es': 'por revisar:', 'de': 'zu prüfen:'},
     'pick_category': {'ar': 'اختر التصنيف', 'en': 'Choose category', 'fr': 'Choisir la catégorie', 'es': 'Elegir categoría', 'de': 'Kategorie wählen'},
     'needs_category': {'ar': 'بدون تصنيف: محتاج مراجعة', 'en': 'No category: needs review', 'fr': 'Sans catégorie', 'es': 'Sin categoría', 'de': 'Ohne Kategorie'},
+    'home_builder': {'ar': 'بناء الصفحة الرئيسية', 'en': 'Home builder', 'fr': 'Home builder', 'es': 'Home builder', 'de': 'Home builder'},
+    'admin_sub_home_builder': {'ar': 'ضيف بانرات وأيقونات وصفوف كورسات وأقسام', 'en': 'Add banners, tiles, course rows and categories', 'fr': 'Home builder', 'es': 'Home builder', 'de': 'Home builder'},
     'res_title': {'ar': 'نتيجة الامتحان', 'en': 'Exam result', 'fr': 'Résultat de l\'examen', 'es': 'Resultado del examen', 'de': 'Prüfungsergebnis'},
     'res_total': {'ar': 'عدد الأسئلة', 'en': 'Total questions', 'fr': 'Total des questions', 'es': 'Total de preguntas', 'de': 'Fragen gesamt'},
     'res_time_taken': {'ar': 'الوقت المستغرق', 'en': 'Time taken', 'fr': 'Temps écoulé', 'es': 'Tiempo empleado', 'de': 'Benötigte Zeit'},
