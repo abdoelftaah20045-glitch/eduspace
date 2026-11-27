@@ -1,0 +1,257 @@
+import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+import '../../core/bg_guard.dart';
+import '../../core/l10n.dart';
+import 'data/admin_tools_repo.dart';
+import 'playlist_import.dart';
+import 'youtube_import_screen.dart';
+
+/// One playlist line of an import.
+class ImportRow {
+  ImportRow(this.line, this.category, this.url, this.title, this.language,
+      this.level,
+      {this.status = 'wait', this.note = ''});
+  final int line;
+  final String category;
+  final String url;
+  final String title;
+  final String language;
+  final String level;
+  String status; // wait, run, ok, skip, err
+  String note;
+
+  Map<String, dynamic> toJson() => {
+        'l': line,
+        'c': category,
+        'u': url,
+        't': title,
+        'g': language,
+        'v': level,
+        's': status,
+        'n': note,
+      };
+
+  static ImportRow fromJson(Map<String, dynamic> j) => ImportRow(
+        (j['l'] as num?)?.toInt() ?? 0,
+        '${j['c'] ?? ''}',
+        '${j['u'] ?? ''}',
+        '${j['t'] ?? ''}',
+        '${j['g'] ?? ''}',
+        '${j['v'] ?? ''}',
+        status: '${j['s'] ?? 'wait'}',
+        note: '${j['n'] ?? ''}',
+      );
+}
+
+/// App-wide import job. It does not belong to a screen: leaving the screen
+/// or the app does not stop it, every step is saved on the phone, and when
+/// the app opens again an unfinished job continues by itself.
+class ImportJob extends ChangeNotifier {
+  ImportJob._();
+  static final ImportJob instance = ImportJob._();
+
+  /// Bumped after every finished playlist so course lists can refresh.
+  static final ValueNotifier<int> courseTick = ValueNotifier<int>(0);
+
+  static const _key = 'import_job_v1';
+
+  final List<ImportRow> rows = [];
+  String fileName = '';
+  bool withDesc = true;
+  bool running = false;
+  String progress = '';
+  bool _stop = false;
+
+  int get done =>
+      rows.where((r) => r.status == 'ok' || r.status == 'skip' || r.status == 'err').length;
+  bool get hasPending =>
+      rows.any((r) => r.status == 'wait' || r.status == 'run');
+
+  Future<void> _save() async {
+    try {
+      final p = await SharedPreferences.getInstance();
+      await p.setString(
+          _key,
+          jsonEncode({
+            'file': fileName,
+            'desc': withDesc,
+            'rows': rows.map((r) => r.toJson()).toList(),
+          }));
+    } catch (_) {}
+  }
+
+  Future<void> restore() async {
+    if (rows.isNotEmpty || running) return;
+    try {
+      final p = await SharedPreferences.getInstance();
+      final raw = p.getString(_key);
+      if (raw == null) return;
+      final m = jsonDecode(raw) as Map<String, dynamic>;
+      fileName = '${m['file'] ?? ''}';
+      withDesc = m['desc'] != false;
+      for (final r in (m['rows'] as List? ?? const [])) {
+        final row = ImportRow.fromJson(Map<String, dynamic>.from(r as Map));
+        if (row.status == 'run') row.status = 'wait';
+        rows.add(row);
+      }
+      notifyListeners();
+    } catch (_) {}
+  }
+
+  void setRows(List<ImportRow> list, String name) {
+    rows
+      ..clear()
+      ..addAll(list);
+    fileName = name;
+    progress = '';
+    _save();
+    notifyListeners();
+  }
+
+  void setWithDesc(bool v) {
+    withDesc = v;
+    _save();
+    notifyListeners();
+  }
+
+  void stop() {
+    _stop = true;
+  }
+
+  static bool _isNetwork(Object e) {
+    if (e is SocketException || e is TimeoutException || e is http.ClientException) {
+      return true;
+    }
+    final t = '$e'.toLowerCase();
+    return t.contains('socket') ||
+        t.contains('host lookup') ||
+        t.contains('connection') ||
+        t.contains('timed out') ||
+        t.contains('timeout') ||
+        t.contains('network') ||
+        t.contains('handshake') ||
+        t.contains('retryable') ||
+        t.contains('clientexception');
+  }
+
+  /// Runs every waiting row. [retryErrors] also re-queues failed rows.
+  Future<void> start(S s, {bool retryErrors = false}) async {
+    if (running) return;
+    if (retryErrors) {
+      for (final r in rows) {
+        if (r.status == 'err') r.status = 'wait';
+      }
+    }
+    if (!hasPending) return;
+    running = true;
+    _stop = false;
+    final title = s.t('bg_import_running');
+    notifyListeners();
+    await BgGuard.begin(title, '$done/${rows.length}');
+    final known = <String>{};
+    try {
+      for (final c in await AdminToolsRepository.fetchCategories()) {
+        if (c['kind'] == 'category') {
+          known.add((c['name'] as String).trim().toLowerCase());
+        }
+      }
+    } catch (_) {}
+    var okCount = 0;
+    var errCount = 0;
+    for (final row in rows) {
+      if (_stop) break;
+      if (row.status != 'wait') continue;
+      row.status = 'run';
+      row.note = '';
+      notifyListeners();
+      var wait = 5;
+      while (true) {
+        if (_stop) {
+          row.status = 'wait';
+          break;
+        }
+        try {
+          final id = YtImporter.listId(row.url);
+          if (id == null) throw s.t('fi_bad_link');
+          final p = await YtImporter.fetchPlaylist(id);
+          if (row.title.isNotEmpty) p.title = row.title;
+          if (row.category.isNotEmpty &&
+              !known.contains(row.category.toLowerCase())) {
+            await AdminToolsRepository.addCategory('category', row.category);
+            known.add(row.category.toLowerCase());
+          }
+          final added = await PlaylistImport.run(
+            p,
+            s: s,
+            withDesc: withDesc,
+            field: row.category,
+            level: row.level,
+            language: row.language,
+            onProgress: (t) {
+              progress = t;
+              notifyListeners();
+              BgGuard.update(title,
+                  '$done/${rows.length} - ${s.t('bg_err_word')}: $errCount\n$t');
+            },
+          );
+          if (added < 0) {
+            row.status = 'skip';
+            row.note = s.t('fi_already');
+          } else {
+            row.status = 'ok';
+            row.note = '${p.title} ($added)';
+            okCount++;
+          }
+          break;
+        } catch (e) {
+          if (_isNetwork(e)) {
+            row.note = s.t('bg_waiting_net');
+            progress = s.t('bg_waiting_net');
+            notifyListeners();
+            BgGuard.update(title, s.t('bg_waiting_net'));
+            await Future<void>.delayed(Duration(seconds: wait));
+            wait = wait >= 60 ? 60 : wait * 2;
+            continue;
+          }
+          final t = '$e';
+          row.status = 'err';
+          row.note = t.length > 160 ? t.substring(0, 160) : t;
+          errCount++;
+          break;
+        }
+      }
+      await _save();
+      courseTick.value++;
+      notifyListeners();
+    }
+    running = false;
+    progress = '';
+    await _save();
+    await BgGuard.end();
+    if (!_stop) {
+      await BgGuard.notify(4712, s.t('bg_import_done'),
+          '${s.t('bg_done_word')}: $okCount - ${s.t('bg_err_word')}: $errCount');
+    }
+    _stop = false;
+    notifyListeners();
+  }
+
+  /// Called when the app starts: continue an unfinished job.
+  Future<void> resumeIfPending(S s) async {
+    await restore();
+    if (running || !hasPending) return;
+    try {
+      if (Supabase.instance.client.auth.currentUser == null) return;
+    } catch (_) {
+      return;
+    }
+    unawaited(start(s));
+  }
+}

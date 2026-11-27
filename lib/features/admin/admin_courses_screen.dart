@@ -5,6 +5,7 @@ import 'course_content_screen.dart';
 import 'course_edit_screen.dart';
 import 'data/admin_repo.dart';
 import 'data/admin_tools_repo.dart';
+import 'import_job.dart';
 
 /// Admin: all courses with status, plus create/delete.
 class AdminCoursesScreen extends StatefulWidget {
@@ -23,6 +24,13 @@ class _AdminCoursesScreenState extends State<AdminCoursesScreen> {
   void initState() {
     super.initState();
     _load();
+    ImportJob.courseTick.addListener(_load);
+  }
+
+  @override
+  void dispose() {
+    ImportJob.courseTick.removeListener(_load);
+    super.dispose();
   }
 
   Future<void> _load() async {

@@ -1,12 +1,13 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
-import '../../core/bg_guard.dart';
 import '../../core/l10n.dart';
 import 'data/admin_repo.dart';
-import 'playlist_import.dart';
+import 'file_import_screen.dart';
+import 'import_job.dart';
 
 /// One video of a playlist.
 class YtVideo {
@@ -335,56 +336,25 @@ class _YoutubeImportScreenState extends State<YoutubeImportScreen> {
   }
 
   Future<void> _import() async {
-    final s = S.of(context);
-    final messenger = ScaffoldMessenger.of(context);
     final chosen = _lists.where((p) => p.selected).toList();
     if (chosen.isEmpty) return;
-    setState(() {
-      _importing = true;
-      _errors.clear();
-    });
-    final title = s.t('bg_import_running');
-    var done = 0;
-    var errs = 0;
-    await BgGuard.begin(title, '0/${chosen.length}');
-    final finished = <YtPlaylist>[];
-    for (final p in chosen) {
-      try {
-        await PlaylistImport.run(
-          p,
-          s: s,
-          withDesc: _withDesc,
-          field: _field.text.trim(),
-          onProgress: (t) {
-            if (mounted) setState(() => _progress = t);
-            BgGuard.update(title,
-                '${done + errs}/${chosen.length} - ${s.t('bg_err_word')}: $errs\n$t');
-          },
-        );
-        done++;
-        finished.add(p);
-      } catch (e) {
-        errs++;
-        final t = '$e';
-        if (mounted) {
-          setState(() => _errors.add(
-              '${p.title}: ${t.length > 200 ? t.substring(0, 200) : t}'));
-        }
-      }
+    final job = ImportJob.instance;
+    if (job.running) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(S.of(context).t('bg_import_running'))));
+      return;
     }
-    await BgGuard.end();
-    await BgGuard.notify(4712, s.t('bg_import_done'),
-        '${s.t('bg_done_word')}: $done - ${s.t('bg_err_word')}: $errs');
-    messenger.showSnackBar(SnackBar(
-        content: Text(
-            '${s.t('yt_done')}: $done${errs > 0 ? ' - ${s.t('bg_err_word')}: $errs' : ''}')));
-    if (mounted) {
-      setState(() {
-        _lists.removeWhere((p) => finished.contains(p));
-        _progress = '';
-        _importing = false;
-      });
-    }
+    final rows = <ImportRow>[
+      for (var i = 0; i < chosen.length; i++)
+        ImportRow(i + 1, _field.text.trim(),
+            'https://www.youtube.com/playlist?list=${chosen[i].id}', '', '', ''),
+    ];
+    job.setRows(rows, 'YouTube');
+    job.setWithDesc(_withDesc);
+    final nav = Navigator.of(context);
+    unawaited(job.start(S.of(context)));
+    nav.pushReplacement(
+        MaterialPageRoute<void>(builder: (_) => const FileImportScreen()));
   }
 
   @override

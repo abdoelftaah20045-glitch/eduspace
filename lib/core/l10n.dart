@@ -710,6 +710,8 @@ class S {
     'int_payment_sub': {'ar': 'يدوي بإيصال ومراجعة الأدمن', 'en': 'Manual with receipt and admin review', 'fr': 'Manual with receipt and admin review', 'es': 'Manual with receipt and admin review', 'de': 'Manual with receipt and admin review'},
     'int_mail': {'ar': 'البريد', 'en': 'Email', 'fr': 'Email', 'es': 'Email', 'de': 'Email'},
     'int_mail_sub': {'ar': 'رسائل التفعيل واستعادة كلمة المرور عبر Supabase', 'en': 'Confirmation and password reset via Supabase', 'fr': 'Confirmation and password reset via Supabase', 'es': 'Confirmation and password reset via Supabase', 'de': 'Confirmation and password reset via Supabase'},
+    'bg_waiting_net': {'ar': 'في انتظار الإنترنت... هيكمل لوحده', 'en': 'Waiting for internet... will continue by itself', 'fr': 'Waiting for internet... will continue by itself', 'es': 'Waiting for internet... will continue by itself', 'de': 'Waiting for internet... will continue by itself'},
+    'bg_stop': {'ar': 'إيقاف', 'en': 'Stop', 'fr': 'Stop', 'es': 'Stop', 'de': 'Stop'},
     'res_title': {'ar': 'نتيجة الامتحان', 'en': 'Exam result', 'fr': 'Résultat de l\'examen', 'es': 'Resultado del examen', 'de': 'Prüfungsergebnis'},
     'res_total': {'ar': 'عدد الأسئلة', 'en': 'Total questions', 'fr': 'Total des questions', 'es': 'Total de preguntas', 'de': 'Fragen gesamt'},
     'res_time_taken': {'ar': 'الوقت المستغرق', 'en': 'Time taken', 'fr': 'Temps écoulé', 'es': 'Tiempo empleado', 'de': 'Benötigte Zeit'},

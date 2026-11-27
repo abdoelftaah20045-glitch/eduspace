@@ -4,13 +4,9 @@ import 'package:archive/archive.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../core/bg_guard.dart';
 import '../../core/l10n.dart';
-import 'data/admin_repo.dart';
-import 'data/admin_tools_repo.dart';
-import 'playlist_import.dart';
+import 'import_job.dart';
 import 'youtube_import_screen.dart';
 
 const kImportTemplate =
@@ -18,19 +14,6 @@ const kImportTemplate =
     'Programming,https://www.youtube.com/playlist?list=PLxxxxxxxxxxxx,,ar,beginner\n'
     'Programming,https://www.youtube.com/playlist?list=PLyyyyyyyyyyyy,My custom title,en,advanced\n'
     'Design,https://www.youtube.com/playlist?list=PLzzzzzzzzzzzz,,,\n';
-
-class _Row {
-  _Row(this.line, this.category, this.url, this.title, this.language,
-      this.level);
-  final int line;
-  final String category;
-  final String url;
-  final String title;
-  final String language;
-  final String level;
-  String status = 'wait'; // wait, run, ok, skip, err
-  String note = '';
-}
 
 /// Reads a CSV or XLSX file into rows of cells.
 List<List<String>> parseTable(String name, List<int> bytes) {
@@ -204,18 +187,31 @@ class FileImportScreen extends StatefulWidget {
 }
 
 class _FileImportScreenState extends State<FileImportScreen> {
-  final List<_Row> _rows = [];
-  String _fileName = '';
+  final _job = ImportJob.instance;
   String _error = '';
-  bool _running = false;
-  bool _withDesc = true;
-  int _done = 0;
-  String _progress = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _job.restore();
+    _job.addListener(_tick);
+  }
+
+  @override
+  void dispose() {
+    _job.removeListener(_tick);
+    super.dispose();
+  }
+
+  void _tick() {
+    if (mounted) setState(() {});
+  }
 
   Future<void> _pick() async {
     final s = S.of(context);
     final picked = await FilePicker.pickFiles();
     if (picked.isEmpty || !mounted) return;
+    if (_job.running) return;
     final f = picked.first;
     try {
       final table = parseTable(f.name, await f.readAsBytes());
@@ -238,7 +234,7 @@ class _FileImportScreenState extends State<FileImportScreen> {
       }
       String at(List<String> r, int i) =>
           i >= 0 && i < r.length ? r[i].trim() : '';
-      final rows = <_Row>[];
+      final rows = <ImportRow>[];
       var lastCat = '';
       for (var i = start; i < table.length; i++) {
         final r = table[i];
@@ -255,7 +251,7 @@ class _FileImportScreenState extends State<FileImportScreen> {
           if (url.isEmpty && cat.isNotEmpty) lastCat = cat;
           if (url.isEmpty) continue;
         }
-        rows.add(_Row(
+        rows.add(ImportRow(
             i + 1,
             cat.isNotEmpty ? cat : lastCat,
             url,
@@ -263,14 +259,8 @@ class _FileImportScreenState extends State<FileImportScreen> {
             _normLang(at(r, cLang)),
             _normLevel(at(r, cLevel))));
       }
-      setState(() {
-        _rows
-          ..clear()
-          ..addAll(rows);
-        _fileName = f.name;
-        _error = rows.isEmpty ? s.t('fi_empty') : '';
-        _done = 0;
-      });
+      _job.setRows(rows, f.name);
+      setState(() => _error = rows.isEmpty ? s.t('fi_empty') : '');
     } catch (e) {
       setState(() => _error = '${s.t('fi_bad_file')}: $e');
     }
@@ -283,97 +273,9 @@ class _FileImportScreenState extends State<FileImportScreen> {
         .showSnackBar(SnackBar(content: Text(S.of(context).t('fi_copied'))));
   }
 
-  Future<bool> _exists(String listId) async {
-    final r = await Supabase.instance.client
-        .from('lessons')
-        .select('id')
-        .ilike('media_url', '%list=$listId%')
-        .limit(1);
-    return (r as List).isNotEmpty;
-  }
-
-  Future<void> _run() async {
-    final s = S.of(context);
-    setState(() {
-      _running = true;
-      _done = 0;
-    });
-    final title = s.t('bg_import_running');
-    await BgGuard.begin(title, '0/${_rows.length}');
-    final known = <String>{};
-    try {
-      for (final c in await AdminToolsRepository.fetchCategories()) {
-        if (c['kind'] == 'category') {
-          known.add((c['name'] as String).trim().toLowerCase());
-        }
-      }
-    } catch (_) {}
-    var okCount = 0;
-    var errCount = 0;
-    for (final row in _rows) {
-      if (row.status == 'ok' || row.status == 'skip') {
-        _done++;
-        continue;
-      }
-      if (!mounted) break;
-      setState(() {
-        row.status = 'run';
-        row.note = '';
-      });
-      try {
-        final id = YtImporter.listId(row.url);
-        if (id == null) throw s.t('fi_bad_link');
-        final p = await YtImporter.fetchPlaylist(id);
-        if (row.title.isNotEmpty) p.title = row.title;
-        if (row.category.isNotEmpty &&
-            !known.contains(row.category.toLowerCase())) {
-          await AdminToolsRepository.addCategory('category', row.category);
-          known.add(row.category.toLowerCase());
-        }
-        final added = await PlaylistImport.run(
-          p,
-          s: s,
-          withDesc: _withDesc,
-          field: row.category,
-          level: row.level,
-          language: row.language,
-          onProgress: (t) {
-            if (mounted) setState(() => _progress = t);
-            BgGuard.update(title,
-                '$_done/${_rows.length} - ${s.t('bg_err_word')}: $errCount\n$t');
-          },
-        );
-        if (added < 0) {
-          row.status = 'skip';
-          row.note = s.t('fi_already');
-        } else {
-          row.status = 'ok';
-          row.note = '${p.title} ($added)';
-          okCount++;
-        }
-      } catch (e) {
-        final t = '$e';
-        row.status = 'err';
-        row.note = t.length > 160 ? t.substring(0, 160) : t;
-        errCount++;
-      }
-      _done++;
-      if (mounted) setState(() {});
-    }
-    await BgGuard.end();
-    await BgGuard.notify(4712, s.t('bg_import_done'),
-        '${s.t('bg_done_word')}: $okCount - ${s.t('bg_err_word')}: $errCount');
-    if (mounted) {
-      setState(() {
-        _running = false;
-        _progress = '';
-      });
-    }
-  }
-
   String _report() {
     final b = StringBuffer();
-    for (final r in _rows) {
+    for (final r in _job.rows) {
       b.writeln('${r.line},${r.status},${r.category},${r.url},${r.note}');
     }
     return b.toString();
@@ -382,10 +284,15 @@ class _FileImportScreenState extends State<FileImportScreen> {
   @override
   Widget build(BuildContext context) {
     final s = S.of(context);
-    final ok = _rows.where((r) => r.status == 'ok').length;
-    final skip = _rows.where((r) => r.status == 'skip').length;
-    final err = _rows.where((r) => r.status == 'err').length;
-    final pending = _rows.where((r) => r.status == 'wait' || r.status == 'err');
+    final ok = _job.rows.where((r) => r.status == 'ok').length;
+    final skip = _job.rows.where((r) => r.status == 'skip').length;
+    final err = _job.rows.where((r) => r.status == 'err').length;
+    final pending = _job.rows.where((r) => r.status == 'wait' || r.status == 'run' || r.status == 'err');
+    final _running = _job.running;
+    final _done = _job.done;
+    final _progress = _job.progress;
+    final _withDesc = _job.withDesc;
+    final _fileName = _job.fileName;
     return Scaffold(
       appBar: AppBar(title: Text(s.t('fi_title'))),
       body: ListView(
@@ -406,7 +313,7 @@ class _FileImportScreenState extends State<FileImportScreen> {
           SwitchListTile(
               contentPadding: EdgeInsets.zero,
               value: _withDesc,
-              onChanged: _running ? null : (v) => setState(() => _withDesc = v),
+              onChanged: _running ? null : (v) => _job.setWithDesc(v),
               title: Text(s.t('yt_with_desc')),
               subtitle: Text(s.t('yt_with_desc_sub'))),
           if (_error.isNotEmpty)
@@ -414,15 +321,15 @@ class _FileImportScreenState extends State<FileImportScreen> {
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 child: Text(_error,
                     style: TextStyle(color: Theme.of(context).colorScheme.error))),
-          if (_rows.isNotEmpty) ...[
-            Text('$_fileName: ${_rows.length} ${s.t('fi_rows')}',
+          if (_job.rows.isNotEmpty) ...[
+            Text('$_fileName: ${_job.rows.length} ${s.t('fi_rows')}',
                 style: const TextStyle(fontWeight: FontWeight.w700)),
             const SizedBox(height: 8),
             LinearProgressIndicator(
-                value: _rows.isEmpty ? 0 : _done / _rows.length),
+                value: _job.rows.isEmpty ? 0 : _done / _job.rows.length),
             const SizedBox(height: 4),
             Text(
-                '$_done/${_rows.length}  ${s.t('fi_ok')}: $ok  ${s.t('fi_skipped')}: $skip  ${s.t('fi_errors')}: $err'),
+                '$_done/${_job.rows.length}  ${s.t('fi_ok')}: $ok  ${s.t('fi_skipped')}: $skip  ${s.t('fi_errors')}: $err'),
             if (_progress.isNotEmpty)
               Text(_progress, style: const TextStyle(color: Colors.black54)),
             const SizedBox(height: 8),
@@ -430,10 +337,18 @@ class _FileImportScreenState extends State<FileImportScreen> {
               Expanded(
                   child: FilledButton(
                       onPressed:
-                          _running || pending.isEmpty ? null : _run,
-                      child: Text(err > 0 && ok + skip + err == _rows.length
+                          _running || pending.isEmpty
+                          ? null
+                          : () => _job.start(S.of(context),
+                              retryErrors: !_job.hasPending),
+                      child: Text(err > 0 && ok + skip + err == _job.rows.length
                           ? s.t('fi_retry')
                           : s.t('yt_import_btn')))),
+              if (_running) ...[
+                const SizedBox(width: 8),
+                OutlinedButton(
+                    onPressed: _job.stop, child: Text(s.t('bg_stop'))),
+              ],
               const SizedBox(width: 8),
               OutlinedButton(
                   onPressed: () async {
@@ -445,7 +360,7 @@ class _FileImportScreenState extends State<FileImportScreen> {
                   child: Text(s.t('fi_report'))),
             ]),
             const Divider(height: 24),
-            for (final r in _rows)
+            for (final r in _job.rows)
               ListTile(
                 dense: true,
                 contentPadding: EdgeInsets.zero,

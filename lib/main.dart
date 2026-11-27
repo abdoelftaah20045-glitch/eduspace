@@ -1,6 +1,8 @@
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'core/updater.dart';
 import 'core/course_watch.dart';
+import 'core/l10n.dart';
+import 'features/admin/import_job.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -66,4 +68,8 @@ Future<void> main() async {
     runApp(const EduSpaceApp());
   }
   Future<void>.delayed(const Duration(seconds: 5), Updater.checkOnLaunch);
+  // An import that did not finish (app closed, no internet) continues by itself.
+  Future<void>.delayed(const Duration(seconds: 4), () {
+    ImportJob.instance.resumeIfPending(S(AppState.instance.locale.value));
+  });
 }
