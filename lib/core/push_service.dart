@@ -14,7 +14,16 @@ class PushService {
   static Future<void> init() async {
     if (!Integrations.fcmEnabled) return;
     try {
-      await Firebase.initializeApp();
+      // Firebase values come from the build (dart-define), so no
+      // google-services.json or Gradle plugin is needed.
+      await Firebase.initializeApp(
+        options: const FirebaseOptions(
+          apiKey: String.fromEnvironment('FB_API_KEY'),
+          appId: String.fromEnvironment('FB_APP_ID'),
+          messagingSenderId: String.fromEnvironment('FB_SENDER_ID'),
+          projectId: String.fromEnvironment('FB_PROJECT_ID'),
+        ),
+      );
       final messaging = FirebaseMessaging.instance;
       await messaging.requestPermission();
       await _saveToken(await messaging.getToken());

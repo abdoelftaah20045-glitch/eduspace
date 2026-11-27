@@ -32,6 +32,7 @@ dependencies:
   archive: any
   flutter_foreground_task: ^11.0.3
   flutter_local_notifications: ^23.0.4
+  workmanager: ^0.10.10
 
 dev_dependencies:
   flutter_test:

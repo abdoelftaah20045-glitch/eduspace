@@ -76,6 +76,10 @@ jobs:
           # file_picker's flutter_plugin_android_lifecycle requires compileSdk 36+
           sed -i 's/compileSdk = flutter.compileSdkVersion/compileSdk = 36/' "$GRADLE"
           sed -i 's/compileSdk flutter.compileSdkVersion/compileSdk 36/' "$GRADLE"
+          # Deki application id (namespace stays as generated; the manifest uses relative class names).
+          sed -i 's/applicationId = "com.example.eduspace_app"/applicationId = "com.deki.app"/; s/applicationId "com.example.eduspace_app"/applicationId "com.deki.app"/' "$GRADLE"
+          grep -n 'applicationId' "$GRADLE"
+          grep -q 'applicationId.*"com.deki.app"' "$GRADLE" || { echo "applicationId patch failed"; exit 1; }
           if [ "$GRADLE" = "android/app/build.gradle.kts" ]; then
             cat ci/release-signing.gradle.kts >> "$GRADLE"
           else
@@ -108,6 +112,10 @@ jobs:
           --dart-define=SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}
           --dart-define=SENTRY_DSN=${{ secrets.SENTRY_DSN }}
           --dart-define=FCM_ENABLED=${{ secrets.FCM_ENABLED }}
+          --dart-define=FB_API_KEY=${{ secrets.FB_API_KEY }}
+          --dart-define=FB_APP_ID=${{ secrets.FB_APP_ID }}
+          --dart-define=FB_SENDER_ID=${{ secrets.FB_SENDER_ID }}
+          --dart-define=FB_PROJECT_ID=${{ secrets.FB_PROJECT_ID }}
           --dart-define=APP_BUILD=${{ github.run_number }}
 
       - name: Show APK sizes

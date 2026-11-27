@@ -1,5 +1,6 @@
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'core/updater.dart';
+import 'core/course_watch.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -53,6 +54,7 @@ Future<void> main() async {
   // Push notifications: no-op unless built with FCM_ENABLED=true and the
   // Firebase config files (exec guide section 17, Push).
   await PushService.init();
+  CourseWatch.register();
   // Crash monitoring: only when the owner's Sentry DSN is supplied at
   // build time (exec guide section 17, Monitoring).
   if (Integrations.monitoringEnabled) {
