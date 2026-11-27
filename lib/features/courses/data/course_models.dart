@@ -2,6 +2,8 @@
 /// PostgREST maps; no code generation.
 library;
 
+import '../../../core/html_text.dart';
+
 class Course {
   Course({
     required this.id,
@@ -124,12 +126,12 @@ class Course {
   factory Course.fromMap(Map<String, dynamic> m) {
     return Course(
       id: m['id'] as String,
-      title: (m['title'] as String?) ?? '',
-      description: (m['description'] as String?) ?? '',
+      title: decodeHtml(m['title'] as String?),
+      description: decodeHtml(m['description'] as String?),
       coverUrl: m['cover_url'] as String?,
-      field: m['field'] as String?,
+      field: m['field'] == null ? null : decodeHtml(m['field'] as String?),
       level: m['level'] as String?,
-      instructorName: m['instructor_name'] as String?,
+      instructorName: m['instructor_name'] == null ? null : decodeHtml(m['instructor_name'] as String?),
       language: (m['language'] as String?) ?? 'ar',
       prerequisites: m['prerequisites'] as String?,
       hours: (m['hours'] as num?)?.toDouble(),
@@ -179,7 +181,7 @@ class CourseSection {
     return CourseSection(
       id: m['id'] as String,
       courseId: m['course_id'] as String,
-      title: (m['title'] as String?) ?? '',
+      title: decodeHtml(m['title'] as String?),
       sortOrder: (m['sort_order'] as num?)?.toInt() ?? 0,
       lessons: lessons,
     );
@@ -251,7 +253,7 @@ class Lesson {
       id: m['id'] as String,
       courseId: m['course_id'] as String,
       sectionId: m['section_id'] as String?,
-      title: (m['title'] as String?) ?? '',
+      title: decodeHtml(m['title'] as String?),
       type: (m['type'] as String?) ?? 'text',
       content: (m['content'] as String?) ?? '',
       mediaUrl: m['media_url'] as String?,

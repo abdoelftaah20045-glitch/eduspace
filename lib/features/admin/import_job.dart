@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/bg_guard.dart';
+import '../../core/html_text.dart';
 import '../../core/l10n.dart';
 import 'data/admin_repo.dart';
 import 'data/admin_tools_repo.dart';
@@ -236,7 +237,7 @@ class ImportJob extends ChangeNotifier {
           if (row.title.isNotEmpty) p.title = row.title;
           if (row.category.isNotEmpty &&
               !known.contains(row.category.toLowerCase())) {
-            await AdminToolsRepository.addCategory('category', row.category);
+            await AdminToolsRepository.addCategory('category', decodeHtml(row.category));
             known.add(row.category.toLowerCase());
           }
           final res = await PlaylistImport.run(

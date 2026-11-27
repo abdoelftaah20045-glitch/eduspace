@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
+import '../../core/html_text.dart';
 import '../../core/l10n.dart';
 import 'data/admin_repo.dart';
 import 'file_import_screen.dart';
@@ -11,7 +12,8 @@ import 'import_job.dart';
 
 /// One video of a playlist.
 class YtVideo {
-  YtVideo(this.id, this.title, this.seconds, this.thumb);
+  YtVideo(this.id, String title, this.seconds, this.thumb)
+      : title = decodeHtml(title);
   final String id;
   String title;
   final int seconds;
@@ -22,7 +24,11 @@ class YtVideo {
 
 /// One playlist, shown in the preview before import.
 class YtPlaylist {
-  YtPlaylist(this.id, this.title, this.channel, this.thumb, this.videos);
+  YtPlaylist(this.id, String title, String channel, this.thumb, this.videos,
+      {this.avatar = ''})
+      : title = decodeHtml(title),
+        channel = decodeHtml(channel);
+  final String avatar;
   final String id;
   String title;
   final String channel;
@@ -253,7 +259,53 @@ class YtImporter {
       throw Exception(
           'no videos found (page ${html.length} bytes, layout markers: lockup=${html.contains('lockupViewModel')}, renderer=${html.contains('playlistVideoRenderer')}, consent=${html.contains('consent.youtube.com')}). The playlist may be private or empty.');
     }
-    return YtPlaylist(id, title, channel, videos.first.thumb, videos);
+    var avatar = '';
+    try {
+      avatar = await _avatar(data);
+    } catch (_) {}
+    return YtPlaylist(id, title, channel, videos.first.thumb, videos,
+        avatar: avatar);
+  }
+
+  /// Channel picture of the playlist owner (public YouTube data).
+  static Future<String> _avatar(dynamic data) async {
+    final ow = <Map>[];
+    _collect(data, 'videoOwnerRenderer', ow);
+    for (final o in ow) {
+      final th = o['thumbnail'];
+      if (th is Map && th['thumbnails'] is List && (th['thumbnails'] as List).isNotEmpty) {
+        final u = '${((th['thumbnails'] as List).last as Map)['url'] ?? ''}';
+        if (u.startsWith('http')) return u;
+      }
+    }
+    // Channel id of the owner, then the channel page's og:image.
+    String? bid;
+    void find(dynamic n) {
+      if (bid != null) return;
+      if (n is Map) {
+        final b = n['browseEndpoint'];
+        if (b is Map && '${b['browseId'] ?? ''}'.startsWith('UC')) {
+          bid = '${b['browseId']}';
+          return;
+        }
+        n.values.forEach(find);
+      } else if (n is List) {
+        n.forEach(find);
+      }
+    }
+    final hs = <Map>[];
+    _collect(data, 'playlistHeaderRenderer', hs);
+    if (hs.isNotEmpty) find(hs.first['ownerText']);
+    if (bid == null && ow.isNotEmpty) find(ow.first);
+    if (bid == null) return '';
+    final res = await http
+        .get(Uri.parse('https://www.youtube.com/channel/$bid?hl=en'),
+            headers: _headers)
+        .timeout(const Duration(seconds: 20));
+    if (res.statusCode != 200) return '';
+    final m = RegExp(r'<meta property="og:image" content="([^"]+)"')
+        .firstMatch(utf8.decode(res.bodyBytes));
+    return decodeHtml(m?.group(1) ?? '');
   }
 
   /// Real description of one video (from its public page), or ''.
@@ -271,7 +323,8 @@ class YtImporter {
               .firstMatch(html);
       if (m == null) return '';
       final d = jsonDecode('"${m.group(1)}"') as String;
-      return d.length > 1500 ? d.substring(0, 1500) : d;
+      final dd = decodeHtml(d);
+      return dd.length > 1500 ? dd.substring(0, 1500) : dd;
     } catch (_) {
       return '';
     }

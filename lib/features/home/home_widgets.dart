@@ -182,6 +182,13 @@ class TopMentors extends StatelessWidget {
       final n = (c.instructorName ?? '').trim();
       if (n.isNotEmpty && !seen.containsKey(n)) seen[n] = c;
     }
+    // A teacher's picture may be on any of their courses.
+    final photos = <String, String>{};
+    for (final c in courses) {
+      final n = (c.instructorName ?? '').trim();
+      final ph = c.instructorPhotoUrl ?? '';
+      if (n.isNotEmpty && ph.isNotEmpty) photos.putIfAbsent(n, () => ph);
+    }
     if (seen.isEmpty) return const SizedBox.shrink();
     final list = seen.entries.take(10).toList();
     return SizedBox(
@@ -192,7 +199,7 @@ class TopMentors extends StatelessWidget {
         separatorBuilder: (_, __) => const SizedBox(width: 14),
         itemBuilder: (_, i) {
           final e = list[i];
-          final photo = e.value.instructorPhotoUrl;
+          final photo = photos[e.key] ?? e.value.instructorPhotoUrl;
           return SizedBox(
             width: 70,
             child: Column(children: [

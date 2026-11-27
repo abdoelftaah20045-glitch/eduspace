@@ -1,3 +1,4 @@
+import '../../core/html_text.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/l10n.dart';
@@ -56,7 +57,18 @@ class PlaylistImport {
           sectionId = '${m['section_id']}';
         }
       }
-      if (p.videos.every((v) => have.contains(v.id))) return (-1, courseId);
+      if (p.videos.every((v) => have.contains(v.id))) {
+        if (p.avatar.isNotEmpty) {
+          try {
+            await db
+                .from('courses')
+                .update({'instructor_photo_url': p.avatar})
+                .eq('id', courseId)
+                .or('instructor_photo_url.is.null,instructor_photo_url.eq.');
+          } catch (_) {}
+        }
+        return (-1, courseId);
+      }
     }
 
     final todo = <int>[];
@@ -116,7 +128,7 @@ class PlaylistImport {
         'title': p.title,
         'description':
             '${p.channel.isEmpty ? '' : '${p.channel} - '}$n ${s.t('lessons')}, ${hours.toStringAsFixed(1)} ${s.t('hours')}',
-        'field': field,
+        'field': decodeHtml(field),
         'instructor_name': p.channel,
         'cover_url': p.thumb,
         'hours': double.parse(hours.toStringAsFixed(1)),
@@ -125,6 +137,17 @@ class PlaylistImport {
         if (level.isNotEmpty) 'level': level,
         if (language.isNotEmpty) 'language': language,
       });
+    }
+    // Teacher picture (best effort: needs the instructor_photo_url column
+    // from SQL part 33; never blocks the import).
+    if (p.avatar.isNotEmpty) {
+      try {
+        await db
+            .from('courses')
+            .update({'instructor_photo_url': p.avatar})
+            .eq('id', courseId)
+            .or('instructor_photo_url.is.null,instructor_photo_url.eq.');
+      } catch (_) {}
     }
     try {
     if (sectionId.isEmpty) {

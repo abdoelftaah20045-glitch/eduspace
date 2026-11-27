@@ -161,7 +161,7 @@ class _HomeTabState extends State<_HomeTab> {
       } catch (_) {}
       var trending = <Course>[];
       try {
-        trending = (await CoursesRepository.fetchCourses()).take(8).toList();
+        trending = (await CoursesRepository.fetchCourses()).take(30).toList();
       } catch (_) {}
       try {
         final uid = Supabase.instance.client.auth.currentUser?.id;
