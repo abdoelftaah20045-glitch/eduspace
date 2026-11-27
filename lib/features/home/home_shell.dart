@@ -306,8 +306,8 @@ class _HomeTabState extends State<_HomeTab> {
           .then((_) => _load()),
       child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
         Container(
-          width: 44,
-          height: 44,
+          width: 40,
+          height: 40,
           decoration: BoxDecoration(
             gradient: LinearGradient(
                 begin: Alignment.topLeft,
@@ -323,7 +323,7 @@ class _HomeTabState extends State<_HomeTab> {
             textAlign: TextAlign.center,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
-                fontSize: 11.5,
+                fontSize: 11,
                 fontWeight: FontWeight.w600,
                 color: Theme.of(context).colorScheme.onSurface)),
       ]),
@@ -337,6 +337,25 @@ class _HomeTabState extends State<_HomeTab> {
     final item = _continueItem;
     final myCourses = _myCourses ?? const <Course>[];
     final scheme = theme.colorScheme;
+    final tilesList = _filterQuick([
+                _quick(context, Icons.menu_book_outlined, s.t('my_courses'),
+                    const Color(0xFF2196F3), const CoursesScreen()),
+                _quick(context, Icons.video_camera_front_outlined,
+                    s.t('lv_title'), const Color(0xFFE53935), const LivesScreen()),
+                _quick(context, Icons.quiz_outlined, s.t('tab_exams'),
+                    const Color(0xFF7C4DFF), const ExamsScreen()),
+                _quick(context, Icons.folder_open, s.t('library_label'),
+                    const Color(0xFF00ACC1), const LibraryScreen()),
+                _quick(context, Icons.fact_check_outlined, s.t('qb_title'),
+                    const Color(0xFFF29900), const QuestionBankScreen()),
+                _quick(context, Icons.event_outlined, s.t('sch_title'),
+                    const Color(0xFF2E9E5B), const ScheduleScreen()),
+                _quick(context, Icons.workspace_premium_outlined,
+                    s.t('my_certificates'), const Color(0xFFC9A227),
+                    const MyCertificatesScreen()),
+                _quick(context, Icons.support_agent, s.t('support'),
+                    const Color(0xFFAB47BC), const SupportScreen()),
+    ]);
     final homeParts = <String, List<Widget>>{
       'home.continue': [
             if (item != null && RemoteUi.visible('home.continue')) ...[
@@ -497,32 +516,14 @@ class _HomeTabState extends State<_HomeTab> {
             Text(s.t('sections_label'), style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: Theme.of(context).colorScheme.onSurface)),
             const SizedBox(height: 12),
             // Quick dashboard grid (reference: round icon tiles).
-            GridView.count(
-              crossAxisCount: 4,
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              mainAxisSpacing: 12,
-              crossAxisSpacing: 8,
-              childAspectRatio: .8,
-              children: _filterQuick([
-                _quick(context, Icons.menu_book_outlined, s.t('my_courses'),
-                    const Color(0xFF2196F3), const CoursesScreen()),
-                _quick(context, Icons.video_camera_front_outlined,
-                    s.t('lv_title'), const Color(0xFFE53935), const LivesScreen()),
-                _quick(context, Icons.quiz_outlined, s.t('tab_exams'),
-                    const Color(0xFF7C4DFF), const ExamsScreen()),
-                _quick(context, Icons.folder_open, s.t('library_label'),
-                    const Color(0xFF00ACC1), const LibraryScreen()),
-                _quick(context, Icons.fact_check_outlined, s.t('qb_title'),
-                    const Color(0xFFF29900), const QuestionBankScreen()),
-                _quick(context, Icons.event_outlined, s.t('sch_title'),
-                    const Color(0xFF2E9E5B), const ScheduleScreen()),
-                _quick(context, Icons.workspace_premium_outlined,
-                    s.t('my_certificates'), const Color(0xFFC9A227),
-                    const MyCertificatesScreen()),
-                _quick(context, Icons.support_agent, s.t('support'),
-                    const Color(0xFFAB47BC), const SupportScreen()),
-              ]),
+            SizedBox(
+              height: 86,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: tilesList.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 10),
+                itemBuilder: (_, i) => SizedBox(width: 68, child: tilesList[i]),
+              ),
             ),
       ],
     };
