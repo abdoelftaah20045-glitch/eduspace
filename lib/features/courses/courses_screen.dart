@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../core/pressable.dart';
 
 import '../../core/l10n.dart';
+import '../../core/search_norm.dart';
 import '../../core/remote_ui.dart';
 import '../../core/paid_courses.dart';
 import '../../core/widgets.dart';
@@ -45,7 +46,7 @@ class _CoursesScreenState extends State<CoursesScreen> {
   Future<void> _load() async {
     try {
       final courses =
-          await CoursesRepository.fetchCourses(query: _searchController.text);
+          await CoursesRepository.fetchCourses();
       try {
         final mine = await CoursesRepository.fetchMyCourses();
         _mine = {for (final c in mine) c.id: c};
@@ -136,6 +137,10 @@ class _CoursesScreenState extends State<CoursesScreen> {
         if ((c.field ?? '').trim().isNotEmpty) c.field!.trim()
     }.toList();
     var list = merged.where((c) {
+      if (!matchesSearch(_searchController.text,
+          [c.title, c.instructorName, c.field, c.description])) {
+        return false;
+      }
       if (_category.isNotEmpty && (c.field ?? '').trim() != _category) {
         return false;
       }
@@ -159,7 +164,7 @@ class _CoursesScreenState extends State<CoursesScreen> {
             child: TextField(
               controller: _searchController,
               textInputAction: TextInputAction.search,
-              onSubmitted: (_) => _load(),
+              onSubmitted: (_) => setState(() {}),
               decoration: InputDecoration(
                 hintText: s.t('search_courses'),
                 prefixIcon: const Icon(Icons.search),
@@ -170,7 +175,6 @@ class _CoursesScreenState extends State<CoursesScreen> {
                         onPressed: () {
                           _searchController.clear();
                           setState(() {});
-                          _load();
                         }),
                 filled: true,
                 fillColor: theme.colorScheme.surfaceContainerHighest
