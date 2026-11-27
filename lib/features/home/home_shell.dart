@@ -31,6 +31,7 @@ import '../schedule/schedule_screen.dart';
 import '../support/support_screen.dart';
 import '../../core/remote_ui.dart';
 import '../courses/my_courses_screen.dart';
+import '../admin/import_job.dart';
 import 'app_drawer.dart';
 import 'home_widgets.dart';
 
@@ -131,6 +132,13 @@ class _HomeTabState extends State<_HomeTab> {
   void initState() {
     super.initState();
     _load();
+    ImportJob.courseTick.addListener(_load);
+  }
+
+  @override
+  void dispose() {
+    ImportJob.courseTick.removeListener(_load);
+    super.dispose();
   }
 
   Future<void> _load() async {

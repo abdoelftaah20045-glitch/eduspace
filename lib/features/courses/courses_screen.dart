@@ -8,6 +8,7 @@ import '../../core/remote_ui.dart';
 import '../../core/paid_courses.dart';
 import '../../core/widgets.dart';
 import 'course_details_screen.dart';
+import '../admin/import_job.dart';
 import 'data/course_models.dart';
 import 'data/courses_repo.dart';
 
@@ -31,10 +32,12 @@ class _CoursesScreenState extends State<CoursesScreen> {
   void initState() {
     super.initState();
     _load();
+    ImportJob.courseTick.addListener(_load);
   }
 
   @override
   void dispose() {
+    ImportJob.courseTick.removeListener(_load);
     _searchController.dispose();
     super.dispose();
   }

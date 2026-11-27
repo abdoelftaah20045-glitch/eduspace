@@ -1,6 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/tenant.dart';
+import '../../admin/data/admin_repo.dart';
 
 import 'course_models.dart';
 
@@ -15,17 +16,37 @@ class CoursesRepository {
 
   /// Published courses, newest first, optional free-text filter.
   static Future<List<Course>> fetchCourses({String? query}) async {
+    final admin = await _adminCached();
     var q = _c
         .from('courses')
         .select()
-        .eq('status', 'published')
+        .inFilter('status', admin ? ['published', 'draft'] : ['published'])
         .eq('tenant_id', TenantContext.id);
     if (query != null && query.trim().isNotEmpty) {
       final pattern = '%${query.trim()}%';
       q = q.or('title.ilike.$pattern,description.ilike.$pattern,field.ilike.$pattern');
     }
     final rows = await q.order('created_at', ascending: false).limit(50);
-    return _mergeSocial(rows.map((m) => Course.fromMap(m)).toList());
+    return _mergeSocial(rows.map((m) {
+      // Admins also see drafts (marked); students only ever get published.
+      if (admin && m['status'] == 'draft') {
+        return Course.fromMap({...m, 'title': '${m['title']}  (مسودة / draft)'});
+      }
+      return Course.fromMap(m);
+    }).toList());
+  }
+
+  static String? _adminFor;
+  static bool _adminVal = false;
+
+  static Future<bool> _adminCached() async {
+    final uid = _c.auth.currentUser?.id;
+    if (uid == null) return false;
+    if (_adminFor != uid) {
+      _adminVal = await AdminRepository.isAdmin();
+      _adminFor = uid;
+    }
+    return _adminVal;
   }
 
   /// Merges favorites and rating stats into courses.
