@@ -96,13 +96,14 @@ class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
           actions: [
             TextButton(
               onPressed: () async {
-                final n = await AdminToolsRepository.autoClassifyCourses()
-                    .catchError((_) => -1);
+                final r = await AdminToolsRepository.autoClassifyCourses()
+                    .then<(int, int)?>((v) => v)
+                    .catchError((_) => null);
                 if (!mounted) return;
                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    content: Text(n < 0
+                    content: Text(r == null
                         ? s.t('generic_error')
-                        : '${s.t('auto_classify_done')} $n')));
+                        : '${s.t('auto_classify_done')} ${r.$1} · ${s.t('auto_classify_left')} ${r.$2}')));
                 _load();
               },
               child: Text(s.t('auto_classify')),

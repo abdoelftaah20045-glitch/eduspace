@@ -1,3 +1,5 @@
+import 'data/admin_tools_repo.dart';
+import 'auto_category.dart';
 import '../../core/admin_search.dart';
 import '../../core/search_norm.dart';
 import 'package:flutter/material.dart';
@@ -145,6 +147,61 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
     }
   }
 
+  Future<void> _pickCategory(ImportRow r) async {
+    final s = S.of(context);
+    var existing = <String>[];
+    try {
+      existing = [
+        for (final c in await AdminToolsRepository.fetchCategories())
+          if (c['kind'] == 'category') (c['name'] as String).trim()
+      ];
+    } catch (_) {}
+    final names = <String>[
+      ...existing,
+      ...AutoCategory.allNames()
+          .where((n) => !existing.any((e) => e.toLowerCase() == n.toLowerCase())),
+    ];
+    if (!mounted) return;
+    var q = '';
+    final picked = await showDialog<String>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setD) {
+          final shown = names.where((n) => matchesSearch(q, [n])).toList();
+          return AlertDialog(
+            title: Text(s.t('pick_category')),
+            content: SizedBox(
+              width: double.maxFinite,
+              height: 380,
+              child: Column(children: [
+                AdminSearchField(onChanged: (v) => setD(() => q = v)),
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: shown.length,
+                    itemBuilder: (_, i) => ListTile(
+                      dense: true,
+                      title: Text(shown[i]),
+                      onTap: () => Navigator.pop(ctx, shown[i]),
+                    ),
+                  ),
+                ),
+              ]),
+            ),
+          );
+        },
+      ),
+    );
+    if (picked == null) return;
+    try {
+      await AdminToolsRepository.setCourseField(r.courseId, picked);
+      if (mounted) setState(() => r.category = picked);
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(s.t('generic_error'))));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final s = S.of(context);
@@ -194,6 +251,14 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
                               style:
                                   const TextStyle(fontWeight: FontWeight.w700)),
                           if (r.category.isNotEmpty) Text(decodeHtml(r.category)),
+                          if (r.category.isEmpty)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 4),
+                              child: Text(s.t('needs_category'),
+                                  style: const TextStyle(
+                                      color: Color(0xFFE65100),
+                                      fontWeight: FontWeight.w600)),
+                            ),
                           const SizedBox(height: 8),
                           Wrap(spacing: 8, runSpacing: 4, children: [
                             OutlinedButton.icon(
@@ -204,6 +269,10 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
                                             courseTitle: decodeHtml(r.note)))),
                                 icon: const Icon(Icons.visibility_outlined),
                                 label: Text(s.t('imp_preview'))),
+                            if (r.category.isEmpty)
+                              OutlinedButton(
+                                  onPressed: () => _pickCategory(r),
+                                  child: Text(s.t('pick_category'))),
                             FilledButton.icon(
                                 onPressed:
                                     _busy.contains(r.courseId) ? null : () => _approve(r),

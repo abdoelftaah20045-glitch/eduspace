@@ -240,12 +240,22 @@ class ImportJob extends ChangeNotifier {
           if (row.title.isNotEmpty) p.title = row.title;
           if (row.category.isEmpty) {
             // No category given: classify from the content (free rules).
-            row.category = AutoCategory.pick(
+            // Not sure -> stays empty and waits for the admin in the review.
+            final pk = AutoCategory.pick(
               title: p.title,
               videoTitles: [for (final v in p.videos) v.title],
               existing: names,
               channel: p.channel,
             );
+            if (pk != null) {
+              final par = pk.parent;
+              if (par != null && !known.contains(par.toLowerCase())) {
+                await AdminToolsRepository.addCategory('category', par);
+                known.add(par.toLowerCase());
+                names.add(par);
+              }
+              row.category = pk.name;
+            }
           }
           if (row.category.isNotEmpty &&
               !known.contains(row.category.toLowerCase())) {

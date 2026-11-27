@@ -52,9 +52,29 @@ class AdminToolsRepository {
         .order('name');
   }
 
-  /// Puts every course that has no category into one (rule based, free).
-  /// Returns how many courses were classified.
-  static Future<int> autoClassifyCourses() async {
+  /// Makes sure a category exists (and its main subject).
+  static Future<void> ensureCategory(String name, {String? parent}) async {
+    final have = <String>{
+      for (final c in await fetchCategories())
+        if (c['kind'] == 'category') (c['name'] as String).trim().toLowerCase()
+    };
+    if (parent != null && !have.contains(parent.toLowerCase())) {
+      await addCategory('category', parent);
+    }
+    if (!have.contains(name.toLowerCase())) {
+      await addCategory('category', name);
+    }
+  }
+
+  /// Sets the category of one course (creating the category if needed).
+  static Future<void> setCourseField(String courseId, String name) async {
+    await ensureCategory(name, parent: AutoCategory.parentOf(name));
+    await _c.from('courses').update({'field': name}).eq('id', courseId);
+  }
+
+  /// Sorts every course that has no category, only when the content clearly
+  /// belongs to a real subject. Returns (sorted, needs review).
+  static Future<(int, int)> autoClassifyCourses() async {
     final cats = <String>[
       for (final c in await fetchCategories())
         if (c['kind'] == 'category') (c['name'] as String).trim()
@@ -65,25 +85,28 @@ class AdminToolsRepository {
         .eq('tenant_id', TenantContext.id)
         .limit(2000);
     var n = 0;
+    var left = 0;
     for (final r in rows as List) {
       final m = r as Map;
       if ('${m['field'] ?? ''}'.trim().isNotEmpty) continue;
-      final name = AutoCategory.pick(
+      final pk = AutoCategory.pick(
         title: '${m['title'] ?? ''}',
         description: '${m['description'] ?? ''}',
         existing: cats,
         channel: '${m['instructor_name'] ?? ''}',
       );
-      if (!cats.any((c) => c.toLowerCase() == name.toLowerCase())) {
-        try {
-          await addCategory('category', name);
-          cats.add(name);
-        } catch (_) {}
+      if (pk == null) {
+        left++;
+        continue;
       }
-      await _c.from('courses').update({'field': name}).eq('id', m['id']);
+      try {
+        await ensureCategory(pk.name, parent: pk.parent);
+        cats.add(pk.name);
+      } catch (_) {}
+      await _c.from('courses').update({'field': pk.name}).eq('id', m['id']);
       n++;
     }
-    return n;
+    return (n, left);
   }
 
   static Future<void> addCategory(String kind, String name) async {
