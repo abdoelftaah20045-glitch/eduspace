@@ -147,14 +147,10 @@ class _AdminBooksScreenState extends State<AdminBooksScreen> {
 
   Future<void> _bulk() async {
     final ar = _ar(context);
-    final res = await FilePicker.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: const ['csv', 'xlsx'],
-        withData: true);
-    if (res == null || res.files.isEmpty) return;
-    final f = res.files.first;
-    final bytes = f.bytes;
-    if (bytes == null) return;
+    final res = await FilePicker.pickFiles();
+    if (res.isEmpty || !mounted) return;
+    final f = res.first;
+    final bytes = await f.readAsBytes();
     setState(() => _busy = true);
     var added = 0;
     var skipped = 0;
