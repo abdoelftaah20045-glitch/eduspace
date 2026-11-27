@@ -367,9 +367,10 @@ class _FileImportScreenState extends State<FileImportScreen> {
           await AdminRepository.addSection(courseId, p.title, 0);
           final sections = await AdminRepository.fetchSections(courseId);
           final sectionId = sections.first['id'] as String;
+          final lessonRows = <Map<String, dynamic>>[];
           for (var i = 0; i < n; i++) {
             final v = p.videos[i];
-            await AdminRepository.addLesson({
+            lessonRows.add({
               'course_id': courseId,
               'section_id': sectionId,
               'title': v.title,
@@ -379,6 +380,11 @@ class _FileImportScreenState extends State<FileImportScreen> {
               'duration_seconds': v.seconds > 0 ? v.seconds : null,
               'sort_order': i,
             });
+          }
+          for (var i = 0; i < lessonRows.length; i += 50) {
+            await Supabase.instance.client
+                .from('lessons')
+                .insert(lessonRows.skip(i).take(50).toList());
           }
           row.status = 'ok';
           row.note = '${p.title} ($n)';
