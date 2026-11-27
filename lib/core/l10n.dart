@@ -689,6 +689,8 @@ class S {
     'course_notify_users': {'ar': 'ابعت إشعار للمستخدمين', 'en': 'Notify users', 'fr': 'Notify users', 'es': 'Notify users', 'de': 'Notify users'},
     'bulk_publish': {'ar': 'نشر كل المسودات المعروضة', 'en': 'Publish all shown drafts', 'fr': 'Publish all shown drafts', 'es': 'Publish all shown drafts', 'de': 'Publish all shown drafts'},
     'bulk_publish_body': {'ar': 'عدد الكورسات', 'en': 'Courses', 'fr': 'Courses', 'es': 'Courses', 'de': 'Courses'},
+    'admin_pay_refund': {'ar': 'استرداد', 'en': 'Refund', 'fr': 'Refund', 'es': 'Refund', 'de': 'Refund'},
+    'pay_status_refunded': {'ar': 'تم رد المبلغ', 'en': 'Refunded', 'fr': 'Refunded', 'es': 'Refunded', 'de': 'Refunded'},
     'res_title': {'ar': 'نتيجة الامتحان', 'en': 'Exam result', 'fr': 'Résultat de l\'examen', 'es': 'Resultado del examen', 'de': 'Prüfungsergebnis'},
     'res_total': {'ar': 'عدد الأسئلة', 'en': 'Total questions', 'fr': 'Total des questions', 'es': 'Total de preguntas', 'de': 'Fragen gesamt'},
     'res_time_taken': {'ar': 'الوقت المستغرق', 'en': 'Time taken', 'fr': 'Temps écoulé', 'es': 'Tiempo empleado', 'de': 'Benötigte Zeit'},

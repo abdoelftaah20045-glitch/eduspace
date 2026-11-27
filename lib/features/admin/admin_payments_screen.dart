@@ -135,6 +135,41 @@ class _RequestsTabState extends State<_RequestsTab> {
     _load();
   }
 
+  Future<void> _refund(String id) async {
+    final s = S.of(context);
+    final note = TextEditingController();
+    final go = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(s.t('admin_pay_refund')),
+        content: TextField(
+            controller: note,
+            decoration: InputDecoration(labelText: s.t('pay_note'))),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(s.t('cancel'))),
+          FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(s.t('admin_pay_refund'))),
+        ],
+      ),
+    );
+    if (go != true) return;
+    try {
+      await _c.rpc('refund_payment',
+          params: {'p_id': id, 'p_reason': note.text.trim()});
+    } catch (e) {
+      if (mounted) {
+        final t = '$e';
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(
+                '${s.t('pay_sql_needed')}\n${t.length > 120 ? t.substring(0, 120) : t}')));
+      }
+    }
+    _load();
+  }
+
   @override
   Widget build(BuildContext context) {
     final s = S.of(context);
@@ -185,6 +220,10 @@ class _RequestsTabState extends State<_RequestsTab> {
                           onPressed: () => _receipt(r['receipt_path']),
                           icon: const Icon(Icons.receipt_long),
                           label: Text(s.t('admin_pay_receipt'))),
+                    if (r['status'] == 'approved')
+                      OutlinedButton(
+                          onPressed: () => _refund(r['id']),
+                          child: Text(s.t('admin_pay_refund'))),
                     if (pending) ...[
                       FilledButton(
                           onPressed: () => _decide(r['id'], true),
