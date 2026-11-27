@@ -69,7 +69,6 @@ class _AdminAiQuizScreenState extends State<AdminAiQuizScreen> {
         'tenant_id': TenantContext.id,
         'enabled': next['enabled'] == true,
         'publish': next['publish'] == true,
-        'text_fallback': next['text_fallback'] == true,
         'course_ids': next['course_ids'],
         'updated_at': DateTime.now().toUtc().toIso8601String(),
         if (patch['enabled'] == true) 'paused_until': null,
@@ -108,12 +107,6 @@ class _AdminAiQuizScreenState extends State<AdminAiQuizScreen> {
             value: cfg['publish'] == true,
             title: const Text('نشر مباشر للاختبارات (من غير مراجعة)'),
             onChanged: (v) => _saveAuto({'publish': v}),
-          ),
-          SwitchListTile(
-            value: cfg['text_fallback'] == true,
-            title: const Text('لو الفيديو مش متاح، اعمل من العنوان والوصف'),
-            subtitle: const Text('مقفول: مفيش اختبار بيتعمل إلا من الفيديو نفسه.'),
-            onChanged: (v) => _saveAuto({'text_fallback': v}),
           ),
           if (p != null)
             Padding(
@@ -242,7 +235,7 @@ class _AdminAiQuizScreenState extends State<AdminAiQuizScreen> {
           child: Padding(
             padding: EdgeInsets.all(14),
             child: Text(
-                'بيعمل اختبار تدريبي (من 10 لـ 20 سؤال حسب طول الفيديو) لكل درس معندوش اختبار. لو الفيديو يوتيوب عام، الذكاء الاصطناعي بيشوف الفيديو نفسه وبيسأل في اللي اتشرح فعلاً (عدد الأسئلة حسب طول الفيديو)، ولو مش متاح بيرجع لعنوان الدرس ووصفه. الحد المجاني حوالي 8 ساعات فيديو في اليوم، وبتتولد بالذكاء الاصطناعي المجاني فممكن يبقى فيها أخطاء، فالأفضل مراجعتها. بيتحفظوا مسودة لحد ما تنشرهم، أو فعّل النشر المباشر. سيب الشاشة مفتوحة أثناء التشغيل.'),
+                'بيعمل اختبار تدريبي (من 10 لـ 20 سؤال حسب طول الفيديو) لكل درس معندوش اختبار. لو الفيديو يوتيوب عام، الذكاء الاصطناعي بيشوف الفيديو نفسه وبيسأل في اللي اتشرح فعلاً (عدد الأسئلة حسب طول الفيديو)، ولو الفيديو مش متاح بيتخطى الدرس ويحاول تاني بعدين (مفيش أسئلة بتتعمل من العنوان). الحد المجاني حوالي 8 ساعات فيديو في اليوم، وبتتولد بالذكاء الاصطناعي المجاني فممكن يبقى فيها أخطاء، فالأفضل مراجعتها. بيتحفظوا مسودة لحد ما تنشرهم، أو فعّل النشر المباشر. سيب الشاشة مفتوحة أثناء التشغيل.'),
           ),
         ),
         SwitchListTile(

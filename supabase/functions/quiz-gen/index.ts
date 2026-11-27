@@ -63,7 +63,7 @@ Deno.serve(async (req: Request) => {
     let publish = body.publish === true;
     let count = Math.min(20, Math.max(10, Number(body.count ?? 10)));
     let auto = false;
-    let strict = false; // auto mode: never use text-only unless the setting allows
+    const strict = true; // questions come ONLY from the video itself, never from title/description
     let tenantId = '';
     if (body.auto === true) {
       // Called by the database timer. Authenticated by the shared secret.
@@ -81,7 +81,6 @@ Deno.serve(async (req: Request) => {
         .select('*').maybeSingle();
       if (!claimed) return json({ skipped: 'not_due' });
       publish = claimed.publish === true;
-      strict = claimed.text_fallback !== true;
       count = 10;
       const { data: nid } = await db.rpc('quiz_auto_next', { t: tenantId });
       if (!nid) {
@@ -107,7 +106,7 @@ Deno.serve(async (req: Request) => {
         if (res.ok) { upd.made = (cur?.made ?? 0) + 1; upd.last_error = null; }
         if (res.skipped) {
           upd.skipped = (cur?.skipped ?? 0) + 1;
-          await db.from('quiz_auto_skip').upsert({ lesson_id: lessonId, tenant_id: tenantId, reason: String(res.skipped) });
+          await db.from('quiz_auto_skip').upsert({ lesson_id: lessonId, tenant_id: tenantId, reason: String(res.skipped), created_at: new Date().toISOString() });
         }
         if (res.quota) {
           upd.paused_until = new Date(Date.now() + 2 * 3600000).toISOString();
@@ -177,10 +176,10 @@ Deno.serve(async (req: Request) => {
     const errs: string[] = [];
     const started = Date.now();
     const models = (await pickModels(key)).slice(0, 3);
-    for (const mode of (videoUrl ? ['video', 'text'] : ['text'])) {
+    for (const mode of (videoUrl ? ['video'] : [] as string[])) {
     const isVideo = mode === 'video';
     if (qs) break;
-    if (!isVideo && strict) break;
+    if (!isVideo) break;
     for (const model of models) {
       for (let attempt = 0; attempt < 2 && !qs; attempt++) {
         if (Date.now() - started > (isVideo ? 140000 : 100000)) break;
@@ -214,7 +213,7 @@ Deno.serve(async (req: Request) => {
       if (qs) break;
     }
     }
-    if (qs === null && strict) {
+    if (qs === null) {
       if (!videoUrl) return await finish({ skipped: 'no_youtube_link' });
       if (quotaHit) return await finish({ quota: true, detail: errs.join(' | ').slice(0, 300) });
       return await finish({ skipped: 'video_unavailable', detail: errs.join(' | ').slice(0, 200) });
