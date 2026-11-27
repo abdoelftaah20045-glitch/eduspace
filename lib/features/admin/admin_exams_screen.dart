@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../../core/l10n.dart';
 import 'admin_attempts_screen.dart';
 import 'data/admin_exams_repo.dart';
+import 'exam_coverage_screen.dart';
 import 'exam_edit_screen.dart';
 import 'exam_questions_screen.dart';
 
@@ -73,7 +74,12 @@ class _AdminExamsScreenState extends State<AdminExamsScreen> {
   Widget build(BuildContext context) {
     final s = S.of(context);
     return Scaffold(
-      appBar: AppBar(title: Text(s.t('admin_exams'))),
+      appBar: AppBar(title: Text(s.t('admin_exams')), actions: [
+        TextButton(
+            onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(builder: (_) => const ExamCoverageScreen())),
+            child: const Text('التغطية')),
+      ]),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           Navigator.of(context)

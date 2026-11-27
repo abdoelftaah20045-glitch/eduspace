@@ -80,7 +80,12 @@ class _QuestionImportScreenState extends State<QuestionImportScreen> {
     final items = _items;
     final good = items?.where((q) => q.problem == null).length ?? 0;
     return Scaffold(
-      appBar: AppBar(title: Text(s.t('import_questions'))),
+      appBar: AppBar(title: Text(s.t('import_questions')), actions: [
+        FilledButton(
+            onPressed: (_saving || good == 0) ? null : _save,
+            child: Text('${s.t('import_save')} ($good)')),
+        const SizedBox(width: 12),
+      ]),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [

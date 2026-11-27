@@ -738,6 +738,8 @@ class S {
     'admin_sub_lesson_links': {'ar': 'اسحب روابط الملفات تحت كل درس', 'en': 'Pull resource links under each lesson', 'fr': 'Links', 'es': 'Links', 'de': 'Links'},
     'lesson_asg': {'ar': 'تكليفات الدروس', 'en': 'Lesson assignments', 'fr': 'Assignments', 'es': 'Assignments', 'de': 'Assignments'},
     'admin_sub_lesson_asg': {'ar': 'مدة التسليم ومراجعة تكليفات الدروس', 'en': 'Deadline and review of lesson assignments', 'fr': 'Assignments', 'es': 'Assignments', 'de': 'Assignments'},
+    'imports_title': {'ar': 'الاستيراد الشغال', 'en': 'Running imports', 'fr': 'Running imports', 'es': 'Running imports', 'de': 'Running imports'},
+    'imports_sub': {'ar': 'شوف كل الاستيراد وتقدمه وأوقفه', 'en': 'See every import, its progress, and stop it', 'fr': 'See every import, its progress, and stop it', 'es': 'See every import, its progress, and stop it', 'de': 'See every import, its progress, and stop it'},
     'res_title': {'ar': 'نتيجة الامتحان', 'en': 'Exam result', 'fr': 'Résultat de l\'examen', 'es': 'Resultado del examen', 'de': 'Prüfungsergebnis'},
     'res_total': {'ar': 'عدد الأسئلة', 'en': 'Total questions', 'fr': 'Total des questions', 'es': 'Total de preguntas', 'de': 'Fragen gesamt'},
     'res_time_taken': {'ar': 'الوقت المستغرق', 'en': 'Time taken', 'fr': 'Temps écoulé', 'es': 'Tiempo empleado', 'de': 'Benötigte Zeit'},

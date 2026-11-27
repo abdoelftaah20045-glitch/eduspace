@@ -421,7 +421,13 @@ class _YoutubeImportScreenState extends State<YoutubeImportScreen> {
     final scheme = theme.colorScheme;
     final picked = _lists.where((p) => p.selected).length;
     return Scaffold(
-      appBar: AppBar(title: Text(s.t('yt_import'))),
+      appBar: AppBar(title: Text(s.t('yt_import')), actions: [
+        if (_lists.isNotEmpty)
+          FilledButton(
+              onPressed: (_importing || picked == 0) ? null : _import,
+              child: Text('${s.t('yt_import_btn')} ($picked)')),
+        const SizedBox(width: 12),
+      ]),
       bottomNavigationBar: _lists.isEmpty
           ? null
           : SafeArea(

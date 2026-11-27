@@ -297,6 +297,15 @@ class _FileImportScreenState extends State<FileImportScreen> {
     final _fileName = _job.fileName;
     return Scaffold(
       appBar: AppBar(title: Text(s.t('fi_title')), actions: [
+        if (_job.rows.isNotEmpty)
+          FilledButton(
+              onPressed: _running
+                  ? _job.stop
+                  : (pending.isEmpty
+                      ? null
+                      : () => _job.start(S.of(context),
+                          retryErrors: !_job.hasPending)),
+              child: Text(_running ? s.t('bg_stop') : s.t('yt_import_btn'))),
         TextButton.icon(
           onPressed: () => Navigator.of(context).push(MaterialPageRoute<void>(
               builder: (_) => const ImportReviewScreen())),

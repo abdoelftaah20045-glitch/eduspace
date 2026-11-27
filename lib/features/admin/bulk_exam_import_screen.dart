@@ -227,7 +227,12 @@ class _BulkExamImportScreenState extends State<BulkExamImportScreen> {
     final matched = groups?.where((g) => g.lesson != null).length ?? 0;
     final todo = groups?.where((g) => g.lesson != null && !g.hasExam && g.valid > 0).length ?? 0;
     return Scaffold(
-      appBar: AppBar(title: const Text('استيراد اختبارات بالجملة')),
+      appBar: AppBar(title: const Text('استيراد اختبارات بالجملة'), actions: [
+        FilledButton(
+            onPressed: (_busy || todo == 0) ? null : _save,
+            child: Text('حفظ $todo')),
+        const SizedBox(width: 12),
+      ]),
       body: ListView(padding: const EdgeInsets.all(16), children: [
         const Card(
           child: Padding(
