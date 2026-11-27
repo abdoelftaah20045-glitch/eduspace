@@ -730,6 +730,8 @@ class S {
     'admin_sub_home_builder': {'ar': 'ضيف بانرات وأيقونات وصفوف كورسات وأقسام', 'en': 'Add banners, tiles, course rows and categories', 'fr': 'Home builder', 'es': 'Home builder', 'de': 'Home builder'},
     'splash_editor': {'ar': 'شاشة البداية', 'en': 'Splash screen', 'fr': 'Splash', 'es': 'Splash', 'de': 'Splash'},
     'admin_sub_splash': {'ar': 'الألوان والشعار ومدة الأنيميشن', 'en': 'Colors, slogan and animation speed', 'fr': 'Splash', 'es': 'Splash', 'de': 'Splash'},
+    'bulk_exams': {'ar': 'استيراد اختبارات بالجملة', 'en': 'Bulk exam import', 'fr': 'Bulk exam import', 'es': 'Bulk exam import', 'de': 'Bulk exam import'},
+    'admin_sub_bulk_exams': {'ar': 'اختبار لكل فيديو من ملف أو شيت، يتصحح تلقائيًا', 'en': 'One auto-graded exam per video from a file or sheet', 'fr': 'Bulk', 'es': 'Bulk', 'de': 'Bulk'},
     'res_title': {'ar': 'نتيجة الامتحان', 'en': 'Exam result', 'fr': 'Résultat de l\'examen', 'es': 'Resultado del examen', 'de': 'Prüfungsergebnis'},
     'res_total': {'ar': 'عدد الأسئلة', 'en': 'Total questions', 'fr': 'Total des questions', 'es': 'Total de preguntas', 'de': 'Fragen gesamt'},
     'res_time_taken': {'ar': 'الوقت المستغرق', 'en': 'Time taken', 'fr': 'Temps écoulé', 'es': 'Tiempo empleado', 'de': 'Benötigte Zeit'},

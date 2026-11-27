@@ -254,3 +254,9 @@ List<ParsedQuestion> parseQuestionsFile(String name, String text) {
   if (n.endsWith('.csv') || n.endsWith('.tsv')) return parseQuestionsCsv(text);
   return parseQuestionsText(text);
 }
+
+/// Public wrappers used by the bulk exam import.
+Set<int> parseAnswerCells(dynamic a, List<String> options) =>
+    _parseAnswer(a, options);
+String normQuestionType(String? t, int correctCount, List<String> options) =>
+    _normType(t, correctCount, options);
