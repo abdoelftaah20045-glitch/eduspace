@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 
 import '../../core/l10n.dart';
 import 'import_job.dart';
+import 'import_review_screen.dart';
 import 'youtube_import_screen.dart';
 
 const kImportTemplate =
@@ -294,7 +295,14 @@ class _FileImportScreenState extends State<FileImportScreen> {
     final _withDesc = _job.withDesc;
     final _fileName = _job.fileName;
     return Scaffold(
-      appBar: AppBar(title: Text(s.t('fi_title'))),
+      appBar: AppBar(title: Text(s.t('fi_title')), actions: [
+        TextButton.icon(
+          onPressed: () => Navigator.of(context).push(MaterialPageRoute<void>(
+              builder: (_) => const ImportReviewScreen())),
+          icon: const Icon(Icons.fact_check_outlined),
+          label: Text('${s.t('imp_review')} (${_job.reviewQueue.length})'),
+        ),
+      ]),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [

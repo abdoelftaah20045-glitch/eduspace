@@ -9,6 +9,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/bg_guard.dart';
 import '../../core/l10n.dart';
+import 'data/admin_repo.dart';
 import 'data/admin_tools_repo.dart';
 import 'playlist_import.dart';
 import 'youtube_import_screen.dart';
@@ -17,7 +18,7 @@ import 'youtube_import_screen.dart';
 class ImportRow {
   ImportRow(this.line, this.category, this.url, this.title, this.language,
       this.level,
-      {this.status = 'wait', this.note = ''});
+      {this.status = 'wait', this.note = '', this.courseId = '', this.review = ''});
   final int line;
   final String category;
   final String url;
@@ -26,6 +27,8 @@ class ImportRow {
   final String level;
   String status; // wait, run, ok, skip, err
   String note;
+  String courseId;
+  String review; // '' = waiting for review, approved, rejected
 
   Map<String, dynamic> toJson() => {
         'l': line,
@@ -36,6 +39,8 @@ class ImportRow {
         'v': level,
         's': status,
         'n': note,
+        'ci': courseId,
+        'rv': review,
       };
 
   static ImportRow fromJson(Map<String, dynamic> j) => ImportRow(
@@ -47,6 +52,8 @@ class ImportRow {
         '${j['v'] ?? ''}',
         status: '${j['s'] ?? 'wait'}',
         note: '${j['n'] ?? ''}',
+        courseId: '${j['ci'] ?? ''}',
+        review: '${j['rv'] ?? ''}',
       );
 }
 
@@ -121,6 +128,28 @@ class ImportJob extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Imported courses waiting for the admin's decision.
+  List<ImportRow> get reviewQueue => rows
+      .where((r) => r.courseId.isNotEmpty && r.review.isEmpty && (r.status == 'ok'))
+      .toList();
+
+  Future<void> approve(ImportRow r, {bool notify = false}) async {
+    await AdminToolsRepository.setCourseStatus(r.courseId, 'published',
+        notify: notify);
+    r.review = 'approved';
+    await _save();
+    courseTick.value++;
+    notifyListeners();
+  }
+
+  Future<void> reject(ImportRow r) async {
+    await AdminRepository.deleteCourse(r.courseId);
+    r.review = 'rejected';
+    await _save();
+    courseTick.value++;
+    notifyListeners();
+  }
+
   void stop() {
     _stop = true;
   }
@@ -187,7 +216,7 @@ class ImportJob extends ChangeNotifier {
             await AdminToolsRepository.addCategory('category', row.category);
             known.add(row.category.toLowerCase());
           }
-          final added = await PlaylistImport.run(
+          final res = await PlaylistImport.run(
             p,
             s: s,
             withDesc: withDesc,
@@ -201,6 +230,8 @@ class ImportJob extends ChangeNotifier {
                   '$done/${rows.length} - ${s.t('bg_err_word')}: $errCount\n$t');
             },
           );
+          final added = res.$1;
+          row.courseId = res.$2;
           if (added < 0) {
             row.status = 'skip';
             row.note = s.t('fi_already');

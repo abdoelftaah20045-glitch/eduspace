@@ -19,7 +19,7 @@ class PlaylistImport {
 
   /// Returns the number of lessons added, or -1 when the playlist was
   /// already fully imported.
-  static Future<int> run(
+  static Future<(int, String)> run(
     YtPlaylist p, {
     required S s,
     required bool withDesc,
@@ -56,7 +56,7 @@ class PlaylistImport {
           sectionId = '${m['section_id']}';
         }
       }
-      if (p.videos.every((v) => have.contains(v.id))) return -1;
+      if (p.videos.every((v) => have.contains(v.id))) return (-1, courseId);
     }
 
     final todo = <int>[];
@@ -155,7 +155,7 @@ class PlaylistImport {
     for (var i = 0; i < rows.length; i += 50) {
       await db.from('lessons').insert(rows.skip(i).take(50).toList());
     }
-    return rows.length;
+    return (rows.length, courseId);
     } catch (e) {
       // Do not leave an empty draft course behind when we created it.
       if (createdHere) {
