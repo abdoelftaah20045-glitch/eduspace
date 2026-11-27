@@ -122,7 +122,7 @@ class _LivesScreenState extends State<LivesScreen> {
                       ),
                     PressScale(
                       child: InkWell(
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(8),
                         onTap: () => Navigator.of(context)
                             .push(MaterialPageRoute(
                                 builder: (_) => LiveDetailScreen(session: l)))
@@ -132,7 +132,7 @@ class _LivesScreenState extends State<LivesScreen> {
                           padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
                             color: scheme.surface,
-                            borderRadius: BorderRadius.circular(16),
+                            borderRadius: BorderRadius.circular(8),
                             border: Border.all(color: scheme.outlineVariant),
                             boxShadow: [
                               BoxShadow(
@@ -277,7 +277,7 @@ class _LiveDetailScreenState extends State<LiveDetailScreen> {
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               color: theme.colorScheme.primary,
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(8),
             ),
             child: Column(
               children: [

@@ -164,7 +164,7 @@ class _StudyPlannerScreenState extends State<StudyPlannerScreen> {
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
                         colors: [Color(0xFFE8805A), Color(0xFFD96A43)]),
-                    borderRadius: BorderRadius.circular(22),
+                    borderRadius: BorderRadius.circular(8),
                   ),
                   child: Row(children: [
                     SizedBox(
@@ -254,7 +254,7 @@ class _StudyPlannerScreenState extends State<StudyPlannerScreen> {
         background: Container(
           decoration: BoxDecoration(
               color: const Color(0xFFE53935),
-              borderRadius: BorderRadius.circular(16)),
+              borderRadius: BorderRadius.circular(8)),
           alignment: AlignmentDirectional.centerEnd,
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: const Icon(Icons.delete_outline, color: Colors.white),

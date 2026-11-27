@@ -59,7 +59,7 @@ class _HelpScreenState extends State<HelpScreen> {
               margin: const EdgeInsets.only(bottom: 10),
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surface,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(8),
                 boxShadow: const [
                   BoxShadow(
                       color: Color(0x14E8805A),

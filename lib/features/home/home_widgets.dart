@@ -102,7 +102,7 @@ class FeaturedCourseCard extends StatelessWidget {
         ? s.t('free')
         : '${c.price.toStringAsFixed(0)} ${c.currency}';
     return InkWell(
-      borderRadius: BorderRadius.circular(18),
+      borderRadius: BorderRadius.circular(8),
       onTap: () => Navigator.of(context).push(MaterialPageRoute(
           builder: (_) => CourseDetailsScreen(courseId: c.id))),
       child: Container(

@@ -100,7 +100,7 @@ class _QuizAnalysisState extends State<QuizAnalysis> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Card(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -215,7 +215,7 @@ class _ChapterCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: col.withValues(alpha: .07),
         border: Border.all(color: col.withValues(alpha: .35)),
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(8),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -230,7 +230,7 @@ class _ChapterCard extends StatelessWidget {
             ),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(color: col, borderRadius: BorderRadius.circular(20)),
+              decoration: BoxDecoration(color: col, borderRadius: BorderRadius.circular(8)),
               child: Text('${g.pct.toStringAsFixed(1)}%',
                   style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
             ),

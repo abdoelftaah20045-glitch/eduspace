@@ -114,7 +114,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                               color: mine
                                   ? const Color(0xFFE8F0FF)
                                   : Theme.of(context).colorScheme.surface,
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: BorderRadius.circular(8),
                               border: Border.all(
                                   color: mine
                                       ? const Color(0xFFE8805A)

@@ -68,7 +68,7 @@ class _PerformanceScreenState extends State<PerformanceScreen> {
           padding: const EdgeInsets.symmetric(vertical: 14),
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surface,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(8),
             boxShadow: [
               BoxShadow(
                   color: c.withValues(alpha: .15),

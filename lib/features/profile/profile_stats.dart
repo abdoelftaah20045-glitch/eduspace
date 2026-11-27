@@ -48,7 +48,7 @@ class _ProfileStatsState extends State<ProfileStats> {
             padding: const EdgeInsets.symmetric(vertical: 14),
             decoration: BoxDecoration(
               color: col.withValues(alpha: .1),
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(8),
             ),
             child: Column(children: [
               Icon(i, color: col),

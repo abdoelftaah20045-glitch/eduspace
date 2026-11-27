@@ -195,7 +195,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                                 return Card(
                                   margin: const EdgeInsets.only(bottom: 10),
                                   shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(16)),
+                                      borderRadius: BorderRadius.circular(8)),
                                   clipBehavior: Clip.antiAlias,
                                   child: ListTile(
                                     leading: Icon(_iconFor(item.fileType),
@@ -241,7 +241,7 @@ class _FileCard extends StatelessWidget {
     return PressScale(child: Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(8),
         side: BorderSide(color: Theme.of(context).dividerColor),
       ),
       clipBehavior: Clip.antiAlias,

@@ -75,7 +75,7 @@ class _CoursesStripState extends State<CoursesStrip> {
                 final c = items[i];
                 final p = (c.progressPercent ?? 0).clamp(0, 100);
                 return InkWell(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(8),
                   onTap: () => Navigator.of(context).push(MaterialPageRoute(
                       builder: (_) => CourseDetailsScreen(courseId: c.id))),
                   child: Container(
@@ -83,7 +83,7 @@ class _CoursesStripState extends State<CoursesStrip> {
                     decoration: BoxDecoration(
                       color: scheme.surfaceContainerHighest
                           .withValues(alpha: .5),
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(8),
                     ),
                     clipBehavior: Clip.antiAlias,
                     child: Column(

@@ -84,7 +84,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
         padding: const EdgeInsets.all(20),
         children: [
           Card(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             child: ListTile(
               leading: const Icon(Icons.account_circle_outlined),
               title: Text(s.t('current_account')),
