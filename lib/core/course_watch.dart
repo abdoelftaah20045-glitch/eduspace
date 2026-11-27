@@ -7,10 +7,10 @@ import 'package:workmanager/workmanager.dart';
 
 import 'bg_guard.dart';
 import 'config.dart';
-import 'integrations.dart';
 
 const _taskName = 'deki_course_watch';
 const _lastKey = 'course_watch_last_ts';
+const _pushLive = bool.fromEnvironment('PUSH_LIVE');
 
 /// Runs in a background isolate, even with the app closed.
 @pragma('vm:entry-point')
@@ -32,7 +32,7 @@ class CourseWatch {
   CourseWatch._();
 
   static Future<void> register() async {
-    if (!Platform.isAndroid || Integrations.fcmEnabled) return;
+    if (!Platform.isAndroid || _pushLive) return;
     try {
       final perm = await FlutterForegroundTask.checkNotificationPermission();
       if (perm != NotificationPermission.granted) {

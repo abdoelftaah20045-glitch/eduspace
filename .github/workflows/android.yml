@@ -112,6 +112,7 @@ jobs:
           --dart-define=SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}
           --dart-define=SENTRY_DSN=${{ secrets.SENTRY_DSN }}
           --dart-define=FCM_ENABLED=${{ secrets.FCM_ENABLED }}
+          --dart-define=PUSH_LIVE=${{ secrets.PUSH_LIVE }}
           --dart-define=FB_API_KEY=${{ secrets.FB_API_KEY }}
           --dart-define=FB_APP_ID=${{ secrets.FB_APP_ID }}
           --dart-define=FB_SENDER_ID=${{ secrets.FB_SENDER_ID }}
