@@ -84,7 +84,8 @@ Deno.serve(async (req: Request) => {
       count = 10;
       const { data: nid } = await db.rpc('quiz_auto_next', { t: tenantId });
       if (!nid) {
-        await db.from('quiz_auto_config').update({ enabled: false, busy_until: null, last_error: 'done: every lesson has a quiz or was skipped' }).eq('tenant_id', tenantId);
+        // Stay armed: check again in 30 min so new lessons are picked up by themselves.
+        await db.from('quiz_auto_config').update({ busy_until: null, paused_until: new Date(Date.now() + 30 * 60000).toISOString(), last_error: 'idle: every lesson has a quiz. Watching for new lessons.' }).eq('tenant_id', tenantId);
         return json({ done: true });
       }
       lessonId = String(nid);
