@@ -23,6 +23,10 @@ jobs:
       - name: Generate Android platform files
         run: flutter create --platforms=android --project-name eduspace_app .
 
+      - name: Light launch background (no black screen at start)
+        continue-on-error: true
+        run: python3 ci/patch_launch_theme.py
+
       - name: Screen protection (FLAG_SECURE) in MainActivity
         run: sh ci/patch_mainactivity.sh
 

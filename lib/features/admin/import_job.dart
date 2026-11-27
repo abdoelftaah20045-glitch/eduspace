@@ -129,9 +129,32 @@ class ImportJob extends ChangeNotifier {
   }
 
   /// Imported courses waiting for the admin's decision.
-  List<ImportRow> get reviewQueue => rows
-      .where((r) => r.courseId.isNotEmpty && r.review.isEmpty && (r.status == 'ok'))
-      .toList();
+  Set<String>? draftIds;
+
+  /// Ids of courses still in draft (what the review queue may show).
+  Future<void> refreshDrafts() async {
+    try {
+      final r = await Supabase.instance.client
+          .from('courses')
+          .select('id')
+          .eq('status', 'draft')
+          .limit(2000);
+      draftIds = {for (final m in r as List) '${(m as Map)['id']}'};
+      notifyListeners();
+    } catch (_) {}
+  }
+
+  /// Also lists playlists that were skipped because they were imported
+  /// before, as long as their course is still a draft.
+  List<ImportRow> get reviewQueue {
+    final seen = <String>{};
+    return rows.where((r) {
+      if (r.courseId.isEmpty || r.review.isNotEmpty) return false;
+      if (r.status != 'ok' && r.status != 'skip') return false;
+      if (draftIds != null && !draftIds!.contains(r.courseId)) return false;
+      return seen.add(r.courseId);
+    }).toList();
+  }
 
   Future<void> approve(ImportRow r, {bool notify = false}) async {
     await AdminToolsRepository.setCourseStatus(r.courseId, 'published',
@@ -232,9 +255,10 @@ class ImportJob extends ChangeNotifier {
           );
           final added = res.$1;
           row.courseId = res.$2;
+          await refreshDrafts();
           if (added < 0) {
             row.status = 'skip';
-            row.note = s.t('fi_already');
+            row.note = '${p.title} (${s.t('fi_already')})';
           } else {
             row.status = 'ok';
             row.note = '${p.title} ($added)';

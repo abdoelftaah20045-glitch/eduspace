@@ -16,17 +16,19 @@ class CoursesRepository {
 
   /// Published courses, newest first, optional free-text filter.
   static Future<List<Course>> fetchCourses({String? query}) async {
-    final admin = await _adminCached();
+    // The server (RLS) decides who may see drafts: tenant admins get them,
+    // students only ever get published rows.
+    const admin = true;
     var q = _c
         .from('courses')
         .select()
-        .inFilter('status', admin ? ['published', 'draft'] : ['published'])
+        .inFilter('status', ['published', 'draft'])
         .eq('tenant_id', TenantContext.id);
     if (query != null && query.trim().isNotEmpty) {
       final pattern = '%${query.trim()}%';
       q = q.or('title.ilike.$pattern,description.ilike.$pattern,field.ilike.$pattern');
     }
-    final rows = await q.order('created_at', ascending: false).limit(50);
+    final rows = await q.order('created_at', ascending: false).limit(300);
     return _mergeSocial(rows.map((m) {
       // Admins also see drafts (marked); students only ever get published.
       if (admin && m['status'] == 'draft') {

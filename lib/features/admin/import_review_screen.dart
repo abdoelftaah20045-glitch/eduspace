@@ -22,6 +22,7 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
   void initState() {
     super.initState();
     _job.restore();
+    _job.refreshDrafts();
     _job.addListener(_tick);
   }
 

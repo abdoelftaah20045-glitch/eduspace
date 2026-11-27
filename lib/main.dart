@@ -30,6 +30,9 @@ Future<void> main() async {
       );
   WidgetsFlutterBinding.ensureInitialized();
   FlutterForegroundTask.initCommunicationPort();
+  // Paint the splash colour on the very first frame; the slower startup
+  // work below then happens behind it instead of a black screen.
+  runApp(const ColoredBox(color: Color(0xFFEFF6FF)));
   // Immersive: hide status and navigation bars; a swipe shows them briefly.
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
   await AppState.instance.load();
