@@ -495,8 +495,9 @@ class _HomeBlockState extends State<HomeBlock> {
 /// Puts the admin's custom blocks between the built-in Home sections.
 /// A block's `at` is the number of built-in sections before it (0 = top).
 List<Widget> mergeHomeBlocks(List<List<Widget>> sections) {
+  final source = RemoteUi.homeBlocksSet ? RemoteUi.homeBlocks : defaultHomeBlocks;
   final blocks = [
-    for (final b in RemoteUi.homeBlocks)
+    for (final b in source)
       if (b['enabled'] != false) b,
   ];
   int at(Map<String, dynamic> b) =>
@@ -510,3 +511,12 @@ List<Widget> mergeHomeBlocks(List<List<Widget>> sections) {
   }
   return out;
 }
+
+/// Fuller Home out of the box, until the admin saves his own layout.
+const List<Map<String, dynamic>> defaultHomeBlocks = [
+  {'id': 'd_chips', 'type': 'chips', 'at': 0},
+  {'id': 'd_best', 'type': 'numbered', 'title': 'الأفضل اليوم', 'at': 5, 'rows': 10, 'source': 'rated'},
+  {'id': 'd_cats', 'type': 'categories', 'title': 'تصفح بالأقسام', 'at': 6, 'rows': 12},
+  {'id': 'd_new', 'type': 'courses', 'title': 'أحدث الكورسات', 'at': 6, 'rows': 8, 'style': 'row', 'source': 'latest'},
+  {'id': 'd_free', 'type': 'courses', 'title': 'كورسات مجانية', 'at': 6, 'rows': 8, 'style': 'row', 'source': 'free'},
+];

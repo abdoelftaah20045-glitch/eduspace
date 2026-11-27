@@ -20,6 +20,8 @@ class RemoteUi {
   static Map<String, num> limits = {};
   static List<Map<String, dynamic>> events = [];
   static List<Map<String, dynamic>> homeBlocks = [];
+  /// True once the admin saved a Home layout (even an empty one).
+  static bool homeBlocksSet = false;
 
   /// Admin-set number (ui_limits) or the built-in default.
   static num limit(String key, num def) => limits[key] ?? def;
@@ -56,6 +58,7 @@ class RemoteUi {
           continue;
         }
         if (r['setting_key'] == 'ui_home') {
+          homeBlocksSet = true;
           homeBlocks = [
             for (final e in (v['blocks'] as List? ?? const []))
               if (e is Map) Map<String, dynamic>.from(e),

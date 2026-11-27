@@ -39,11 +39,17 @@ class _AdminHomeBuilderScreenState extends State<AdminHomeBuilderScreen> {
   void initState() {
     super.initState();
     _blocks = [for (final b in RemoteUi.homeBlocks) Map<String, dynamic>.from(b)];
+    if (!RemoteUi.homeBlocksSet && _blocks.isEmpty) {
+      _blocks = [
+        for (final b in defaultHomeBlocks) Map<String, dynamic>.from(b),
+      ];
+    }
   }
 
   Future<void> _save() async {
     setState(() => _saving = true);
     try {
+      RemoteUi.homeBlocksSet = true;
       RemoteUi.homeBlocks = [for (final b in _blocks) Map<String, dynamic>.from(b)];
       await AdminToolsRepository.saveSetting('ui_home', {'blocks': _blocks});
       RemoteUi.version.value++;
