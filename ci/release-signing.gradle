@@ -15,3 +15,13 @@ android {
         }
     }
 }
+
+// Needed by flutter_local_notifications (core library desugaring).
+android {
+    compileOptions {
+        coreLibraryDesugaringEnabled true
+    }
+}
+dependencies {
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.4'
+}

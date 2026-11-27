@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
 
+import 'bg_guard.dart';
 import 'l10n.dart';
 import 'recovery.dart';
 
@@ -94,7 +95,11 @@ class _UpdateDialogState extends State<_UpdateDialog> {
       _progress = 0;
     });
     final client = http.Client();
+    final s0 = S.of(context);
+    var guarded = false;
     try {
+      await BgGuard.begin(s0.t('bg_update_downloading'), '0%');
+      guarded = true;
       final req = http.Request('GET', Uri.parse(widget.apkUrl));
       final res = await client.send(req).timeout(const Duration(seconds: 30));
       if (res.statusCode != 200) throw Exception('HTTP ${res.statusCode}');
@@ -107,12 +112,20 @@ class _UpdateDialogState extends State<_UpdateDialog> {
         sink.add(chunk);
         got += chunk.length;
         if (total > 0 && mounted) setState(() => _progress = got / total);
+        if (total > 0) {
+          BgGuard.update(s0.t('bg_update_downloading'),
+              '${(got * 100 / total).floor()}%');
+        }
       }
       await sink.close();
       if (total > 0 && got != total) {
         throw Exception('incomplete download ($got/$total)');
       }
       if (mounted) setState(() => _progress = 1);
+      await BgGuard.end();
+      guarded = false;
+      await BgGuard.notify(
+          4713, s0.t('bg_update_ready'), s0.t('bg_update_ready_body'));
       final result = await OpenFilex.open(file.path,
           type: 'application/vnd.android.package-archive');
       if (mounted) {
@@ -131,6 +144,7 @@ class _UpdateDialogState extends State<_UpdateDialog> {
         });
       }
     } finally {
+      if (guarded) await BgGuard.end();
       client.close();
     }
   }
@@ -154,6 +168,9 @@ class _UpdateDialogState extends State<_UpdateDialog> {
           LinearProgressIndicator(value: _progress),
           const SizedBox(height: 6),
           Text(s.t('update_downloading')),
+          const SizedBox(height: 4),
+          Text(s.t('update_bg_hint'),
+              style: Theme.of(context).textTheme.bodySmall),
         ],
         if (_error != null) ...[
           const SizedBox(height: 12),

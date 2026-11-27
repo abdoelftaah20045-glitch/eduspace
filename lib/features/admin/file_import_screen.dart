@@ -6,9 +6,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../core/bg_guard.dart';
 import '../../core/l10n.dart';
 import 'data/admin_repo.dart';
 import 'data/admin_tools_repo.dart';
+import 'playlist_import.dart';
 import 'youtube_import_screen.dart';
 
 const kImportTemplate =
@@ -296,6 +298,8 @@ class _FileImportScreenState extends State<FileImportScreen> {
       _running = true;
       _done = 0;
     });
+    final title = s.t('bg_import_running');
+    await BgGuard.begin(title, '0/${_rows.length}');
     final known = <String>{};
     try {
       for (final c in await AdminToolsRepository.fetchCategories()) {
@@ -304,12 +308,14 @@ class _FileImportScreenState extends State<FileImportScreen> {
         }
       }
     } catch (_) {}
+    var okCount = 0;
+    var errCount = 0;
     for (final row in _rows) {
       if (row.status == 'ok' || row.status == 'skip') {
         _done++;
         continue;
       }
-      if (!mounted) return;
+      if (!mounted) break;
       setState(() {
         row.status = 'run';
         row.note = '';
@@ -317,86 +323,46 @@ class _FileImportScreenState extends State<FileImportScreen> {
       try {
         final id = YtImporter.listId(row.url);
         if (id == null) throw s.t('fi_bad_link');
-        if (await _exists(id)) {
+        final p = await YtImporter.fetchPlaylist(id);
+        if (row.title.isNotEmpty) p.title = row.title;
+        if (row.category.isNotEmpty &&
+            !known.contains(row.category.toLowerCase())) {
+          await AdminToolsRepository.addCategory('category', row.category);
+          known.add(row.category.toLowerCase());
+        }
+        final added = await PlaylistImport.run(
+          p,
+          s: s,
+          withDesc: _withDesc,
+          field: row.category,
+          level: row.level,
+          language: row.language,
+          onProgress: (t) {
+            if (mounted) setState(() => _progress = t);
+            BgGuard.update(title,
+                '$_done/${_rows.length} - ${s.t('bg_err_word')}: $errCount\n$t');
+          },
+        );
+        if (added < 0) {
           row.status = 'skip';
           row.note = s.t('fi_already');
         } else {
-          final p = await YtImporter.fetchPlaylist(id);
-          if (row.title.isNotEmpty) p.title = row.title;
-          final n = p.videos.length;
-          if (_withDesc) {
-            for (var i = 0; i < n; i += 4) {
-              final batch = p.videos.skip(i).take(4).toList();
-              if (mounted) {
-                setState(() => _progress =
-                    '${p.title}: ${s.t('yt_reading')} ${i + 1}/$n');
-              }
-              final res = await Future.wait(
-                  batch.map((v) => YtImporter.fetchDescription(v.id)));
-              for (var k = 0; k < batch.length; k++) {
-                batch[k].description = res[k];
-              }
-            }
-          }
-          for (var i = 0; i < n; i++) {
-            final v = p.videos[i];
-            if (v.description.trim().isEmpty) {
-              v.description =
-                  '${s.t('yt_lesson')} ${i + 1}/$n: ${v.title}${p.channel.isEmpty ? '' : ' - ${p.channel}'}';
-            }
-          }
-          if (row.category.isNotEmpty &&
-              !known.contains(row.category.toLowerCase())) {
-            await AdminToolsRepository.addCategory('category', row.category);
-            known.add(row.category.toLowerCase());
-          }
-          final hours = p.totalSeconds / 3600;
-          final courseId = await AdminRepository.createCourse({
-            'title': p.title,
-            'description':
-                '${p.channel.isEmpty ? '' : '${p.channel} - '}$n ${s.t('lessons')}, ${hours.toStringAsFixed(1)} ${s.t('hours')}',
-            'field': row.category,
-            'instructor_name': p.channel,
-            'cover_url': p.thumb,
-            'hours': double.parse(hours.toStringAsFixed(1)),
-            'price': 0,
-            'status': 'draft',
-            if (row.level.isNotEmpty) 'level': row.level,
-            if (row.language.isNotEmpty) 'language': row.language,
-          });
-          await AdminRepository.addSection(courseId, p.title, 0);
-          final sections = await AdminRepository.fetchSections(courseId);
-          final sectionId = sections.first['id'] as String;
-          final lessonRows = <Map<String, dynamic>>[];
-          for (var i = 0; i < n; i++) {
-            final v = p.videos[i];
-            lessonRows.add({
-              'course_id': courseId,
-              'section_id': sectionId,
-              'title': v.title,
-              'type': 'video',
-              'content': v.description,
-              'media_url': '${v.url}&list=${p.id}',
-              'duration_seconds': v.seconds > 0 ? v.seconds : null,
-              'sort_order': i,
-            });
-          }
-          for (var i = 0; i < lessonRows.length; i += 50) {
-            await Supabase.instance.client
-                .from('lessons')
-                .insert(lessonRows.skip(i).take(50).toList());
-          }
           row.status = 'ok';
-          row.note = '${p.title} ($n)';
+          row.note = '${p.title} ($added)';
+          okCount++;
         }
       } catch (e) {
         final t = '$e';
         row.status = 'err';
         row.note = t.length > 160 ? t.substring(0, 160) : t;
+        errCount++;
       }
       _done++;
       if (mounted) setState(() {});
     }
+    await BgGuard.end();
+    await BgGuard.notify(4712, s.t('bg_import_done'),
+        '${s.t('bg_done_word')}: $okCount - ${s.t('bg_err_word')}: $errCount');
     if (mounted) {
       setState(() {
         _running = false;

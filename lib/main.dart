@@ -1,3 +1,4 @@
+import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'core/updater.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -25,6 +26,7 @@ Future<void> main() async {
         ),
       );
   WidgetsFlutterBinding.ensureInitialized();
+  FlutterForegroundTask.initCommunicationPort();
   // Immersive: hide status and navigation bars; a swipe shows them briefly.
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
   await AppState.instance.load();

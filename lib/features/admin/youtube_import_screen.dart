@@ -3,8 +3,10 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
+import '../../core/bg_guard.dart';
 import '../../core/l10n.dart';
 import 'data/admin_repo.dart';
+import 'playlist_import.dart';
 
 /// One video of a playlist.
 class YtVideo {
@@ -337,79 +339,51 @@ class _YoutubeImportScreenState extends State<YoutubeImportScreen> {
     final messenger = ScaffoldMessenger.of(context);
     final chosen = _lists.where((p) => p.selected).toList();
     if (chosen.isEmpty) return;
-    setState(() => _importing = true);
+    setState(() {
+      _importing = true;
+      _errors.clear();
+    });
+    final title = s.t('bg_import_running');
     var done = 0;
-    try {
-      for (final p in chosen) {
-        if (_withDesc) {
-          // Four at a time, to stay polite and fast.
-          for (var i = 0; i < p.videos.length; i += 4) {
-            final batch = p.videos.skip(i).take(4).toList();
-            if (mounted) {
-              setState(() => _progress =
-                  '${p.title}: ${s.t('yt_reading')} ${i + 1}/${p.videos.length}');
-            }
-            final res = await Future.wait(
-                batch.map((v) => YtImporter.fetchDescription(v.id)));
-            for (var k = 0; k < batch.length; k++) {
-              batch[k].description = res[k];
-            }
-          }
-        }
-        final n = p.videos.length;
-        for (var i = 0; i < n; i++) {
-          final v = p.videos[i];
-          if (v.description.trim().isEmpty) {
-            v.description =
-                '${s.t('yt_lesson')} ${i + 1}/$n: ${v.title} (${_mmss(v.seconds)})${p.channel.isEmpty ? '' : ' - ${p.channel}'}';
-          }
-        }
-        if (mounted) setState(() => _progress = '${p.title}: ${s.t('yt_saving')}');
-        final hours = p.totalSeconds / 3600;
-        final courseId = await AdminRepository.createCourse({
-          'title': p.title,
-          'description':
-              '${p.channel.isEmpty ? '' : '${p.channel} - '}$n ${s.t('lessons')}, ${hours.toStringAsFixed(1)} ${s.t('hours')}',
-          'field': _field.text.trim(),
-          'instructor_name': p.channel,
-          'cover_url': p.thumb,
-          'hours': double.parse(hours.toStringAsFixed(1)),
-          'price': 0,
-          'status': 'draft',
-        });
-        await AdminRepository.addSection(courseId, p.title, 0);
-        final sections = await AdminRepository.fetchSections(courseId);
-        final sectionId = sections.first['id'] as String;
-        for (var i = 0; i < n; i++) {
-          final v = p.videos[i];
-          await AdminRepository.addLesson({
-            'course_id': courseId,
-            'section_id': sectionId,
-            'title': v.title,
-            'type': 'video',
-            'content': v.description,
-            'media_url': '${v.url}&list=${p.id}',
-            'duration_seconds': v.seconds > 0 ? v.seconds : null,
-            'sort_order': i,
-          });
-        }
+    var errs = 0;
+    await BgGuard.begin(title, '0/${chosen.length}');
+    final finished = <YtPlaylist>[];
+    for (final p in chosen) {
+      try {
+        await PlaylistImport.run(
+          p,
+          s: s,
+          withDesc: _withDesc,
+          field: _field.text.trim(),
+          onProgress: (t) {
+            if (mounted) setState(() => _progress = t);
+            BgGuard.update(title,
+                '${done + errs}/${chosen.length} - ${s.t('bg_err_word')}: $errs\n$t');
+          },
+        );
         done++;
+        finished.add(p);
+      } catch (e) {
+        errs++;
+        final t = '$e';
+        if (mounted) {
+          setState(() => _errors.add(
+              '${p.title}: ${t.length > 200 ? t.substring(0, 200) : t}'));
+        }
       }
-      messenger.showSnackBar(
-          SnackBar(content: Text('${s.t('yt_done')}: $done')));
-      if (mounted) {
-        setState(() {
-          _lists.removeWhere((p) => p.selected);
-          _progress = '';
-        });
-      }
-    } catch (e) {
-      final t = '$e';
-      messenger.showSnackBar(SnackBar(
-          content: Text(
-              '${s.t('generic_error')}: ${t.length > 140 ? t.substring(0, 140) : t}')));
-    } finally {
-      if (mounted) setState(() => _importing = false);
+    }
+    await BgGuard.end();
+    await BgGuard.notify(4712, s.t('bg_import_done'),
+        '${s.t('bg_done_word')}: $done - ${s.t('bg_err_word')}: $errs');
+    messenger.showSnackBar(SnackBar(
+        content: Text(
+            '${s.t('yt_done')}: $done${errs > 0 ? ' - ${s.t('bg_err_word')}: $errs' : ''}')));
+    if (mounted) {
+      setState(() {
+        _lists.removeWhere((p) => finished.contains(p));
+        _progress = '';
+        _importing = false;
+      });
     }
   }
 
