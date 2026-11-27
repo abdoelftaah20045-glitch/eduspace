@@ -61,7 +61,7 @@ Deno.serve(async (req: Request) => {
     let uid: string | null = null;
     let lessonId = String(body.lesson_id ?? '');
     let publish = body.publish === true;
-    let count = Math.min(10, Math.max(3, Number(body.count ?? 6)));
+    let count = Math.min(20, Math.max(10, Number(body.count ?? 10)));
     let auto = false;
     let strict = false; // auto mode: never use text-only unless the setting allows
     let tenantId = '';
@@ -82,7 +82,7 @@ Deno.serve(async (req: Request) => {
       if (!claimed) return json({ skipped: 'not_due' });
       publish = claimed.publish === true;
       strict = claimed.text_fallback !== true;
-      count = 6;
+      count = 10;
       const { data: nid } = await db.rpc('quiz_auto_next', { t: tenantId });
       if (!nid) {
         await db.from('quiz_auto_config').update({ enabled: false, busy_until: null, last_error: 'done: every lesson has a quiz or was skipped' }).eq('tenant_id', tenantId);
@@ -138,8 +138,8 @@ Deno.serve(async (req: Request) => {
     const ym = String(lesson.media_url ?? '').match(/(?:youtu\.be\/|[?&]v=|embed\/|shorts\/)([A-Za-z0-9_-]{11})/);
     const videoUrl = ym ? `https://www.youtube.com/watch?v=${ym[1]}` : null;
     const mins = Math.round(Number(lesson.duration_seconds ?? 0) / 60);
-    // More questions for longer videos (about one per 3 minutes, 4 to 15).
-    const vcount = Math.min(15, Math.max(4, Math.ceil((mins || 12) / 3)));
+    // 10 questions minimum, +1 per 4 minutes of video, 20 maximum.
+    const vcount = Math.min(20, Math.max(10, 10 + Math.round((mins || 8) / 4)));
     const vprompt =
       `Course: ${cTitle}${field ? ' (' + field + ')' : ''}\nLesson title: ${title}\n\n` +
       `Watch this video. Write ${vcount} multiple-choice questions that test ONLY what the speaker actually explains in it, spread across the video from start to end and covering each main point. ` +
@@ -190,7 +190,7 @@ Deno.serve(async (req: Request) => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               contents: [{ role: 'user', parts: isVideo ? [{ fileData: { fileUri: videoUrl!, mimeType: 'video/*' } }, { text: vprompt }] : [{ text: prompt }] }],
-              generationConfig: { responseMimeType: 'application/json', responseSchema: schema, temperature: 0.3, maxOutputTokens: 6000 },
+              generationConfig: { responseMimeType: 'application/json', responseSchema: schema, temperature: 0.3, maxOutputTokens: 9000 },
             }),
             signal: AbortSignal.timeout(isVideo ? 110000 : 60000),
           });
@@ -225,7 +225,7 @@ Deno.serve(async (req: Request) => {
       q.options.length === 4 && q.options.every((o: any) => typeof o === 'string' && o.trim()) &&
       Number.isInteger(q.correct) && q.correct >= 0 && q.correct <= 3 &&
       new Set(q.options.map((o: string) => o.trim())).size === 4);
-    if (good.length < 3) return await finish({ skipped: 'too_vague', got: good.length });
+    if (good.length < 6) return await finish({ skipped: 'too_vague', got: good.length });
 
     const { data: exam, error: e1 } = await db.from('exams').insert({
       course_id: course.id,
