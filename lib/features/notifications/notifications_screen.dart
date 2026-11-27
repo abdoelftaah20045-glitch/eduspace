@@ -1,3 +1,5 @@
+import 'dart:async';
+import '../../core/push_service.dart';
 import '../../core/cached_avatar.dart';
 import '../../core/maintenance.dart';
 import 'package:flutter/material.dart';
@@ -27,10 +29,16 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   void initState() {
     super.initState();
     _load();
+    PushService.arrived.addListener(_load);
+    _poll = Timer.periodic(const Duration(seconds: 30), (_) => _load());
   }
+
+  Timer? _poll;
 
   @override
   void dispose() {
+    _poll?.cancel();
+    PushService.arrived.removeListener(_load);
     _search.dispose();
     super.dispose();
   }

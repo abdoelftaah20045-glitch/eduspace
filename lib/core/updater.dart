@@ -15,6 +15,11 @@ import 'recovery.dart';
 /// newest build as an update.
 const int kAppBuild = int.fromEnvironment('APP_BUILD', defaultValue: 0);
 
+/// Number of the code update (Shorebird patch) this code was published as.
+/// Shown in About so it is easy to see which update is really running.
+/// Bump it by one before every patch.
+const int kPatchNumber = 3;
+
 /// In-app self-update (Android). CI publishes version.json plus the arm64
 /// APK to a public release; the app compares builds on launch, downloads the
 /// APK inside the app and hands it to the system installer.

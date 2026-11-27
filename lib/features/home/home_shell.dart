@@ -1,3 +1,4 @@
+import '../../core/push_service.dart';
 import '../../core/cached_avatar.dart';
 import '../../core/security.dart';
 import '../../core/maintenance.dart';
@@ -124,7 +125,7 @@ class _HomeTab extends StatefulWidget {
   State<_HomeTab> createState() => _HomeTabState();
 }
 
-class _HomeTabState extends State<_HomeTab> {
+class _HomeTabState extends State<_HomeTab> with WidgetsBindingObserver {
   ContinueItem? _continueItem;
   List<Course>? _myCourses;
   List<Announcement> _announcements = [];
@@ -140,10 +141,19 @@ class _HomeTabState extends State<_HomeTab> {
     super.initState();
     _load();
     ImportJob.courseTick.addListener(_load);
+    PushService.arrived.addListener(_load);
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) _load();
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    PushService.arrived.removeListener(_load);
     ImportJob.courseTick.removeListener(_load);
     super.dispose();
   }

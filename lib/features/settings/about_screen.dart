@@ -3,6 +3,7 @@ import '../../core/app_logo.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/l10n.dart';
+import '../../core/updater.dart';
 
 /// About (spec S50): version, terms, privacy, licenses, contact.
 class AboutScreen extends StatelessWidget {
@@ -31,7 +32,10 @@ class AboutScreen extends StatelessWidget {
                     .headlineSmall
                     ?.copyWith(fontWeight: FontWeight.bold)),
           ),
-          Center(child: Text('${s.t('app_version')} 0.3.0')),
+          Center(child: Text('${s.t('app_version')} 0.2.0 (build $kAppBuild)')),
+          Center(
+              child: Text('Update #$kPatchNumber',
+                  style: const TextStyle(fontWeight: FontWeight.w700))),
           const SizedBox(height: 8),
           Center(child: Text(s.t('about_legalese'), textAlign: TextAlign.center)),
           const SizedBox(height: 20),

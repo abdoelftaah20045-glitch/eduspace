@@ -1,4 +1,5 @@
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -12,6 +13,10 @@ import 'integrations.dart';
 /// notification permission, fetches the FCM token and stores it in
 /// public.push_tokens so the server can target the device later.
 class PushService {
+  /// Bumped when a push arrives while the app is open, so lists refresh.
+  static final ValueNotifier<int> arrived = ValueNotifier<int>(0);
+  static String? _lastToken;
+
   static Future<void> init() async {
     if (!Integrations.fcmEnabled) return;
     try {
@@ -29,6 +34,16 @@ class PushService {
       await messaging.requestPermission();
       await _saveToken(await messaging.getToken());
       messaging.onTokenRefresh.listen(_saveToken);
+      // A token can only be stored once someone is signed in: save it again
+      // right after every sign-in / session restore, not only at app start.
+      Supabase.instance.client.auth.onAuthStateChange.listen((st) async {
+        if (st.session != null) {
+          try {
+            await _saveToken(_lastToken ?? await messaging.getToken());
+          } catch (_) {}
+        }
+      });
+      FirebaseMessaging.onMessage.listen((_) => arrived.value++);
       // Tapping a push opens what it refers to.
       void open(RemoteMessage m) {
         final d = <String, dynamic>{...m.data};
@@ -49,6 +64,7 @@ class PushService {
 
   static Future<void> _saveToken(String? token) async {
     if (token == null) return;
+    _lastToken = token;
     final user = Supabase.instance.client.auth.currentUser;
     if (user == null) return;
     try {
