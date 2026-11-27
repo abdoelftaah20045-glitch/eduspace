@@ -32,10 +32,108 @@ class _AdminAiQuizScreenState extends State<AdminAiQuizScreen> {
   String? _error;
   final List<String> _log = [];
 
+  Map<String, dynamic>? _cfg;
+  Map<String, dynamic>? _prog;
+  String? _autoErr;
+
   @override
   void initState() {
     super.initState();
     _load();
+    _loadAuto();
+  }
+
+  Future<void> _loadAuto() async {
+    try {
+      final row = await _c
+          .from('quiz_auto_config')
+          .select()
+          .eq('tenant_id', TenantContext.id)
+          .maybeSingle();
+      final pr = await _c.rpc('quiz_auto_progress', params: {'t': TenantContext.id});
+      if (!mounted) return;
+      setState(() {
+        _cfg = row == null ? <String, dynamic>{} : Map<String, dynamic>.from(row);
+        _prog = pr is Map ? Map<String, dynamic>.from(pr) : null;
+        _autoErr = null;
+      });
+    } catch (_) {
+      if (mounted) setState(() => _autoErr = 'شغّل ملف SQL part37 الأول عشان التشغيل التلقائي.');
+    }
+  }
+
+  Future<void> _saveAuto(Map<String, dynamic> patch) async {
+    try {
+      final next = {...?_cfg, ...patch};
+      await _c.from('quiz_auto_config').upsert({
+        'tenant_id': TenantContext.id,
+        'enabled': next['enabled'] == true,
+        'publish': next['publish'] == true,
+        'text_fallback': next['text_fallback'] == true,
+        'course_ids': next['course_ids'],
+        'updated_at': DateTime.now().toUtc().toIso8601String(),
+        if (patch['enabled'] == true) 'paused_until': null,
+        if (patch['enabled'] == true) 'last_error': null,
+      });
+      await _loadAuto();
+    } catch (e) {
+      if (mounted) setState(() => _autoErr = '$e');
+    }
+  }
+
+  Widget _autoCard() {
+    final cfg = _cfg;
+    if (_autoErr != null) {
+      return Card(child: Padding(padding: const EdgeInsets.all(14), child: Text(_autoErr!)));
+    }
+    if (cfg == null) return const SizedBox.shrink();
+    final p = _prog;
+    final paused = DateTime.tryParse('${cfg['paused_until'] ?? ''}');
+    final waiting = paused != null && paused.isAfter(DateTime.now().toUtc());
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(8),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          SwitchListTile(
+            value: cfg['enabled'] == true,
+            title: const Text('تشغيل تلقائي (على السيرفر)'),
+            subtitle: const Text(
+                'بيشتغل لوحده كل كام دقيقة من غير ما تفتح التطبيق. لما الحد اليومي يخلص بيقف ويكمل تاني يوم لحد ما كل درس يبقى له اختبار. الدروس اللي مفيهاش فيديو يوتيوب عام بتتخطى.'),
+            onChanged: (v) => _saveAuto({
+              'enabled': v,
+              'course_ids': _picked.isEmpty ? null : _picked.toList(),
+            }),
+          ),
+          SwitchListTile(
+            value: cfg['publish'] == true,
+            title: const Text('نشر مباشر للاختبارات (من غير مراجعة)'),
+            onChanged: (v) => _saveAuto({'publish': v}),
+          ),
+          SwitchListTile(
+            value: cfg['text_fallback'] == true,
+            title: const Text('لو الفيديو مش متاح، اعمل من العنوان والوصف'),
+            subtitle: const Text('مقفول: مفيش اختبار بيتعمل إلا من الفيديو نفسه.'),
+            onChanged: (v) => _saveAuto({'text_fallback': v}),
+          ),
+          if (p != null)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+              child: Text(
+                  'اتعمل: ${p['done']}  •  فاضل: ${p['remaining']}  •  اتخطى: ${p['skipped']}',
+                  style: const TextStyle(fontWeight: FontWeight.w800)),
+            ),
+          if (waiting)
+            const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16),
+                child: Text('واقف مؤقتاً (الحد اليومي)، وهيكمل لوحده.')),
+          if ('${cfg['last_error'] ?? ''}'.isNotEmpty)
+            Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Text('${cfg['last_error']}', style: const TextStyle(fontSize: 12))),
+          TextButton(onPressed: _loadAuto, child: const Text('تحديث')),
+        ]),
+      ),
+    );
   }
 
   Future<void> _load() async {
@@ -139,6 +237,7 @@ class _AdminAiQuizScreenState extends State<AdminAiQuizScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('اختبارات تدريبية بالذكاء الاصطناعي')),
       body: ListView(padding: const EdgeInsets.all(16), children: [
+        _autoCard(),
         const Card(
           child: Padding(
             padding: EdgeInsets.all(14),
