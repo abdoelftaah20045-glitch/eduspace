@@ -673,6 +673,7 @@ class S {
     'fi_bad_file': {'ar': 'تعذر قراءة الملف', 'en': 'Could not read the file', 'fr': 'Could not read the file', 'es': 'Could not read the file', 'de': 'Could not read the file'},
     'fi_bad_link': {'ar': 'الرابط مش رابط قائمة تشغيل', 'en': 'Not a playlist link', 'fr': 'Not a playlist link', 'es': 'Not a playlist link', 'de': 'Not a playlist link'},
     'fi_already': {'ar': 'مستورد قبل كده', 'en': 'Already imported', 'fr': 'Already imported', 'es': 'Already imported', 'de': 'Already imported'},
+    'support_auto_reply': {'ar': 'وصلتنا رسالتك وهنرد عليك فى أقرب وقت', 'en': 'We received your message and will reply as soon as possible.', 'fr': 'We received your message and will reply as soon as possible.', 'es': 'We received your message and will reply as soon as possible.', 'de': 'We received your message and will reply as soon as possible.'},
     'res_title': {'ar': 'نتيجة الامتحان', 'en': 'Exam result', 'fr': 'Résultat de l\'examen', 'es': 'Resultado del examen', 'de': 'Prüfungsergebnis'},
     'res_total': {'ar': 'عدد الأسئلة', 'en': 'Total questions', 'fr': 'Total des questions', 'es': 'Total de preguntas', 'de': 'Fragen gesamt'},
     'res_time_taken': {'ar': 'الوقت المستغرق', 'en': 'Time taken', 'fr': 'Temps écoulé', 'es': 'Tiempo empleado', 'de': 'Benötigte Zeit'},

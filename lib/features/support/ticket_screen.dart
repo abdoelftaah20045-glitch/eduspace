@@ -72,6 +72,28 @@ class _TicketScreenState extends State<TicketScreen> {
     if (mounted) setState(() => _status = status);
   }
 
+  /// Messages plus, for the student only, an automatic acknowledgement
+  /// while no admin has replied yet. Text editable in admin Texts
+  /// (key support_auto_reply). Display only, nothing is stored.
+  List<SupportMessage> _shown() {
+    final list = _messages ?? const <SupportMessage>[];
+    if (widget.asAdmin || list.isEmpty || list.any((m) => m.isAdmin)) {
+      return list;
+    }
+    final text = S.of(context).t('support_auto_reply').trim();
+    if (text.isEmpty) return list;
+    return [
+      list.first,
+      SupportMessage(
+          id: 'auto',
+          senderId: 'system',
+          body: text,
+          isAdmin: true,
+          createdAt: list.first.createdAt.add(const Duration(seconds: 1))),
+      ...list.skip(1),
+    ];
+  }
+
   @override
   Widget build(BuildContext context) {
     final s = S.of(context);
@@ -118,9 +140,9 @@ class _TicketScreenState extends State<TicketScreen> {
                 ? const Center(child: CircularProgressIndicator())
                 : ListView.builder(
                     padding: const EdgeInsets.all(16),
-                    itemCount: _messages!.length,
+                    itemCount: _shown().length,
                     itemBuilder: (context, i) {
-                      final m = _messages![i];
+                      final m = _shown()[i];
                       final mine = !m.isAdmin && !widget.asAdmin ||
                           m.isAdmin && widget.asAdmin;
                       return Align(
