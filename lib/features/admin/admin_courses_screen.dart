@@ -20,6 +20,8 @@ class _AdminCoursesScreenState extends State<AdminCoursesScreen> {
   List<Map<String, dynamic>>? _courses;
   String _query = '';
   String? _statusFilter;
+  String? _catFilter; // null = all, '' = no category
+  String? _loadError;
 
   @override
   void initState() {
@@ -38,13 +40,16 @@ class _AdminCoursesScreenState extends State<AdminCoursesScreen> {
     try {
       final rows = await AdminRepository.fetchAllCourses();
       if (!mounted) return;
-      setState(() => _courses = rows);
-    } catch (_) {
+      setState(() {
+        _courses = rows;
+        _loadError = null;
+      });
+    } catch (e) {
       if (!mounted) return;
-      setState(() => _courses = const []);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(S.of(context).t('generic_error'))),
-      );
+      setState(() {
+        _courses ??= const [];
+        _loadError = '$e';
+      });
     }
   }
 
@@ -153,6 +158,41 @@ class _AdminCoursesScreenState extends State<AdminCoursesScreen> {
     }
   }
 
+  Widget _catChips(S s) {
+    final counts = <String, int>{};
+    var none = 0;
+    for (final c in _courses ?? const <Map<String, dynamic>>[]) {
+      final f = (c['field']?.toString() ?? '').trim();
+      if (f.isEmpty) {
+        none++;
+      } else {
+        counts[f] = (counts[f] ?? 0) + 1;
+      }
+    }
+    final names = counts.keys.toList()
+      ..sort((a, b) => counts[b]!.compareTo(counts[a]!));
+    Widget chip(String label, bool sel, VoidCallback f) => Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          child: ChoiceChip(label: Text(label), selected: sel, onSelected: (_) => f()),
+        );
+    return SizedBox(
+      height: 48,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        children: [
+          chip(s.t('audience_all'), _catFilter == null,
+              () => setState(() => _catFilter = null)),
+          if (none > 0)
+            chip('بدون تصنيف ($none)', _catFilter == '',
+                () => setState(() => _catFilter = '')),
+          for (final n in names)
+            chip('$n (${counts[n]})', _catFilter == n,
+                () => setState(() => _catFilter = n)),
+        ],
+      ),
+    );
+  }
+
   Widget _filters(S s) {
     const statuses = ['draft', 'published', 'archived'];
     return Column(
@@ -164,6 +204,7 @@ class _AdminCoursesScreenState extends State<AdminCoursesScreen> {
           ),
           onChanged: (v) => setState(() => _query = v.trim()),
         ),
+        _catChips(s),
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(vertical: 8),
@@ -200,6 +241,8 @@ class _AdminCoursesScreenState extends State<AdminCoursesScreen> {
     final courses = all
         ?.where((c) =>
             (_statusFilter == null || c['status'] == _statusFilter) &&
+            (_catFilter == null ||
+                (c['field']?.toString() ?? '').trim() == _catFilter) &&
             matchesSearch(_query, [
               c['title']?.toString(),
               c['instructor_name']?.toString(),
@@ -228,7 +271,23 @@ class _AdminCoursesScreenState extends State<AdminCoursesScreen> {
       body: courses == null
           ? const Center(child: CircularProgressIndicator())
           : courses.isEmpty
-              ? Center(child: Text(s.t('no_courses')))
+              ? ListView(padding: const EdgeInsets.all(16), children: [
+                  _filters(s),
+                  const SizedBox(height: 40),
+                  if (_loadError != null && (all ?? const []).isEmpty) ...[
+                    Center(child: Text(s.t('generic_error'))),
+                    const SizedBox(height: 8),
+                    Center(
+                        child: Text(_loadError!,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(fontSize: 11))),
+                    const SizedBox(height: 8),
+                    Center(
+                        child: OutlinedButton(
+                            onPressed: _load, child: Text(s.t('retry')))),
+                  ] else
+                    Center(child: Text(s.t('no_courses'))),
+                ])
               : RefreshIndicator(
                   onRefresh: _load,
                   child: ListView.builder(
