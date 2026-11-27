@@ -11,6 +11,19 @@ ThemeData _base(ColorScheme scheme) {
   return ThemeData(
     useMaterial3: true,
     colorScheme: scheme,
+    switchTheme: SwitchThemeData(
+      thumbIcon: WidgetStateProperty.resolveWith((st) => st.contains(WidgetState.selected)
+          ? const Icon(Icons.check_rounded)
+          : const Icon(Icons.close_rounded)),
+      trackColor: WidgetStateProperty.resolveWith((st) =>
+          st.contains(WidgetState.selected)
+              ? scheme.primary
+              : scheme.surfaceContainerHighest),
+      thumbColor: WidgetStateProperty.resolveWith((st) =>
+          st.contains(WidgetState.selected)
+              ? scheme.onPrimary
+              : scheme.outline),
+    ),
     appBarTheme: AppBarTheme(
       centerTitle: true,
       elevation: 0,
