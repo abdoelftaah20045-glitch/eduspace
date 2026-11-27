@@ -1,3 +1,5 @@
+import '../../core/admin_search.dart';
+import '../../core/search_norm.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/l10n.dart';
@@ -15,6 +17,7 @@ class AdminAttemptsScreen extends StatefulWidget {
 
 class _AdminAttemptsScreenState extends State<AdminAttemptsScreen> {
   List<Map<String, dynamic>>? _attempts;
+  String _q = '';
 
   @override
   void initState() {
@@ -35,12 +38,14 @@ class _AdminAttemptsScreenState extends State<AdminAttemptsScreen> {
   @override
   Widget build(BuildContext context) {
     final s = S.of(context);
-    final attempts = _attempts;
+    final attempts = _attempts?.where((a) => matchesAny(_q, a)).toList();
     return Scaffold(
       appBar: AppBar(
           title: Text(
               '${s.t('exam_attempts_label')} · ${widget.exam['title'] ?? ''}')),
-      body: RefreshIndicator(
+      body: Column(children: [
+        AdminSearchField(onChanged: (v) => setState(() => _q = v)),
+        Expanded(child: RefreshIndicator(
         onRefresh: _load,
         child: attempts == null
             ? const Center(child: CircularProgressIndicator())
@@ -97,7 +102,8 @@ class _AdminAttemptsScreenState extends State<AdminAttemptsScreen> {
                       );
                     },
                   ),
-      ),
+      )),
+      ]),
     );
   }
 

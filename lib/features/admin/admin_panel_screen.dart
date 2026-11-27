@@ -1,3 +1,5 @@
+import '../../core/admin_search.dart';
+import '../../core/search_norm.dart';
 import 'admin_maintenance_screen.dart';
 import 'package:flutter/material.dart';
 import '../../core/pressable.dart';
@@ -51,6 +53,7 @@ class AdminPanelScreen extends StatefulWidget {
 }
 
 class _AdminPanelScreenState extends State<AdminPanelScreen> {
+  String _secQ = '';
   Map<String, int>? _counts;
   bool _isSuper = false;
   bool _fullAdmin = true;
@@ -440,6 +443,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  AdminSearchField(onChanged: (v) => setState(() => _secQ = v)),
                   Padding(
                     padding: const EdgeInsets.only(bottom: 12),
                     child: Text(s.t('sections_label'),
@@ -456,7 +460,8 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                     mainAxisSpacing: 12,
                     crossAxisSpacing: 12,
                     children: [
-                      for (final sec in sections)
+                      for (final sec in sections.where((x) =>
+                          matchesSearch(_secQ, [s.t(x.$1), s.t(x.$2)])))
                         Pressable(
                           radius: 18,
                           shadowColor: sec.$4,

@@ -1,3 +1,5 @@
+import '../../core/admin_search.dart';
+import '../../core/search_norm.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -15,6 +17,7 @@ class AdminModerationScreen extends StatefulWidget {
 class _AdminModerationScreenState extends State<AdminModerationScreen> {
   final _c = Supabase.instance.client;
   List<Map<String, dynamic>> _reviews = [];
+  String _q = '';
   List<Map<String, dynamic>> _threads = [];
   bool _loading = true;
   bool _failed = false;
@@ -97,10 +100,13 @@ class _AdminModerationScreenState extends State<AdminModerationScreen> {
   String _course(Map<String, dynamic> m) =>
       ((m['courses'] as Map?)?['title'] ?? '').toString();
 
-  Widget _list(String table, List<Map<String, dynamic>> rows, bool review) {
+  Widget _list(String table, List<Map<String, dynamic>> all, bool review) {
     final s = S.of(context);
-    if (rows.isEmpty) return Center(child: Text(s.t('mod_empty')));
-    return RefreshIndicator(
+    final rows = all.where((r) => matchesAny(_q, r)).toList();
+    if (all.isEmpty) return Center(child: Text(s.t('mod_empty')));
+    return Column(children: [
+      AdminSearchField(onChanged: (v) => setState(() => _q = v)),
+      Expanded(child: RefreshIndicator(
       onRefresh: _load,
       child: ListView.builder(
         padding: const EdgeInsets.all(12),
@@ -124,7 +130,8 @@ class _AdminModerationScreenState extends State<AdminModerationScreen> {
           );
         },
       ),
-    );
+    )),
+    ]);
   }
 
   @override

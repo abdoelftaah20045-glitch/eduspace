@@ -1,3 +1,5 @@
+import '../../core/admin_search.dart';
+import '../../core/search_norm.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -45,6 +47,7 @@ class _RequestsTab extends StatefulWidget {
 
 class _RequestsTabState extends State<_RequestsTab> {
   List<Map<String, dynamic>> _rows = [];
+  String _q = '';
   bool _loading = true;
   bool _error = false;
   String _errText = '';
@@ -190,13 +193,16 @@ class _RequestsTabState extends State<_RequestsTab> {
       ));
     }
     if (_rows.isEmpty) return Center(child: Text(s.t('admin_pay_none')));
-    return RefreshIndicator(
+    final shown = _rows.where((r) => matchesAny(_q, r)).toList();
+    return Column(children: [
+      AdminSearchField(onChanged: (v) => setState(() => _q = v)),
+      Expanded(child: RefreshIndicator(
       onRefresh: _load,
       child: ListView.builder(
         padding: const EdgeInsets.all(12),
-        itemCount: _rows.length,
+        itemCount: shown.length,
         itemBuilder: (_, i) {
-          final r = _rows[i];
+          final r = shown[i];
           final pending = r['status'] == 'pending';
           final course = (r['courses'] is Map) ? r['courses']['title'] : '';
           return Card(
@@ -241,7 +247,8 @@ class _RequestsTabState extends State<_RequestsTab> {
           );
         },
       ),
-    );
+    )),
+    ]);
   }
 }
 

@@ -1,3 +1,5 @@
+import '../../core/admin_search.dart';
+import '../../core/search_norm.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/l10n.dart';
@@ -16,6 +18,7 @@ class AdminFaqScreen extends StatefulWidget {
 
 class _AdminFaqScreenState extends State<AdminFaqScreen> {
   List<Map<String, dynamic>> _items = [];
+  String _sq = '';
   bool _loading = true;
 
   @override
@@ -134,6 +137,7 @@ class _AdminFaqScreenState extends State<AdminFaqScreen> {
           : ListView(
               padding: const EdgeInsets.fromLTRB(12, 12, 12, 90),
               children: [
+                AdminSearchField(onChanged: (v) => setState(() => _sq = v)),
                 if (_items.isEmpty)
                   Padding(
                     padding: const EdgeInsets.all(16),
@@ -142,6 +146,7 @@ class _AdminFaqScreenState extends State<AdminFaqScreen> {
                         child: Text(s.t('faq_load_defaults'))),
                   ),
                 for (var i = 0; i < _items.length; i++)
+                  if (matchesAny(_sq, _items[i]))
                   Card(
                     child: ListTile(
                       title: Text(_first(_items[i]['q']),

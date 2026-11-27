@@ -1,3 +1,5 @@
+import '../../core/admin_search.dart';
+import '../../core/search_norm.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart' hide TextDirection;
 
@@ -15,6 +17,7 @@ class AdminEventsScreen extends StatefulWidget {
 
 class _AdminEventsScreenState extends State<AdminEventsScreen> {
   List<Map<String, dynamic>> _items = [];
+  String _sq = '';
   bool _loading = true;
 
   @override
@@ -99,18 +102,25 @@ class _AdminEventsScreenState extends State<AdminEventsScreen> {
   @override
   Widget build(BuildContext context) {
     final s = S.of(context);
+    final vis = [
+      for (var j = 0; j < _items.length; j++)
+        if (matchesAny(_sq, _items[j])) j
+    ];
     return Scaffold(
       appBar: AppBar(title: Text(s.t('ui_events'))),
       floatingActionButton: FloatingActionButton(
           onPressed: () => _edit(null), child: const Icon(Icons.add)),
-      body: _loading
+      body: Column(children: [
+        AdminSearchField(onChanged: (v) => setState(() => _sq = v)),
+        Expanded(child: _loading
           ? const Center(child: CircularProgressIndicator())
           : _items.isEmpty
               ? Center(child: Text(s.t('mod_empty')))
               : ListView.builder(
                   padding: const EdgeInsets.all(12),
-                  itemCount: _items.length,
-                  itemBuilder: (_, i) {
+                  itemCount: vis.length,
+                  itemBuilder: (_, k) {
+                    final i = vis[k];
                     final e = _items[i];
                     final d = DateTime.tryParse((e['at'] ?? '').toString())?.toLocal();
                     return Card(
@@ -131,7 +141,8 @@ class _AdminEventsScreenState extends State<AdminEventsScreen> {
                       ),
                     );
                   },
-                ),
+                )),
+      ]),
     );
   }
 }

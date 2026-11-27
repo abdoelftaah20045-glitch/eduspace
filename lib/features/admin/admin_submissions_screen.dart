@@ -1,3 +1,5 @@
+import '../../core/admin_search.dart';
+import '../../core/search_norm.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -18,6 +20,10 @@ class AdminSubmissionsScreen extends StatefulWidget {
 
 class _AdminSubmissionsScreenState extends State<AdminSubmissionsScreen> {
   List<Submission>? _subs;
+  String _q = '';
+  List<Submission> get _shown => (_subs ?? const <Submission>[])
+      .where((x) => matchesSearch(_q, [x.studentName, x.textAnswer, x.linkUrl, x.feedback]))
+      .toList();
 
   @override
   void initState() {
@@ -70,11 +76,13 @@ class _AdminSubmissionsScreenState extends State<AdminSubmissionsScreen> {
         title: Text(widget.assignment.title,
             maxLines: 1, overflow: TextOverflow.ellipsis),
       ),
-      body: RefreshIndicator(
+      body: Column(children: [
+        AdminSearchField(onChanged: (v) => setState(() => _q = v)),
+        Expanded(child: RefreshIndicator(
         onRefresh: _load,
         child: _subs == null
             ? const Center(child: CircularProgressIndicator())
-            : _subs!.isEmpty
+            : _shown.isEmpty
                 ? ListView(
                     padding: const EdgeInsets.all(32),
                     children: [
@@ -84,9 +92,9 @@ class _AdminSubmissionsScreenState extends State<AdminSubmissionsScreen> {
                   )
                 : ListView.builder(
                     padding: const EdgeInsets.all(16),
-                    itemCount: _subs!.length,
+                    itemCount: _shown.length,
                     itemBuilder: (context, i) {
-                      final sub = _subs![i];
+                      final sub = _shown[i];
                       return Card(
                         clipBehavior: Clip.antiAlias,
                         child: Padding(
@@ -173,7 +181,8 @@ class _AdminSubmissionsScreenState extends State<AdminSubmissionsScreen> {
                       );
                     },
                   ),
-      ),
+      )),
+      ]),
     );
   }
 }

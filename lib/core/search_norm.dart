@@ -29,3 +29,27 @@ bool matchesSearch(String query, Iterable<String?> fields) {
   final hay = fields.map(normSearch).join(' ');
   return q.split(' ').every(hay.contains);
 }
+
+/// Search over every text value of a row (map / list / string).
+bool matchesAny(String query, Object? row) {
+  if (normSearch(query).isEmpty) return true;
+  final b = StringBuffer();
+  void walk(Object? v, int d) {
+    if (d > 3 || v == null) return;
+    if (v is String) {
+      b.write('$v ');
+    } else if (v is num) {
+      b.write('$v ');
+    } else if (v is Map) {
+      for (final e in v.values) {
+        walk(e, d + 1);
+      }
+    } else if (v is Iterable) {
+      for (final e in v) {
+        walk(e, d + 1);
+      }
+    }
+  }
+  walk(row, 0);
+  return matchesSearch(query, [b.toString()]);
+}

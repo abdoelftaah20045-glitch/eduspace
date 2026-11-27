@@ -1,3 +1,5 @@
+import '../../core/admin_search.dart';
+import '../../core/search_norm.dart';
 import '../../core/cached_avatar.dart';
 import 'dart:async';
 import 'dart:convert';
@@ -352,6 +354,7 @@ class _YoutubeImportScreenState extends State<YoutubeImportScreen> {
   final _links = TextEditingController();
   final _field = TextEditingController();
   final List<YtPlaylist> _lists = [];
+  String _sq = '';
   final List<String> _errors = [];
   bool _loading = false;
   bool _importing = false;
@@ -495,7 +498,9 @@ class _YoutubeImportScreenState extends State<YoutubeImportScreen> {
               child: Text(e, style: const TextStyle(color: Colors.red, fontSize: 12)),
             ),
           const SizedBox(height: 12),
-          for (final p in _lists)
+          if (_lists.length > 3)
+            AdminSearchField(onChanged: (v) => setState(() => _sq = v)),
+          for (final p in _lists.where((x) => matchesSearch(_sq, [x.title, x.channel])))
             Card(
               margin: const EdgeInsets.only(bottom: 12),
               child: Padding(
