@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/l10n.dart';
 import '../library/data/library_repo.dart';
+import 'admin_books_screen.dart';
 import 'data/admin_repo.dart';
 
 const _fileTypes = [
@@ -92,7 +93,14 @@ class _AdminLibraryScreenState extends State<AdminLibraryScreen> {
   Widget build(BuildContext context) {
     final s = S.of(context);
     return Scaffold(
-      appBar: AppBar(title: Text(s.t('library_label'))),
+      appBar: AppBar(title: Text(s.t('library_label')), actions: [
+        IconButton(
+          tooltip: 'Books',
+          icon: const Icon(Icons.menu_book_rounded),
+          onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const AdminBooksScreen())),
+        ),
+      ]),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _add,
         icon: const Icon(Icons.add),

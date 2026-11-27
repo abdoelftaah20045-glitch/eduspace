@@ -2,6 +2,7 @@ import '../../core/maintenance.dart';
 import 'package:flutter/material.dart';
 import '../../core/pressable.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'books_shelf.dart';
 
 import '../../core/l10n.dart';
 import 'data/library_repo.dart';
@@ -99,6 +100,12 @@ class _LibraryScreenState extends State<LibraryScreen> {
       appBar: AppBar(
         title: Text(s.t('library_label')),
         actions: [
+          IconButton(
+            tooltip: 'Books',
+            icon: const Icon(Icons.menu_book_rounded),
+            onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const BooksShelfScreen())),
+          ),
           IconButton(
             icon: Icon(_grid ? Icons.view_list_outlined : Icons.grid_view),
             onPressed: () => setState(() => _grid = !_grid),

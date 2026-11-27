@@ -16,6 +16,9 @@ class LibraryItem {
     this.courseId,
     this.courseTitle,
     this.downloads = 0,
+    this.author = '',
+    this.coverUrl,
+    this.kind = 'file',
     required this.createdAt,
   });
 
@@ -29,6 +32,9 @@ class LibraryItem {
   final String? courseId;
   final String? courseTitle;
   final int downloads;
+  final String author;
+  final String? coverUrl;
+  final String kind;
   final DateTime createdAt;
 
   factory LibraryItem.fromMap(Map<String, dynamic> m) {
@@ -44,6 +50,9 @@ class LibraryItem {
       courseId: m['course_id'] as String?,
       courseTitle: course is Map ? course['title'] as String? : null,
       downloads: (m['downloads'] as num?)?.toInt() ?? 0,
+      author: (m['author'] as String?) ?? '',
+      coverUrl: (m['cover_url'] as String?),
+      kind: (m['kind'] as String?) ?? 'file',
       createdAt:
           DateTime.tryParse((m['created_at'] ?? '').toString())?.toLocal() ??
               DateTime.now(),
