@@ -27,8 +27,10 @@ class CategoryChips extends StatelessWidget {
       {super.key,
       required this.fields,
       required this.selected,
-      required this.onSelect});
+      required this.onSelect,
+      this.covers = const {}});
 
+  final Map<String, String> covers;
   final List<String> fields;
   final String? selected;
   final ValueChanged<String?> onSelect;
@@ -39,7 +41,7 @@ class CategoryChips extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final items = <String?>[null, ...fields];
     return SizedBox(
-      height: 86,
+      height: 104,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: items.length,
@@ -68,15 +70,23 @@ class CategoryChips extends StatelessWidget {
                           ]
                         : null,
                   ),
-                  child: Icon(f == null ? Icons.apps : _fieldIcon(f),
-                      color: on ? scheme.onPrimary : scheme.primary),
+                  clipBehavior: Clip.antiAlias,
+                  child: (f != null && (covers[f] ?? '').isNotEmpty)
+                      ? CachedImage(covers[f]!,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => Icon(_fieldIcon(f),
+                              color: on ? scheme.onPrimary : scheme.primary))
+                      : Icon(f == null ? Icons.apps : _fieldIcon(f),
+                          color: on ? scheme.onPrimary : scheme.primary),
                 ),
                 const SizedBox(height: 6),
                 Text(f ?? s.t('all_label'),
-                    maxLines: 1,
+                    maxLines: 2,
+                    textAlign: TextAlign.center,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                        fontSize: 11.5,
+                        fontSize: 11,
+                        height: 1.15,
                         fontWeight: on ? FontWeight.w800 : FontWeight.w500)),
               ]),
             ),
@@ -144,15 +154,14 @@ class FeaturedCourseCard extends StatelessWidget {
                         fontSize: 12, color: scheme.onSurfaceVariant)),
               const SizedBox(height: 6),
               Row(children: [
-                const Icon(Icons.star_rounded,
-                    size: 16, color: Color(0xFFF29900)),
-                const SizedBox(width: 2),
-                Text(
-                    (c.ratingAvg ?? 0) > 0
-                        ? c.ratingAvg!.toStringAsFixed(1)
-                        : '-',
-                    style: const TextStyle(
-                        fontSize: 12, fontWeight: FontWeight.w700)),
+                if ((c.ratingAvg ?? 0) > 0) ...[
+                  const Icon(Icons.star_rounded,
+                      size: 16, color: Color(0xFFF29900)),
+                  const SizedBox(width: 2),
+                  Text(c.ratingAvg!.toStringAsFixed(1),
+                      style: const TextStyle(
+                          fontSize: 12, fontWeight: FontWeight.w700)),
+                ],
                 const Spacer(),
                 c.price <= 0
                     ? Container(

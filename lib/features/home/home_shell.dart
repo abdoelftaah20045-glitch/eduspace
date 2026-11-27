@@ -506,6 +506,12 @@ class _HomeTabState extends State<_HomeTab> with WidgetsBindingObserver {
                     .where((x) => x.trim().isNotEmpty)
                     .toSet()
                     .toList(),
+                covers: {
+                  for (final c in _trending)
+                    if ((c.field ?? '').trim().isNotEmpty &&
+                        (c.coverUrl ?? '').isNotEmpty)
+                      c.field!: c.coverUrl!
+                },
                 selected: _discoverField,
                 onSelect: (f) => setState(() => _discoverField = f),
               ),
@@ -556,7 +562,7 @@ class _HomeTabState extends State<_HomeTab> with WidgetsBindingObserver {
       body: RefreshIndicator(
         onRefresh: _load,
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 150),
           children: [
             SafeArea(
               bottom: false,
