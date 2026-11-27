@@ -84,7 +84,7 @@ class _HomeBlockState extends State<HomeBlock> {
   @override
   void initState() {
     super.initState();
-    if (_type == 'courses' || _type == 'categories') _fetch();
+    if (_type == 'courses' || _type == 'categories' || _type == 'numbered' || _type == 'chips') _fetch();
   }
 
   Future<void> _fetch() async {
@@ -126,6 +126,10 @@ class _HomeBlockState extends State<HomeBlock> {
         return _coursesBlock(context, b, title);
       case 'categories':
         return _categories(context, b, title);
+      case 'chips':
+        return _chips(context);
+      case 'numbered':
+        return _numbered(context, b, title);
       case 'text':
         return Padding(
           padding: const EdgeInsets.only(bottom: 20),
@@ -413,6 +417,76 @@ class _HomeBlockState extends State<HomeBlock> {
                   MaterialPageRoute(builder: (_) => const CoursesScreen())),
             ),
         ]),
+      ]),
+    );
+  }
+
+  Widget _chips(BuildContext context) {
+    final counts = <String, int>{};
+    for (final c in _courses ?? const <Course>[]) {
+      final f = (c.field ?? '').trim();
+      if (f.isNotEmpty) counts[f] = (counts[f] ?? 0) + 1;
+    }
+    if (counts.isEmpty) return const SizedBox.shrink();
+    final names = counts.keys.toList()
+      ..sort((a, c) => counts[c]!.compareTo(counts[a]!));
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: SizedBox(
+        height: 40,
+        child: ListView(scrollDirection: Axis.horizontal, children: [
+          for (final n in names.take(14))
+            Padding(
+              padding: const EdgeInsetsDirectional.only(end: 8),
+              child: ActionChip(
+                label: Text(n),
+                onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const CoursesScreen())),
+              ),
+            ),
+        ]),
+      ),
+    );
+  }
+
+  Widget _numbered(BuildContext context, Map<String, dynamic> b, String title) {
+    final list = _pick({...b, 'rows': b['rows'] ?? 10});
+    if (list.isEmpty) return const SizedBox.shrink();
+    final scheme = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 20),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        _title(context, title),
+        SizedBox(
+          height: 150,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: list.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 6),
+            itemBuilder: (_, i) => SizedBox(
+              width: 210,
+              child: Stack(children: [
+                Positioned(
+                  left: 0,
+                  bottom: -14,
+                  child: Text('${i + 1}',
+                      style: TextStyle(
+                          fontSize: 110,
+                          height: 1,
+                          fontWeight: FontWeight.w900,
+                          color: scheme.primary.withValues(alpha: .25))),
+                ),
+                Positioned(
+                  right: 0,
+                  top: 0,
+                  bottom: 0,
+                  width: 150,
+                  child: _card(context, list[i]),
+                ),
+              ]),
+            ),
+          ),
+        ),
       ]),
     );
   }

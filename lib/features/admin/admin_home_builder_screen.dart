@@ -20,6 +20,8 @@ const _typeNames = {
   'courses': 'صف كورسات',
   'categories': 'الأقسام (مع العدد)',
   'text': 'نص / إعلان',
+  'chips': 'شريط أقسام سريع (فلاتر)',
+  'numbered': 'الأفضل اليوم (ترقيم كبير)',
 };
 const _sourceNames = {
   'latest': 'الأحدث',
@@ -126,9 +128,9 @@ class _AdminHomeBuilderScreenState extends State<AdminHomeBuilderScreen> {
                 f(link, 'الرابط عند الضغط'),
               ],
               if (type == 'text') f(body, 'النص', lines: 4),
-              if (type == 'courses' || type == 'categories')
+              if (type == 'courses' || type == 'categories' || type == 'numbered')
                 f(rows, 'عدد العناصر', kb: TextInputType.number),
-              if (type == 'courses') ...[
+              if (type == 'courses' || type == 'numbered') ...[
                 DropdownButtonFormField<String>(
                   initialValue: source,
                   decoration: const InputDecoration(labelText: 'المصدر'),
@@ -156,7 +158,7 @@ class _AdminHomeBuilderScreenState extends State<AdminHomeBuilderScreen> {
                       },
                     ),
                   ),
-                DropdownButtonFormField<String>(
+                if (type == 'courses') DropdownButtonFormField<String>(
                   initialValue: style,
                   decoration: const InputDecoration(labelText: 'الشكل'),
                   items: [
