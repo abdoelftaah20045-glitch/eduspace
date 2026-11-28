@@ -37,9 +37,18 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
   List<String> _avatars = [];
   List<Map<String, dynamic>> _lives = [];
 
+  // Last loaded details per course: reopening shows them at once while the
+  // fresh copy loads in the background (no spinner).
+  static final Map<String, CourseDetails> _cache = {};
+
   @override
   void initState() {
     super.initState();
+    final c = _cache[widget.courseId];
+    if (c != null) {
+      _details = c;
+      _isFav = c.course.isFavorite;
+    }
     _load();
   }
 
@@ -47,6 +56,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
     try {
       final details = await CoursesRepository.fetchCourseDetails(widget.courseId);
       if (!mounted) return;
+      _cache[widget.courseId] = details;
       setState(() {
         _details = details;
         _error = null;
