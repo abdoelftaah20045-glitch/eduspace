@@ -117,7 +117,7 @@ class _AdminEventsScreenState extends State<AdminEventsScreen> {
           : _items.isEmpty
               ? Center(child: Text(s.t('mod_empty')))
               : ListView.builder(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 96),
                   itemCount: vis.length,
                   itemBuilder: (_, k) {
                     final i = vis[k];

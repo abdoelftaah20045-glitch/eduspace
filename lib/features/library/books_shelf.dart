@@ -171,7 +171,7 @@ class _BooksShelfScreenState extends State<BooksShelfScreen> {
       height: 44,
       child: ListView(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         children: [
           for (final o in opts)
             Padding(
@@ -203,7 +203,7 @@ class _BooksShelfScreenState extends State<BooksShelfScreen> {
         height: 196,
         child: ListView(
           scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           children: [
             for (final b in items)
               Padding(

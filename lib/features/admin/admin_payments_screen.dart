@@ -199,7 +199,7 @@ class _RequestsTabState extends State<_RequestsTab> {
       Expanded(child: RefreshIndicator(
       onRefresh: _load,
       child: ListView.builder(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(16),
         itemCount: shown.length,
         itemBuilder: (_, i) {
           final r = shown[i];
@@ -597,7 +597,7 @@ class _SubsTabState extends State<_SubsTab> {
         ]),
       ));
     }
-    return ListView(padding: const EdgeInsets.all(12), children: [
+    return ListView(padding: const EdgeInsets.all(16), children: [
       Row(children: [
         Expanded(
             child: Text(s.t('admin_plans'),

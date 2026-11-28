@@ -218,7 +218,7 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
               ),
             )
           : ListView(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(16),
               children: [
                 Row(children: [
                   Expanded(

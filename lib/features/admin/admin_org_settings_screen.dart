@@ -102,7 +102,7 @@ class _AdminOrgSettingsScreenState extends State<AdminOrgSettingsScreen> {
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : ListView(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(16),
               children: [
                 Row(children: [
                   CircleAvatar(

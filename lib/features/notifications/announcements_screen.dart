@@ -129,7 +129,7 @@ class _AnnDetail extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: Text(s.t('ann_title'))),
       body: ListView(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(16),
         children: [
           if (a.images.isNotEmpty) ...[
             ImageCarousel(

@@ -318,7 +318,7 @@ class _AdminCoursesScreenState extends State<AdminCoursesScreen> {
               : RefreshIndicator(
                   onRefresh: _load,
                   child: ListView.builder(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
                     itemCount: courses.length,
                     itemBuilder: (context, i) {
                       final c = courses[i];
