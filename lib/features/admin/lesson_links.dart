@@ -217,6 +217,48 @@ class _AdminLessonLinksScreenState extends State<AdminLessonLinksScreen> {
     await _loadSugg();
   }
 
+  /// Accepts only clearly safe suggestions; doubtful ones stay in the list.
+  /// Safe = https link, host not junk, known file host or a document file,
+  /// not already attached to that lesson, not repeated in this batch.
+  Future<void> _autoAccept() async {
+    final c = Supabase.instance.client;
+    var ok = 0;
+    var kept = 0;
+    final seen = <String>{};
+    for (final x in List<Map<String, dynamic>>.from(_sugg)) {
+      try {
+        final u = '${x['url']}'.trim();
+        final host = LessonLinks._host(u);
+        final safe = u.toLowerCase().startsWith('https://') &&
+            host.contains('.') &&
+            !LessonLinks._inList(host, LessonLinks._junk) &&
+            (LessonLinks._inList(host, LessonLinks._good) || LessonLinks._docExt.hasMatch(u)) &&
+            '${x['title'] ?? ''}'.trim().isNotEmpty;
+        if (!safe) {
+          kept++;
+          continue;
+        }
+        final key = '${x['lesson_id']}|$u';
+        final have = await c.from('lesson_files').select('file_url').eq('lesson_id', x['lesson_id']);
+        final dup = !seen.add(key) || have.any((h) => '${h['file_url']}' == u);
+        if (!dup) {
+          await c.from('lesson_files').insert({
+            'lesson_id': x['lesson_id'],
+            'name': x['title'],
+            'file_url': u,
+            'tenant_id': TenantContext.id,
+          });
+          ok++;
+        }
+        await c.from('lesson_link_suggestions').delete().eq('id', x['id']);
+      } catch (_) {
+        kept++;
+      }
+    }
+    await _loadSugg();
+    if (mounted) setState(() => _msg = 'قبول تلقائي: اتضاف $ok رابط، وفضل $kept للمراجعة.');
+  }
+
   @override
   void initState() {
     super.initState();
@@ -267,6 +309,20 @@ class _AdminLessonLinksScreenState extends State<AdminLessonLinksScreen> {
         ),
       ),
       body: ListView(padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16), children: [
+        Row(children: [
+          Expanded(
+            child: FilledButton(
+                onPressed: _busy || _picked.isEmpty ? null : _run,
+                child: Text(_busy ? 'جاري السحب...' : 'اسحب الروابط (${_picked.length} كورس)')),
+          ),
+          const SizedBox(width: 6),
+          Expanded(
+            child: OutlinedButton(
+                onPressed: _sugg.isEmpty ? null : _autoAccept,
+                child: Text('مراجعة وقبول تلقائي (${_sugg.length})')),
+          ),
+        ]),
+        const SizedBox(height: 6),
         const Card(
           child: Padding(
             padding: EdgeInsets.all(14),
@@ -299,6 +355,7 @@ class _AdminLessonLinksScreenState extends State<AdminLessonLinksScreen> {
               style: TextStyle(fontWeight: FontWeight.w800)),
           Row(children: [
             TextButton(onPressed: () => _decideAll(true), child: Text('إضافة الكل (${_sugg.length})')),
+            TextButton(onPressed: _autoAccept, child: const Text('قبول تلقائي')),
             TextButton(onPressed: () => _decideAll(false), child: const Text('حذف الكل')),
           ]),
           for (final x in _sugg)
