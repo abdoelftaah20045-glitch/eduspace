@@ -183,6 +183,7 @@ class _HomeTabState extends State<_HomeTab> with WidgetsBindingObserver {
   // but it stays put while switching tabs or coming back from another app.
   bool _dirty = true;
   int _epoch = 0;
+  int _vid = 0;
   List<Course> _mentorPool = [];
   List<Course> _allCourses = [];
   void _reshuffleHome() {
@@ -193,12 +194,15 @@ class _HomeTabState extends State<_HomeTab> with WidgetsBindingObserver {
       _trending = [..._allCourses.take(4), ...rest.take(26)];
       _mentorPool = [..._allCourses]..shuffle(rnd);
       _fieldCourses.clear();
+      _vid++;
     });
   }
 
   Future<void> _refresh() {
     _dirty = true;
     _epoch++;
+    _vid++;
+    HomeVideos.pool = [];
     return _load();
   }
 
@@ -643,6 +647,9 @@ class _HomeTabState extends State<_HomeTab> with WidgetsBindingObserver {
       ],
       'home.books': [
             if (RemoteUi.visible('home.books')) HomeBooks(key: ValueKey(_epoch)),
+      ],
+      'home.videos': [
+            if (RemoteUi.visible('home.videos')) HomeVideos(key: ValueKey('hv$_vid')),
       ],
       'home.new_courses': [
             if (RemoteUi.visible('home.new_courses')) const HomeNewCourses(),

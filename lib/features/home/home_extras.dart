@@ -1,4 +1,7 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../courses/course_details_screen.dart';
 
 import '../courses/data/course_models.dart';
 import '../courses/data/courses_repo.dart';
@@ -240,6 +243,120 @@ class _HomeNewCoursesState extends State<HomeNewCourses> {
         ),
       ),
       const SizedBox(height: 24),
+    ]);
+  }
+}
+
+/// A different set of lesson videos from inside the courses on every visit.
+/// The pool is fetched once (random slice) and kept in memory, so remounting
+/// the section only reshuffles it, instantly.
+class HomeVideos extends StatefulWidget {
+  const HomeVideos({super.key});
+
+  /// Emptied on pull-to-refresh so the next build fetches a new random slice.
+  static List<Map<String, dynamic>> pool = [];
+
+  @override
+  State<HomeVideos> createState() => _HomeVideosState();
+}
+
+class _HomeVideosState extends State<HomeVideos> {
+  List<Map<String, dynamic>> _list = const [];
+
+  static String? _yt(String? url) {
+    if (url == null) return null;
+    final m = RegExp(r'(?:youtu\.be/|v=|/embed/|/live/|/shorts/)([A-Za-z0-9_-]{11})')
+        .firstMatch(url);
+    return m?.group(1);
+  }
+
+  void _pick() {
+    final l = [...HomeVideos.pool]..shuffle(math.Random());
+    _list = l.take(12).toList();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    if (HomeVideos.pool.isNotEmpty) {
+      _pick();
+    } else {
+      _fetch();
+    }
+  }
+
+  Future<void> _fetch() async {
+    final db = Supabase.instance.client;
+    Future<List<Map<String, dynamic>>> slice(int off) async {
+      final r = await db
+          .from('lessons')
+          .select('id,title,course_id,media_url,courses(title)')
+          .not('media_url', 'is', null)
+          .range(off, off + 79);
+      return List<Map<String, dynamic>>.from(r as List)
+          .where((x) => _yt('${x['media_url']}') != null)
+          .toList();
+    }
+
+    try {
+      var r = <Map<String, dynamic>>[];
+      try {
+        r = await slice(math.Random().nextInt(1500));
+      } catch (_) {}
+      if (r.length < 6) r = await slice(0);
+      HomeVideos.pool = r;
+      if (mounted) setState(_pick);
+    } catch (_) {}
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_list.isEmpty) return const SizedBox.shrink();
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      _title(context, 'فيديوهات من الكورسات'),
+      SizedBox(
+        height: 168,
+        child: ListView.separated(
+          scrollDirection: Axis.horizontal,
+          itemCount: _list.length,
+          separatorBuilder: (_, __) => const SizedBox(width: 10),
+          itemBuilder: (_, i) {
+            final x = _list[i];
+            final id = _yt('${x['media_url']}');
+            final cn = (x['courses'] is Map) ? '${x['courses']['title'] ?? ''}' : '';
+            return InkWell(
+              borderRadius: BorderRadius.circular(12),
+              onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                  builder: (_) => CourseDetailsScreen(courseId: '${x['course_id']}'))),
+              child: SizedBox(
+                width: 190,
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: AspectRatio(
+                      aspectRatio: 16 / 9,
+                      child: Image.network('https://i.ytimg.com/vi/$id/hqdefault.jpg',
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => const ColoredBox(color: Colors.black12)),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text('${x['title']}',
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+                  if (cn.isNotEmpty)
+                    Text(cn,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(fontSize: 10.5, color: Colors.black54)),
+                ]),
+              ),
+            );
+          },
+        ),
+      ),
+      const SizedBox(height: 20),
     ]);
   }
 }

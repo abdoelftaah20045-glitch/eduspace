@@ -43,6 +43,7 @@ const _home = [
   _Item('home.lives', 'lv_title', 'البث المباشر'),
   _Item('home.plan', 'planner_title', 'خطة المذاكرة'),
   _Item('home.books', 'library_label', 'الكتب'),
+  _Item('home.videos', 'tab_courses', 'فيديوهات من الكورسات'),
   _Item('home.new_courses', 'tab_courses', 'كورسات جديدة'),
   _Item('home.exams', 'tab_exams', 'امتحانات مقترحة'),
   _Item('home.quote', 'discover_label', 'اقتباس اليوم'),
