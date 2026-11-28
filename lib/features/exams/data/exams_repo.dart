@@ -61,6 +61,9 @@ class ExamsRepository {
         attemptCount: mine.length,
         bestScore: best,
         bestMaxScore: bestMax,
+        imageUrl: exam.imageUrl,
+        certificateEnabled: exam.certificateEnabled,
+        certificatePercent: exam.certificatePercent,
       );
     }).toList();
   }

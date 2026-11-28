@@ -121,7 +121,18 @@ class _ExamInstructionsScreenState extends State<ExamInstructionsScreen> {
       body: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16),
         children: [
-          Text(
+          if (exam.imageUrl != null) ...[
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: AspectRatio(
+                  aspectRatio: 16 / 7,
+                  child: Image.network(exam.imageUrl!, fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => const SizedBox.shrink()),
+                ),
+              ),
+              const SizedBox(height: 10),
+            ],
+            Text(
             exam.title,
             style: Theme.of(context)
                 .textTheme

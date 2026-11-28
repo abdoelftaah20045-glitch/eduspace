@@ -17,6 +17,9 @@ class Exam {
     this.attemptCount = 0,
     this.bestScore,
     this.bestMaxScore,
+    this.imageUrl,
+    this.certificateEnabled = false,
+    this.certificatePercent = 60,
   });
 
   final String id;
@@ -35,6 +38,9 @@ class Exam {
   final int attemptCount;
   final double? bestScore;
   final double? bestMaxScore;
+  final String? imageUrl;
+  final bool certificateEnabled;
+  final double certificatePercent;
 
   bool get isOpen {
     final now = DateTime.now();
@@ -54,6 +60,9 @@ class Exam {
       durationMinutes: (m['duration_minutes'] as num?)?.toInt(),
       passGrade: (m['pass_grade'] as num?)?.toDouble() ?? 0,
       maxAttempts: (m['max_attempts'] as num?)?.toInt() ?? 1,
+      imageUrl: (m['image_url'] as String?)?.trim().isEmpty == true ? null : m['image_url'] as String?,
+      certificateEnabled: (m['certificate_enabled'] as bool?) ?? false,
+      certificatePercent: (m['certificate_percent'] as num?)?.toDouble() ?? 60,
       shuffleQuestions: (m['shuffle_questions'] as bool?) ?? false,
       status: (m['status'] as String?) ?? 'draft',
       availableFrom: m['available_from'] != null
