@@ -1,4 +1,5 @@
 import 'question_import_screen.dart';
+import 'admin_exam_gen_screen.dart';
 import 'bulk_exam_import_screen.dart';
 import '../../core/admin_search.dart';
 import '../../core/search_norm.dart';
@@ -115,6 +116,19 @@ class _AdminExamsScreenState extends State<AdminExamsScreen> {
               ),
             ),
           ]),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(4, 8, 4, 0),
+          child: SizedBox(
+            width: double.infinity,
+            child: FilledButton.tonalIcon(
+              onPressed: () => Navigator.of(context)
+                  .push(MaterialPageRoute<void>(builder: (_) => const AdminExamGenScreen()))
+                  .then((_) => _load()),
+              icon: const Icon(Icons.auto_awesome),
+              label: const Text('امتحان كبير من ملفات (ذكاء / استيراد)'),
+            ),
+          ),
         ),
         AdminSearchField(onChanged: (v) => setState(() => _q = v)),
         Expanded(child: RefreshIndicator(

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/l10n.dart';
 import 'data/admin_exams_repo.dart';
+import 'file_import_screen.dart' show parseTable;
 import 'question_import.dart';
 
 /// Admin: import questions from a JSON / CSV / text file, review them, then
@@ -32,8 +33,15 @@ class _QuestionImportScreenState extends State<QuestionImportScreen> {
       if (picked.isEmpty || !mounted) return;
       final f = picked.first;
       final bytes = await f.readAsBytes();
-      final text = utf8.decode(bytes, allowMalformed: true);
-      final items = parseQuestionsFile(f.name, text);
+      final lower = f.name.toLowerCase();
+      final List<ParsedQuestion> items;
+      if (lower.endsWith('.docx')) {
+        items = parseQuestionsText(docxToText(bytes));
+      } else if (lower.endsWith('.xlsx')) {
+        items = parseQuestionsCsv(rowsToCsv(parseTable(f.name, bytes)));
+      } else {
+        items = parseQuestionsFile(f.name, utf8.decode(bytes, allowMalformed: true));
+      }
       if (!mounted) return;
       setState(() {
         _items = items;

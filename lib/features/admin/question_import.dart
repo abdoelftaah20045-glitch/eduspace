@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:archive/archive.dart';
+
 /// One question read from an import file, before it is saved.
 class ParsedQuestion {
   ParsedQuestion({
@@ -260,3 +262,45 @@ Set<int> parseAnswerCells(dynamic a, List<String> options) =>
     _parseAnswer(a, options);
 String normQuestionType(String? t, int correctCount, List<String> options) =>
     _normType(t, correctCount, options);
+
+/// Text of a Word (.docx) file: one line per paragraph. A new question number
+/// ("12." / "12)") after options starts a new block, so the plain-text parser
+/// can split questions even when the document has no blank lines.
+String docxToText(List<int> bytes) {
+  final zip = ZipDecoder().decodeBytes(bytes);
+  final f = zip.files.where((x) => x.name == 'word/document.xml').toList();
+  if (f.isEmpty) return '';
+  final xml = utf8.decode(f.first.content as List<int>, allowMalformed: true);
+  final paras = xml.split('</w:p>');
+  final out = StringBuffer();
+  final numRe = RegExp(r'^\(?\d{1,4}[\).:\-]\s*\S');
+  var hasOptions = false;
+  for (final raw in paras) {
+    var t = raw
+        .replaceAll(RegExp(r'<w:tab\s*/>'), ' ')
+        .replaceAll(RegExp(r'<w:br\s*/>'), '\n')
+        .replaceAll(RegExp(r'<[^>]+>'), '')
+        .replaceAll('&amp;', '&')
+        .replaceAll('&lt;', '<')
+        .replaceAll('&gt;', '>')
+        .replaceAll('&quot;', '"')
+        .replaceAll('&apos;', "'")
+        .trim();
+    if (t.isEmpty) {
+      out.write('\n');
+      hasOptions = false;
+      continue;
+    }
+    if (numRe.hasMatch(t) && hasOptions) out.write('\n');
+    if (RegExp(r'^\(?([A-Ha-h])[\).:\-]\s').hasMatch(t)) hasOptions = true;
+    if (numRe.hasMatch(t) && !RegExp(r'^\(?[A-Ha-h][\).:\-]').hasMatch(t)) hasOptions = false;
+    out.write('$t\n');
+  }
+  return out.toString();
+}
+
+/// Rows of cells back to CSV text (for XLSX question files).
+String rowsToCsv(List<List<String>> rows) => [
+      for (final r in rows)
+        r.map((c) => '"${c.replaceAll('"', '""')}"').join(',')
+    ].join('\n');
