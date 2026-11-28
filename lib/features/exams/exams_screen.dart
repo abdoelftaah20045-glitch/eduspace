@@ -45,20 +45,6 @@ class _ExamsScreenState extends State<ExamsScreen> {
   Widget build(BuildContext context) =>
       MaintenanceGate(pageKey: 'exams', child: Builder(builder: _mtBuild));
 
-  Widget _list(S s, List<Exam> items) => items.isEmpty
-      ? Center(child: Text(s.t('no_exams')))
-      : RefreshIndicator(
-          onRefresh: _load,
-          child: ListView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16),
-            itemCount: items.length,
-            itemBuilder: (context, i) => FadeSlideIn(
-              delay: Duration(milliseconds: 60 * (i < 8 ? i : 8)),
-              child: _ExamCard(exam: items[i], onDone: _load),
-            ),
-          ),
-        );
-
   Widget _mtBuild(BuildContext context) {
     final s = S.of(context);
     final exams = _exams;
@@ -68,7 +54,19 @@ class _ExamsScreenState extends State<ExamsScreen> {
           ? Center(child: Text(s.t('generic_error')))
           : exams == null
               ? const Center(child: CircularProgressIndicator())
-              : _list(s, exams),
+              : exams.isEmpty
+                  ? Center(child: Text(s.t('no_exams')))
+                  : RefreshIndicator(
+                      onRefresh: _load,
+                      child: ListView.builder(
+                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16),
+                        itemCount: exams.length,
+                        itemBuilder: (context, i) => FadeSlideIn(
+                          delay: Duration(milliseconds: 60 * (i < 8 ? i : 8)),
+                          child: _ExamCard(exam: exams[i], onDone: _load),
+                        ),
+                      ),
+                    ),
     );
   }
 }
@@ -116,17 +114,6 @@ class _ExamCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (exam.imageUrl != null) ...[
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: AspectRatio(
-                  aspectRatio: 16 / 7,
-                  child: Image.network(exam.imageUrl!, fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => const SizedBox.shrink()),
-                ),
-              ),
-              const SizedBox(height: 10),
-            ],
             Row(
               children: [
                 Container(

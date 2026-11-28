@@ -29,10 +29,6 @@ class _ExamEditScreenState extends State<ExamEditScreen> {
           .toStringAsFixed(0));
   late final _maxAttempts = TextEditingController(
       text: ((widget.exam?['max_attempts'] as num?)?.toInt() ?? 1).toString());
-  late final _image = TextEditingController(text: widget.exam?['image_url'] as String? ?? '');
-  late final _certPct = TextEditingController(
-      text: ((widget.exam?['certificate_percent'] as num?)?.toDouble() ?? 60).toStringAsFixed(0));
-  late bool _certOn = widget.exam?['certificate_enabled'] as bool? ?? false;
   String? _courseId;
   late String _status = widget.exam?['status'] as String? ?? 'draft';
   late bool _shuffle = widget.exam?['shuffle_questions'] as bool? ?? false;
@@ -101,16 +97,6 @@ class _ExamEditScreenState extends State<ExamEditScreen> {
       'available_from': _availableFrom?.toIso8601String(),
       'available_until': _availableUntil?.toIso8601String(),
     };
-    // New columns (part47): only sent when they exist or are used, so saving
-    // still works before the SQL has been run.
-    final hasCols = widget.exam?.containsKey('image_url') ?? false;
-    if (hasCols || _image.text.trim().isNotEmpty) {
-      values['image_url'] = _image.text.trim().isEmpty ? null : _image.text.trim();
-    }
-    if (hasCols || _certOn) {
-      values['certificate_enabled'] = _certOn;
-      values['certificate_percent'] = double.tryParse(_certPct.text.trim()) ?? 60;
-    }
     try {
       if (widget.exam == null) {
         final newId = await AdminExamsRepository.createExam(values);
@@ -243,23 +229,6 @@ class _ExamEditScreenState extends State<ExamEditScreen> {
                   .toList(),
               onChanged: (v) => setState(() => _status = v ?? 'draft'),
             ),
-            TextFormField(
-              controller: _image,
-              decoration: const InputDecoration(labelText: 'رابط صورة الامتحان (اختياري)'),
-              keyboardType: TextInputType.url,
-            ),
-            SwitchListTile(
-              contentPadding: EdgeInsets.zero,
-              title: const Text('شهادة عند النجاح في هذا الامتحان'),
-              value: _certOn,
-              onChanged: (v) => setState(() => _certOn = v),
-            ),
-            if (_certOn)
-              TextFormField(
-                controller: _certPct,
-                decoration: const InputDecoration(labelText: 'النسبة المطلوبة للشهادة (%)'),
-                keyboardType: TextInputType.number,
-              ),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
               title: Text(s.t('shuffle_questions')),

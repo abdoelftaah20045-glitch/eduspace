@@ -5,7 +5,6 @@ import '../library/book_links.dart';
 import '../library/books_shelf.dart';
 import '../library/data/library_repo.dart';
 import 'admin_book_sources_screen.dart';
-import 'admin_books_review_screen.dart';
 import 'file_import_screen.dart' show parseTable;
 
 bool _ar(BuildContext c) => Localizations.localeOf(c).languageCode == 'ar';
@@ -253,12 +252,6 @@ class _AdminBooksScreenState extends State<AdminBooksScreen> {
         title: Text(ar ? 'إدارة الكتب' : 'Manage books'),
         actions: [
           IconButton(
-            tooltip: ar ? 'مراجعة الكتب' : 'Review books',
-            icon: const Icon(Icons.fact_check_outlined),
-            onPressed: () => Navigator.of(context).push(MaterialPageRoute(
-                builder: (_) => const AdminBooksReviewScreen())).then((_) => _load()),
-          ),
-          IconButton(
             tooltip: ar ? 'مصادر مفتوحة' : 'Open sources',
             icon: const Icon(Icons.search),
             onPressed: () => Navigator.of(context).push(MaterialPageRoute(
@@ -279,18 +272,6 @@ class _AdminBooksScreenState extends State<AdminBooksScreen> {
       body: Column(
         children: [
           if (_busy) const LinearProgressIndicator(),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(4, 10, 4, 0),
-            child: SizedBox(
-              width: double.infinity,
-              child: FilledButton.tonalIcon(
-                onPressed: () => Navigator.of(context).push(MaterialPageRoute(
-                    builder: (_) => const AdminBooksReviewScreen())).then((_) => _load()),
-                icon: const Icon(Icons.fact_check_outlined),
-                label: Text(ar ? 'مراجعة الكتب (قبول / رفض)' : 'Review books (approve / reject)'),
-              ),
-            ),
-          ),
           Padding(
             padding: const EdgeInsets.fromLTRB(4, 10, 4, 0),
             child: Row(children: [

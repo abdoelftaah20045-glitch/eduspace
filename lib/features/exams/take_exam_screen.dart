@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import '../ai/ai_fab.dart';
 
 import '../../core/l10n.dart';
-import '../../core/remote_ui.dart';
 import 'data/exam_models.dart';
 import 'data/exams_repo.dart';
 
@@ -63,11 +62,7 @@ class _TakeExamScreenState extends State<TakeExamScreen> {
         _attemptId = attemptId;
         _questions = questions;
       });
-      final fixed = widget.exam.durationMinutes;
-      final perQ = RemoteUi.limit('exam_min_per_question', 1);
-      final int? minutes = (fixed != null && fixed > 0)
-          ? fixed
-          : (perQ > 0 ? (questions.length * perQ).ceil() : null);
+      final minutes = widget.exam.durationMinutes;
       if (minutes != null && minutes > 0) {
         _secondsLeft = minutes * 60;
         _timer = Timer.periodic(const Duration(seconds: 1), (t) {
@@ -207,7 +202,7 @@ class _TakeExamScreenState extends State<TakeExamScreen> {
       appBar: AppBar(
         title: Text(widget.exam.title),
         actions: [
-          if (_timer != null && _secondsLeft > 0)
+          if (widget.exam.durationMinutes != null && _secondsLeft > 0)
             Padding(
               padding: const EdgeInsetsDirectional.only(end: 16),
               child: Center(

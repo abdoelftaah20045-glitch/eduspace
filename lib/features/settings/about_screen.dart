@@ -34,7 +34,7 @@ class AboutScreen extends StatelessWidget {
           ),
           Center(child: Text('${s.t('app_version')} 0.2.0 (build $kAppBuild)')),
           Center(
-              child: Text('Update #$kPatchNumber',
+              child: Text('Update #${kPatchNumber}b',
                   style: const TextStyle(fontWeight: FontWeight.w700))),
           const SizedBox(height: 8),
           Center(child: Text(s.t('about_legalese'), textAlign: TextAlign.center)),

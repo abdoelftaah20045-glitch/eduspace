@@ -333,12 +333,6 @@ class _FileImportScreenState extends State<FileImportScreen> {
             const SizedBox(height: 12),
           ],
           Text(s.t('fi_hint')),
-          if (_job.serverJobId.isNotEmpty)
-            Card(
-                child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: const Text(
-                        'اتبعتت القائمة للسيرفر. هيكمل لوحده حتى لو قفلت التطبيق أو النت قطع. تابع التقدم من شاشة "الاستيراد".'))),
           const SizedBox(height: 12),
           Wrap(spacing: 8, runSpacing: 8, children: [
             FilledButton.icon(

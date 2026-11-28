@@ -17,7 +17,6 @@ class Certificate {
     required this.status,
     required this.issuedAt,
     this.lang = 'ar',
-    this.examId,
   });
 
   final String id;
@@ -29,7 +28,6 @@ class Certificate {
   final String status;
   final DateTime issuedAt;
   final String lang;
-  final String? examId;
 
   bool get isValid => status == 'valid';
 
@@ -42,7 +40,6 @@ class Certificate {
         hours: (m['hours'] as num?)?.toDouble(),
         status: (m['status'] as String?) ?? 'valid',
         lang: (m['lang'] as String?) == 'en' ? 'en' : 'ar',
-        examId: m['exam_id'] as String?,
         issuedAt:
             DateTime.tryParse((m['issued_at'] ?? '').toString())?.toLocal() ??
                 DateTime.now(),
@@ -118,7 +115,6 @@ class CertificatesRepository {
   /// Template and look for a course's certificate (course row wins over the
   /// global row). Null when nothing is configured.
   static Future<Map<String, dynamic>?> settingsFor(String courseId) async {
-    if (courseId.isEmpty) return null;
     try {
       final rows = await _c
           .from('certificate_settings')
@@ -135,17 +131,6 @@ class CertificatesRepository {
     }
   }
 
-  /// Issues the certificate of a passed exam (server checks the rules).
-  static Future<List<Certificate>> issueForExam(String examId) async {
-    try {
-      final r = await _c.rpc('issue_exam_certificate', params: {'p_exam': examId});
-      if (r is List) {
-        return [for (final m in r) Certificate.fromMap(Map<String, dynamic>.from(m as Map))];
-      }
-    } catch (_) {}
-    return [];
-  }
-
   static String _newNumber() {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
     final r = Random.secure();
@@ -160,7 +145,7 @@ class CertificatesRepository {
 List<List<Certificate>> groupCertsByCourse(List<Certificate> all) {
   final map = <String, List<Certificate>>{};
   for (final c in all) {
-    map.putIfAbsent(c.examId != null ? 'e:${c.examId}' : c.courseId, () => []).add(c);
+    map.putIfAbsent(c.courseId, () => []).add(c);
   }
   return map.values.toList();
 }

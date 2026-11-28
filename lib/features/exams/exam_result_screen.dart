@@ -3,8 +3,6 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../../core/l10n.dart';
-import '../certificates/certificate_view_screen.dart';
-import '../certificates/data/certificates_repo.dart';
 import 'data/exam_models.dart';
 import 'exam_review_screen.dart';
 
@@ -118,10 +116,6 @@ class ExamResultScreen extends StatelessWidget {
                   style: const TextStyle(color: Colors.white, fontSize: 13)),
             ]),
           ),
-          if (exam.certificateEnabled && passed && pct >= exam.certificatePercent) ...[
-            const SizedBox(height: 16),
-            _ExamCertBox(examId: exam.id),
-          ],
           const SizedBox(height: 16),
           Card(
             elevation: 0,
@@ -234,39 +228,4 @@ class _RingPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_RingPainter old) => old.value != value;
-}
-
-class _ExamCertBox extends StatefulWidget {
-  const _ExamCertBox({required this.examId});
-  final String examId;
-
-  @override
-  State<_ExamCertBox> createState() => _ExamCertBoxState();
-}
-
-class _ExamCertBoxState extends State<_ExamCertBox> {
-  List<Certificate>? _certs;
-
-  @override
-  void initState() {
-    super.initState();
-    CertificatesRepository.issueForExam(widget.examId).then((c) {
-      if (mounted) setState(() => _certs = c);
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final certs = _certs;
-    if (certs == null) return const LinearProgressIndicator();
-    if (certs.isEmpty) return const SizedBox.shrink();
-    return FilledButton.icon(
-      onPressed: () => Navigator.of(context).push(MaterialPageRoute(
-          builder: (_) => CertificateViewScreen(cert: certs.first, siblings: certs))),
-      icon: const Icon(Icons.workspace_premium_outlined),
-      label: Text(Localizations.localeOf(context).languageCode == 'ar'
-          ? 'عرض الشهادة'
-          : 'View certificate'),
-    );
-  }
 }

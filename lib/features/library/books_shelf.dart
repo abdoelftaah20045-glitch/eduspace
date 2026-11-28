@@ -35,9 +35,7 @@ class BookCover extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Align(
-              alignment: Alignment.center,
-              child: Icon(Icons.menu_book_rounded, color: Colors.white54, size: 44)),
+          const Icon(Icons.menu_book_rounded, color: Colors.white70, size: 22),
           const SizedBox(height: 8),
           Expanded(
             child: Text(

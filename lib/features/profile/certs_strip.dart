@@ -25,7 +25,7 @@ class _CertsStripState extends State<CertsStrip> {
     CertificatesRepository.fetchMine().then((c) {
       final v = c.where((x) => x.isValid).toList();
       if (mounted) setState(() => _certs = v);
-      for (final id in v.map((x) => x.courseId).where((x) => x.isNotEmpty).toSet()) {
+      for (final id in v.map((x) => x.courseId).toSet()) {
         CertificatesRepository.settingsFor(id).then((m) {
           if (mounted) setState(() => _settings[id] = m);
         }).catchError((_) {});

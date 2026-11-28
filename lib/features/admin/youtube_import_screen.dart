@@ -184,10 +184,6 @@ class YtImporter {
   }
 
   static Future<YtPlaylist> fetchPlaylist(String id) async {
-    // Disabled: YouTube pages are no longer scraped from the app. The server
-    // job (function playlist-import) uses the official YouTube Data API.
-    throw Exception('moved to server');
-    // ignore: dead_code
     final res = await http
         .get(Uri.parse('https://www.youtube.com/playlist?list=$id&hl=en'),
             headers: _headers)
@@ -317,8 +313,6 @@ class YtImporter {
 
   /// Real description of one video (from its public page), or ''.
   static Future<String> fetchDescription(String videoId) async {
-    // Disabled (see fetchPlaylist): descriptions come from the server job.
-    if (videoId.isNotEmpty) return '';
     try {
       final res = await http
           .get(Uri.parse('https://www.youtube.com/watch?v=$videoId&hl=en'),
@@ -389,9 +383,7 @@ class _YoutubeImportScreenState extends State<YoutubeImportScreen> {
     });
     for (final id in ids) {
       try {
-        // No page scraping: the server reads the list with the official
-        // YouTube API after the import starts.
-        final p = YtPlaylist(id, id, '', '', const []);
+        final p = await YtImporter.fetchPlaylist(id);
         if (mounted) setState(() => _lists.add(p));
       } catch (e) {
         if (mounted) setState(() => _errors.add('$id: $e'));

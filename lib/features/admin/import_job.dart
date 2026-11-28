@@ -14,7 +14,6 @@ import '../../core/l10n.dart';
 import 'data/admin_repo.dart';
 import 'data/admin_tools_repo.dart';
 import 'playlist_import.dart';
-import 'server_import.dart';
 import 'youtube_import_screen.dart';
 
 /// One playlist line of an import.
@@ -76,8 +75,6 @@ class ImportJob extends ChangeNotifier {
   String fileName = '';
   bool withDesc = true;
   bool running = false;
-  /// Set when the last start was handed to the server.
-  String serverJobId = '';
   String progress = '';
   bool _stop = false;
 
@@ -207,41 +204,6 @@ class ImportJob extends ChangeNotifier {
       }
     }
     if (!hasPending) return;
-    // Preferred: the server does the whole import (keeps going with the app
-    // closed, retries by itself). Falls back to the in-app loop below when
-    // the server part is not installed yet.
-    final waiting = rows.where((r) => r.status == 'wait').toList();
-    if (waiting.isNotEmpty) {
-      final id = await ServerPlaylist.enqueue(
-        title: fileName,
-        withDesc: withDesc,
-        items: [
-          for (final r in waiting)
-            {
-              'line': r.line,
-              'category': r.category,
-              'url': r.url,
-              'title': r.title,
-              'lang': r.language,
-              'level': r.level,
-            }
-        ],
-      );
-      if (id != null) {
-        rows.removeWhere((r) => r.status == 'wait');
-        progress = '';
-        await _save();
-        serverJobId = id;
-        notifyListeners();
-        return;
-      }
-      // No page scraping from the phone any more: the official YouTube API
-      // runs on the server only.
-      progress =
-          'السيرفر مش جاهز لسه: لازم part49 ودالة playlist-import ومفتاح YouTube. الاستيراد واقف.';
-      notifyListeners();
-      return;
-    }
     running = true;
     _stop = false;
     final title = s.t('bg_import_running');
