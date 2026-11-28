@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart' show TextDirection;
 import 'html_text.dart';
 
 /// Search-friendly form of a text: entity codes decoded, lower case,
@@ -52,4 +53,18 @@ bool matchesAny(String query, Object? row) {
   }
   walk(row, 0);
   return matchesSearch(query, [b.toString()]);
+}
+
+/// Direction of a typed text by its first strong letter: Arabic letters give
+/// RTL, Latin letters give LTR, empty or digits keep [fallback].
+TextDirection dirOfText(String t, TextDirection fallback) {
+  for (final r in t.runes) {
+    if ((r >= 0x0590 && r <= 0x08FF) || (r >= 0xFB1D && r <= 0xFEFF)) {
+      return TextDirection.rtl;
+    }
+    if ((r >= 0x41 && r <= 0x5A) || (r >= 0x61 && r <= 0x7A)) {
+      return TextDirection.ltr;
+    }
+  }
+  return fallback;
 }

@@ -19,6 +19,9 @@ import 'data/courses_repo.dart';
 class CoursesScreen extends StatefulWidget {
   const CoursesScreen({super.key});
 
+  /// Bumped when the Courses tab is opened: new order, no reload.
+  static final ValueNotifier<int> reshuffle = ValueNotifier(0);
+
   @override
   State<CoursesScreen> createState() => _CoursesScreenState();
 }
@@ -36,20 +39,31 @@ class _CoursesScreenState extends State<CoursesScreen> {
     super.initState();
     _load();
     ImportJob.courseTick.addListener(_load);
+    CoursesScreen.reshuffle.addListener(_reshuffleNow);
   }
 
   @override
   void dispose() {
     ImportJob.courseTick.removeListener(_load);
+    CoursesScreen.reshuffle.removeListener(_reshuffleNow);
     _searchController.dispose();
     super.dispose();
   }
 
   // One random order per app session so the list does not jump around, but
   // new imports of one subject never pile up at the top.
-  static final int _seed = DateTime.now().millisecondsSinceEpoch;
+  int _seed = DateTime.now().millisecondsSinceEpoch;
 
-  static List<Course> _mixed(List<Course> list) {
+  void _reshuffleNow() {
+    if (!mounted) return;
+    setState(() {
+      _seed = DateTime.now().microsecondsSinceEpoch;
+      final c = _courses;
+      if (c != null) _courses = _mixed(c);
+    });
+  }
+
+  List<Course> _mixed(List<Course> list) {
     final groups = <String, List<Course>>{};
     for (final c in list) {
       groups.putIfAbsent((c.field ?? '').trim(), () => []).add(c);
@@ -187,7 +201,10 @@ class _CoursesScreenState extends State<CoursesScreen> {
         .where((c) => c.isEnrolled && (c.progressPercent ?? 0) < 100)
         .toList();
     return RefreshIndicator(
-      onRefresh: _load,
+      onRefresh: () {
+        _seed = DateTime.now().microsecondsSinceEpoch;
+        return _load();
+      },
       child: ListView(
         padding: const EdgeInsets.only(bottom: 24),
         children: [
@@ -196,6 +213,8 @@ class _CoursesScreenState extends State<CoursesScreen> {
             padding: const EdgeInsets.fromLTRB(4, 4, 4, 8),
             child: TextField(
               controller: _searchController,
+              textDirection: dirOfText(_searchController.text, Directionality.of(context)),
+              textAlign: TextAlign.start,
               textInputAction: TextInputAction.search,
               onSubmitted: (_) => setState(() {}),
               decoration: InputDecoration(

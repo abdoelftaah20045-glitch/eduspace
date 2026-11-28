@@ -149,7 +149,12 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
         title: TextField(
           controller: _c,
           autofocus: true,
-          onChanged: _changed,
+          textDirection: dirOfText(_c.text, Directionality.of(context)),
+          textAlign: TextAlign.start,
+          onChanged: (v) {
+            setState(() {});
+            _changed(v);
+          },
           textInputAction: TextInputAction.search,
           onSubmitted: _run,
           decoration: const InputDecoration(

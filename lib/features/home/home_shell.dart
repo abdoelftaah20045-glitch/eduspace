@@ -43,6 +43,10 @@ import '../admin/import_job.dart';
 import 'app_drawer.dart';
 import 'home_widgets.dart';
 
+class _CoursesTabHook {
+  static void enter() => CoursesScreen.reshuffle.value++;
+}
+
 /// Bottom navigation shell: Home / Courses / Exams / Account.
 class HomeShell extends StatefulWidget {
   const HomeShell({super.key});
@@ -64,6 +68,10 @@ class _HomeShellState extends State<HomeShell> {
     super.initState();
     PaidCourses.load();
     ScreenProtection.sync();
+    // Warm the other main tabs a few seconds after Home so they open instantly.
+    Future.delayed(const Duration(seconds: 4), () {
+      if (mounted) setState(() => _seen.addAll(const ['my', 'courses', 'exams', 'library', 'account']));
+    });
     RemoteUi.load().then((_) {
       if (mounted) setState(() {});
     });
@@ -134,6 +142,7 @@ class _HomeShellState extends State<HomeShell> {
             _gen[tabs[i].$1] = (_gen[tabs[i].$1] ?? 0) + 1;
           }
           _index = i;
+          if (tabs[i].$1 == 'courses' && i != idx) _CoursesTabHook.enter();
         }),
         destinations: [
           for (final t in tabs)
