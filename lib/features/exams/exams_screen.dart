@@ -19,7 +19,6 @@ class ExamsScreen extends StatefulWidget {
 
 class _ExamsScreenState extends State<ExamsScreen> {
   List<Exam>? _exams;
-  List<Exam> _quizzes = [];
   String? _error;
 
   @override
@@ -31,14 +30,9 @@ class _ExamsScreenState extends State<ExamsScreen> {
   Future<void> _load() async {
     try {
       final exams = await ExamsRepository.fetchExams();
-      var quizzes = <Exam>[];
-      try {
-        quizzes = await ExamsRepository.fetchExams(lessonQuizzes: true);
-      } catch (_) {}
       if (!mounted) return;
       setState(() {
         _exams = exams;
-        _quizzes = quizzes;
         _error = null;
       });
     } catch (_) {
@@ -68,22 +62,13 @@ class _ExamsScreenState extends State<ExamsScreen> {
   Widget _mtBuild(BuildContext context) {
     final s = S.of(context);
     final exams = _exams;
-    return DefaultTabController(
-      length: 2,
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(s.t('tab_exams')),
-          bottom: TabBar(tabs: [
-            Tab(text: s.t('tab_exams')),
-            Tab(text: s.t('exams_lesson_quizzes')),
-          ]),
-        ),
-        body: _error != null
-            ? Center(child: Text(s.t('generic_error')))
-            : exams == null
-                ? const Center(child: CircularProgressIndicator())
-                : TabBarView(children: [_list(s, exams), _list(s, _quizzes)]),
-      ),
+    return Scaffold(
+      appBar: AppBar(title: Text(s.t('tab_exams'))),
+      body: _error != null
+          ? Center(child: Text(s.t('generic_error')))
+          : exams == null
+              ? const Center(child: CircularProgressIndicator())
+              : _list(s, exams),
     );
   }
 }
