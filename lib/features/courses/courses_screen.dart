@@ -179,6 +179,8 @@ class _CoursesScreenState extends State<CoursesScreen> {
       if (_filter == 'progress') {
         return c.isEnrolled && (c.progressPercent ?? 0) < 100;
       }
+      if (_filter.startsWith('lvl_')) return c.level == _filter.substring(4);
+      if (_filter.startsWith('lang_')) return c.language == _filter.substring(5);
       return true;
     }).toList();
     final cont = merged
@@ -245,6 +247,13 @@ class _CoursesScreenState extends State<CoursesScreen> {
                     () => setState(() => _filter = 'free')),
                 _chip(s.t('cat_in_progress'), _filter == 'progress',
                     () => setState(() => _filter = 'progress')),
+                for (final l in const ['beginner', 'intermediate', 'advanced'])
+                  _chip(s.t('level_$l'), _filter == 'lvl_$l',
+                      () => setState(() => _filter = 'lvl_$l')),
+                _chip('العربية', _filter == 'lang_ar',
+                    () => setState(() => _filter = 'lang_ar')),
+                _chip('English', _filter == 'lang_en',
+                    () => setState(() => _filter = 'lang_en')),
               ],
             ),
           ),
