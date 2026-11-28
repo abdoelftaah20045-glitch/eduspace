@@ -235,6 +235,12 @@ class ImportJob extends ChangeNotifier {
         notifyListeners();
         return;
       }
+      // No page scraping from the phone any more: the official YouTube API
+      // runs on the server only.
+      progress =
+          'السيرفر مش جاهز لسه: لازم part49 ودالة playlist-import ومفتاح YouTube. الاستيراد واقف.';
+      notifyListeners();
+      return;
     }
     running = true;
     _stop = false;
