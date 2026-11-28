@@ -13,15 +13,17 @@ class ExamsRepository {
   static String get _uid => _c.auth.currentUser!.id;
 
   /// Published exams with the current user's attempt counts and best score.
-  static Future<List<Exam>> fetchExams() async {
-    final rows = await _c
+  static Future<List<Exam>> fetchExams({bool lessonQuizzes = false}) async {
+    final base = _c
         .from('exams')
         .select()
         .eq('status', 'published')
-        .eq('tenant_id', TenantContext.id)
-        .filter('lesson_id', 'is', null)
+        .eq('tenant_id', TenantContext.id);
+    final rows = await (lessonQuizzes
+            ? base.not('lesson_id', 'is', null)
+            : base.filter('lesson_id', 'is', null))
         .order('created_at', ascending: false)
-        .limit(50);
+        .limit(lessonQuizzes ? 200 : 50);
     final attempts = await _c
         .from('exam_attempts')
         .select()

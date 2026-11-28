@@ -17,6 +17,7 @@ class _AdminLimitsScreenState extends State<AdminLimitsScreen> {
   static const _defs = [
     ('lesson_watch_percent', 'lim_lesson_watch', 90),
     ('tablet_max_width', 'lim_tablet_width', 0),
+    ('exam_min_per_question', 'lim_exam_per_q', 1),
     ('lvl_excellent', 'lim_lvl_excellent', 80),
     ('lvl_good', 'lim_lvl_good', 60),
     ('lvl_average', 'lim_lvl_average', 40),

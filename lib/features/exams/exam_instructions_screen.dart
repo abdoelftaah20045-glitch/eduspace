@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../admin/data/admin_repo.dart';
 
 import '../../core/l10n.dart';
+import '../../core/remote_ui.dart';
 import 'data/exam_models.dart';
 import 'data/exams_repo.dart';
 import 'take_exam_screen.dart';
@@ -137,9 +138,11 @@ class _ExamInstructionsScreenState extends State<ExamInstructionsScreen> {
             children: [
               _stat(
                 s.t('minutes'),
-                exam.durationMinutes != null
+                (exam.durationMinutes != null && exam.durationMinutes! > 0)
                     ? '${exam.durationMinutes}'
-                    : '--',
+                    : (_questionCount != null && RemoteUi.limit('exam_min_per_question', 1) > 0
+                        ? '${(_questionCount! * RemoteUi.limit('exam_min_per_question', 1)).ceil()}'
+                        : '--'),
                 Icons.timer_outlined,
                 const Color(0xFF1E88E5),
               ),

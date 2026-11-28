@@ -423,6 +423,8 @@ class S {
     'ev_title': {'ar': 'حدث', 'en': 'Event', 'fr': 'Événement', 'es': 'Evento', 'de': 'Ereignis'},
     'ev_name': {'ar': 'اسم الحدث', 'en': 'Event name', 'fr': 'Nom de l\'événement', 'es': 'Nombre del evento', 'de': 'Name des Ereignisses'},
     'sch_event': {'ar': 'حدث', 'en': 'Event', 'fr': 'Événement', 'es': 'Evento', 'de': 'Ereignis'},
+    'lim_exam_per_q': {'ar': 'دقائق لكل سؤال (وقت الامتحان = عدد الأسئلة × الرقم ده، لو الامتحان مالوش وقت محدد. 0 = بدون وقت)', 'en': 'Minutes per question (exam time = questions x this, when the exam has no fixed time. 0 = untimed)', 'fr': 'Minutes per question (0 = untimed)', 'es': 'Minutes per question (0 = untimed)', 'de': 'Minutes per question (0 = untimed)'},
+    'exams_lesson_quizzes': {'ar': 'اختبارات الدروس', 'en': 'Lesson quizzes', 'fr': 'Lesson quizzes', 'es': 'Lesson quizzes', 'de': 'Lesson quizzes'},
     'lim_tablet_width': {'ar': 'أقصى عرض للصفحات على التابلت (بالبكسل، 0 = عرض كامل بدون هوامش جانبية)', 'en': 'Max page width on tablets (px, 0 = full width)', 'fr': 'Max page width on tablets (px, 0 = full width)', 'es': 'Max page width on tablets (px, 0 = full width)', 'de': 'Max page width on tablets (px, 0 = full width)'},
     'lim_lesson_watch': {'ar': 'نسبة المشاهدة المطلوبة لإكمال الدرس (%)', 'en': 'Required watch percent to complete a lesson (%)', 'fr': 'Pourcentage à regarder pour terminer une leçon (%)', 'es': 'Porcentaje a ver para completar una lección (%)', 'de': 'Erforderlicher Anteil zum Abschluss einer Lektion (%)'},
     'watch_required': {'ar': 'شاهد الفيديو حتى', 'en': 'Watch at least', 'fr': 'Regardez au moins', 'es': 'Mira al menos', 'de': 'Schaue mindestens'},
