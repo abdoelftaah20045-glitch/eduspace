@@ -68,3 +68,33 @@ TextDirection dirOfText(String t, TextDirection fallback) {
   }
   return fallback;
 }
+
+const _xlang = <List<String>>[
+  ['تمريض', 'nursing'], ['برمجة', 'programming'], ['تصميم', 'design'],
+  ['رياضيات', 'math'], ['فيزياء', 'physics'], ['كيمياء', 'chemistry'],
+  ['احياء', 'biology'], ['طب', 'medicine'], ['لغة', 'language'],
+  ['انجليزي', 'english'], ['اعمال', 'business'], ['تسويق', 'marketing'],
+  ['محاسبة', 'accounting'], ['ادارة', 'management'], ['بيانات', 'data'],
+  ['شبكات', 'network'], ['قواعد بيانات', 'database'], ['تشريح', 'anatomy'],
+  ['صيدلة', 'pharmacy'], ['هندسة', 'engineering'], ['تاريخ', 'history'],
+  ['اقتصاد', 'economics'], ['علم نفس', 'psychology'], ['قانون', 'law'],
+  ['جرافيك', 'graphic'], ['مونتاج', 'editing'], ['تصوير', 'photography'],
+  ['اكسل', 'excel'], ['بايثون', 'python'], ['جافا', 'java'],
+  ['ذكاء اصطناعي', 'artificial intelligence'], ['امن سيبراني', 'cyber security'],
+  ['مواقع', 'web'], ['تطبيقات', 'apps'], ['موبايل', 'mobile'],
+  ['اسعافات', 'first aid'], ['تغذية', 'nutrition'], ['اطفال', 'pediatric'],
+];
+
+/// The query plus its Arabic/English counterparts for common subject words,
+/// so an Arabic search also finds English titles and the other way round.
+List<String> crossLangQueries(String query) {
+  final q = normSearch(query);
+  final out = <String>{q};
+  for (final p in _xlang) {
+    final ar = normSearch(p[0]);
+    final en = p[1];
+    if (q.contains(ar)) out.add(q.replaceAll(ar, en));
+    if (q.contains(en)) out.add(q.replaceAll(en, ar));
+  }
+  return out.where((x) => x.trim().isNotEmpty).toList();
+}

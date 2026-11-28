@@ -22,12 +22,16 @@ class CoursesScreen extends StatefulWidget {
   /// Bumped when the Courses tab is opened: new order, no reload.
   static final ValueNotifier<int> reshuffle = ValueNotifier(0);
 
+  /// Courses already loaded by Home: the tab opens filled, no spinner.
+  static List<Course> cache = const [];
+
   @override
   State<CoursesScreen> createState() => _CoursesScreenState();
 }
 
 class _CoursesScreenState extends State<CoursesScreen> {
   final _searchController = TextEditingController();
+  final _searchFocus = FocusNode();
   List<Course>? _courses;
   Map<String, Course> _mine = {};
   String? _error;
@@ -37,6 +41,13 @@ class _CoursesScreenState extends State<CoursesScreen> {
   @override
   void initState() {
     super.initState();
+    _searchFocus.addListener(() {
+      if (_searchFocus.hasFocus) {
+        _searchController.selection =
+            TextSelection.collapsed(offset: _searchController.text.length);
+      }
+    });
+    if (CoursesScreen.cache.isNotEmpty) _courses = _mixed(CoursesScreen.cache);
     _load();
     ImportJob.courseTick.addListener(_load);
     CoursesScreen.reshuffle.addListener(_reshuffleNow);
@@ -47,6 +58,7 @@ class _CoursesScreenState extends State<CoursesScreen> {
     ImportJob.courseTick.removeListener(_load);
     CoursesScreen.reshuffle.removeListener(_reshuffleNow);
     _searchController.dispose();
+    _searchFocus.dispose();
     super.dispose();
   }
 
@@ -91,7 +103,9 @@ class _CoursesScreenState extends State<CoursesScreen> {
 
   Future<void> _load() async {
     try {
-      final courses = _mixed(await CoursesRepository.fetchCourses(limit: 1000));
+      final raw = await CoursesRepository.fetchCourses(limit: 1000);
+      CoursesScreen.cache = raw;
+      final courses = _mixed(raw);
       try {
         final mine = await CoursesRepository.fetchMyCourses();
         _mine = {for (final c in mine) c.id: c};
@@ -213,6 +227,7 @@ class _CoursesScreenState extends State<CoursesScreen> {
             padding: const EdgeInsets.fromLTRB(4, 4, 4, 8),
             child: TextField(
               controller: _searchController,
+              focusNode: _searchFocus,
               textDirection: dirOfText(_searchController.text, Directionality.of(context)),
               textAlign: TextAlign.start,
               textInputAction: TextInputAction.search,

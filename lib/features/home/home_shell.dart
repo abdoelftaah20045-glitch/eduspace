@@ -47,6 +47,10 @@ class _CoursesTabHook {
   static void enter() => CoursesScreen.reshuffle.value++;
 }
 
+/// Bumped when the Home tab is opened again: courses and teachers reshuffle
+/// from the data already in memory.
+final ValueNotifier<int> _homeReshuffle = ValueNotifier(0);
+
 /// Bottom navigation shell: Home / Courses / Exams / Account.
 class HomeShell extends StatefulWidget {
   const HomeShell({super.key});
@@ -143,6 +147,7 @@ class _HomeShellState extends State<HomeShell> {
           }
           _index = i;
           if (tabs[i].$1 == 'courses' && i != idx) _CoursesTabHook.enter();
+          if (tabs[i].$1 == 'home' && i != idx) _homeReshuffle.value++;
         }),
         destinations: [
           for (final t in tabs)
@@ -179,6 +184,18 @@ class _HomeTabState extends State<_HomeTab> with WidgetsBindingObserver {
   bool _dirty = true;
   int _epoch = 0;
   List<Course> _mentorPool = [];
+  List<Course> _allCourses = [];
+  void _reshuffleHome() {
+    if (!mounted || _allCourses.isEmpty) return;
+    final rnd = math.Random();
+    final rest = _allCourses.skip(4).toList()..shuffle(rnd);
+    setState(() {
+      _trending = [..._allCourses.take(4), ...rest.take(26)];
+      _mentorPool = [..._allCourses]..shuffle(rnd);
+      _fieldCourses.clear();
+    });
+  }
+
   Future<void> _refresh() {
     _dirty = true;
     _epoch++;
@@ -192,6 +209,7 @@ class _HomeTabState extends State<_HomeTab> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     _load();
+    _homeReshuffle.addListener(_reshuffleHome);
     ImportJob.courseTick.addListener(_load);
     PushService.arrived.addListener(_load);
     WidgetsBinding.instance.addObserver(this);
@@ -204,6 +222,7 @@ class _HomeTabState extends State<_HomeTab> with WidgetsBindingObserver {
 
   @override
   void dispose() {
+    _homeReshuffle.removeListener(_reshuffleHome);
     WidgetsBinding.instance.removeObserver(this);
     PushService.arrived.removeListener(_load);
     ImportJob.courseTick.removeListener(_load);
@@ -241,6 +260,8 @@ class _HomeTabState extends State<_HomeTab> with WidgetsBindingObserver {
           final rest = all.skip(4).toList()..shuffle(rnd);
           trending = [...fresh, ...rest.take(26)];
           pool = [...all]..shuffle(rnd);
+          _allCourses = all;
+          CoursesScreen.cache = all;
           _dirty = false;
         } catch (_) {}
       }

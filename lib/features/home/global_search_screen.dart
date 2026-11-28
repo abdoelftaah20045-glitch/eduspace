@@ -22,6 +22,18 @@ class GlobalSearchScreen extends StatefulWidget {
 
 class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
   final _c = TextEditingController();
+  final _f = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+    // Coming back to type again always continues at the end of the text.
+    _f.addListener(() {
+      if (_f.hasFocus) {
+        _c.selection = TextSelection.collapsed(offset: _c.text.length);
+      }
+    });
+  }
   Timer? _t;
   bool _busy = false;
   String _last = '';
@@ -36,6 +48,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
   void dispose() {
     _t?.cancel();
     _c.dispose();
+    _f.dispose();
     super.dispose();
   }
 
@@ -62,10 +75,13 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
     setState(() => _busy = true);
     // Arabic-friendly pattern: letter variants (أ إ آ ا, ى ي, ة ه) become a
     // one-letter wildcard, diacritics are dropped, words may sit apart.
-    final inner = normSearch(q)
-        .replaceAll(RegExp(r'[اهيى]'), '_')
-        .replaceAll(' ', '%');
+    String pt(String x) => '%${x.replaceAll(RegExp(r'[اهيى]'), '_').replaceAll(' ', '%')}%';
+    final alts = crossLangQueries(q);
+    final inner = alts.first.replaceAll(RegExp(r'[اهيى]'), '_').replaceAll(' ', '%');
     final pat = '%$inner%';
+    final pats = [for (final a in alts) pt(a)];
+    String orOf(List<String> cols) =>
+        [for (final p in pats) for (final c in cols) '$c.ilike.$p'].join(',');
     Future<List<Map<String, dynamic>>> safe(
         Future<dynamic> Function() f) async {
       try {
@@ -82,13 +98,13 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
           .select('id,title,field,instructor_name,cover_url')
           .eq('tenant_id', TenantContext.id)
           .inFilter('status', ['published', 'draft'])
-          .or('title.ilike.$pat,description.ilike.$pat,field.ilike.$pat,instructor_name.ilike.$pat')
+          .or(orOf(['title', 'description', 'field', 'instructor_name']))
           .order('created_at', ascending: false)
           .limit(15)),
       safe(() => _db
           .from('lessons')
           .select('id,title,course_id,courses(title)')
-          .ilike('title', pat)
+          .or(orOf(['title']))
           .limit(15)),
       safe(() => _db
           .from('exams')
@@ -96,7 +112,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
           .eq('tenant_id', TenantContext.id)
           .eq('status', 'published')
           .filter('lesson_id', 'is', null)
-          .or('title.ilike.$pat,description.ilike.$pat')
+          .or(orOf(['title', 'description']))
           .limit(15)),
     ]);
     var books = <LibraryItem>[];
@@ -148,6 +164,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
       appBar: AppBar(
         title: TextField(
           controller: _c,
+          focusNode: _f,
           autofocus: true,
           textDirection: dirOfText(_c.text, Directionality.of(context)),
           textAlign: TextAlign.start,
