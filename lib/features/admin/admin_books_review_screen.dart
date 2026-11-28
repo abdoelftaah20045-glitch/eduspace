@@ -46,6 +46,7 @@ class _AdminBooksReviewScreenState extends State<AdminBooksReviewScreen> {
   String _q = '';
   bool _loading = true;
   bool _busy = false;
+  final Set<String> _sel = {};
 
   @override
   void initState() {
@@ -87,6 +88,7 @@ class _AdminBooksReviewScreenState extends State<AdminBooksReviewScreen> {
       }
       final rows = await _filter(_c.from('library_items').select('*')).order('created_at', ascending: false).limit(100);
       _items = [for (final r in rows as List) LibraryItem.fromMap(Map<String, dynamic>.from(r as Map))];
+      _sel.removeWhere((id) => !_items.any((x) => x.id == id));
     } catch (_) {}
     if (mounted) setState(() => _loading = false);
   }
@@ -169,6 +171,33 @@ class _AdminBooksReviewScreenState extends State<AdminBooksReviewScreen> {
     } catch (_) {
       _snack('حصل خطأ');
     }
+  }
+
+  Future<void> _selected(bool approve) async {
+    final ids = _sel.toList();
+    if (ids.isEmpty) return;
+    final ok = await _confirm(
+      approve ? 'نشر ${ids.length} كتاب محدد؟' : 'حذف ${ids.length} كتاب محدد؟',
+      approve ? 'هتظهر للطلاب. اتأكد إن ترخيصها يسمح.' : 'هيتم حذف روابطها نهائيًا.',
+    );
+    if (!ok) return;
+    setState(() => _busy = true);
+    try {
+      for (var i = 0; i < ids.length; i += 150) {
+        final part = ids.sublist(i, i + 150 > ids.length ? ids.length : i + 150);
+        if (approve) {
+          await _c.from('library_items').update({'status': 'published'}).inFilter('id', part);
+        } else {
+          await _c.from('library_items').delete().inFilter('id', part);
+        }
+      }
+      _sel.clear();
+      _snack(approve ? 'تم النشر' : 'تم الحذف');
+    } catch (_) {
+      _snack('حصل خطأ');
+    }
+    if (mounted) setState(() => _busy = false);
+    await _load(counts: true);
   }
 
   Future<void> _all(bool approve) async {
@@ -273,6 +302,34 @@ class _AdminBooksReviewScreenState extends State<AdminBooksReviewScreen> {
             ),
           ]),
         ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(4, 0, 4, 4),
+          child: Row(children: [
+            Expanded(
+              child: OutlinedButton(
+                  onPressed: _busy || _items.isEmpty
+                      ? null
+                      : () => setState(() {
+                            if (_sel.length >= _items.length) {
+                              _sel.clear();
+                            } else {
+                              _sel
+                                ..clear()
+                                ..addAll(_items.map((x) => x.id));
+                            }
+                          }),
+                  child: Text(_sel.length >= _items.length && _items.isNotEmpty
+                      ? 'إلغاء التحديد'
+                      : 'تحديد الكل (${_items.length})')),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: FilledButton(
+                  onPressed: _busy || _sel.isEmpty ? null : () => _selected(true),
+                  child: Text('نشر المحدد (${_sel.length})')),
+            ),
+          ]),
+        ),
         Expanded(
           child: _loading
               ? const Center(child: CircularProgressIndicator())
@@ -285,6 +342,15 @@ class _AdminBooksReviewScreenState extends State<AdminBooksReviewScreen> {
                         final b = _items[i];
                         return ListTile(
                           dense: true,
+                          leading: Checkbox(
+                              value: _sel.contains(b.id),
+                              onChanged: (v) => setState(() {
+                                    if (v == true) {
+                                      _sel.add(b.id);
+                                    } else {
+                                      _sel.remove(b.id);
+                                    }
+                                  })),
                           title: Text(b.title, maxLines: 2, overflow: TextOverflow.ellipsis),
                           subtitle: Text(
                               [b.source, b.license].where((x) => x.isNotEmpty).join(' · '),

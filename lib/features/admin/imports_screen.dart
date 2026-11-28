@@ -87,6 +87,51 @@ class _ImportsScreenState extends State<ImportsScreen> {
               if (x is Map && x['enabled'] == true) Map<String, dynamic>.from(x),
           ];
           return ListView(padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16), children: [
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(14),
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  const Text('استيراد الكتب (على السيرفر، شغال والتطبيق مقفول)',
+                      style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15)),
+                  const SizedBox(height: 8),
+                  if (_booksMissing)
+                    const Text('شغّل ملف SQL part42 وانشر دالة book-import الأول.')
+                  else if (_books == null)
+                    const LinearProgressIndicator()
+                  else ...[
+                    Text('كتب في المكتبة: ${_books!['books']}   تحت المراجعة: ${_books!['review']}'),
+                    const SizedBox(height: 8),
+                    Row(children: [
+                      FilledButton(
+                          onPressed: () => _bookAction('book_import_start'),
+                          child: const Text('استيراد كل المصادر')),
+                      const SizedBox(width: 8),
+                      OutlinedButton(
+                          onPressed: () => _bookAction('book_import_pause'),
+                          child: Text(s.t('bg_stop'))),
+                    ]),
+                    const SizedBox(height: 8),
+                    for (final x in srcs)
+                      if (x is Map)
+                        ListTile(
+                          dense: true,
+                          contentPadding: EdgeInsets.zero,
+                          title: Text('${x['label']}',
+                              maxLines: 1, overflow: TextOverflow.ellipsis),
+                          subtitle: Text(
+                              '${x['status']}  ·  ${x['imported']}${x['error'] != null ? '  ·  ${x['error']}' : ''}',
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis),
+                          trailing: Icon(
+                              x['enabled'] == true ? Icons.sync : Icons.check_circle_outline,
+                              color: x['enabled'] == true ? scheme.primary : Colors.grey),
+                        ),
+                    if (running.isEmpty) const SizedBox.shrink(),
+                  ],
+                ]),
+              ),
+            ),
+            const SizedBox(height: 10),
             for (final j in _plJobs)
               Card(
                 child: ListTile(
@@ -199,51 +244,6 @@ class _ImportsScreenState extends State<ImportsScreen> {
                             onPressed: () => job.start(s),
                             child: Text(s.t('yt_import_btn'))),
                     ]),
-                  ],
-                ]),
-              ),
-            ),
-            const SizedBox(height: 10),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(14),
-                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  const Text('استيراد الكتب (على السيرفر، شغال والتطبيق مقفول)',
-                      style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15)),
-                  const SizedBox(height: 8),
-                  if (_booksMissing)
-                    const Text('شغّل ملف SQL part42 وانشر دالة book-import الأول.')
-                  else if (_books == null)
-                    const LinearProgressIndicator()
-                  else ...[
-                    Text('كتب في المكتبة: ${_books!['books']}   تحت المراجعة: ${_books!['review']}'),
-                    const SizedBox(height: 8),
-                    Row(children: [
-                      FilledButton(
-                          onPressed: () => _bookAction('book_import_start'),
-                          child: const Text('استيراد كل المصادر')),
-                      const SizedBox(width: 8),
-                      OutlinedButton(
-                          onPressed: () => _bookAction('book_import_pause'),
-                          child: Text(s.t('bg_stop'))),
-                    ]),
-                    const SizedBox(height: 8),
-                    for (final x in srcs)
-                      if (x is Map)
-                        ListTile(
-                          dense: true,
-                          contentPadding: EdgeInsets.zero,
-                          title: Text('${x['label']}',
-                              maxLines: 1, overflow: TextOverflow.ellipsis),
-                          subtitle: Text(
-                              '${x['status']}  ·  ${x['imported']}${x['error'] != null ? '  ·  ${x['error']}' : ''}',
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis),
-                          trailing: Icon(
-                              x['enabled'] == true ? Icons.sync : Icons.check_circle_outline,
-                              color: x['enabled'] == true ? scheme.primary : Colors.grey),
-                        ),
-                    if (running.isEmpty) const SizedBox.shrink(),
                   ],
                 ]),
               ),
