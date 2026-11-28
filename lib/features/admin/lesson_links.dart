@@ -187,6 +187,36 @@ class _AdminLessonLinksScreenState extends State<AdminLessonLinksScreen> {
     } catch (_) {}
   }
 
+  Future<void> _decideAll(bool approve) async {
+    final list = List<Map<String, dynamic>>.from(_sugg);
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(approve ? 'إضافة كل الاقتراحات (${list.length})؟' : 'حذف كل الاقتراحات (${list.length})؟'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('إلغاء')),
+          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('تأكيد')),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    final c = Supabase.instance.client;
+    for (final x in list) {
+      try {
+        if (approve) {
+          await c.from('lesson_files').insert({
+            'lesson_id': x['lesson_id'],
+            'name': x['title'],
+            'file_url': x['url'],
+            'tenant_id': TenantContext.id,
+          });
+        }
+        await c.from('lesson_link_suggestions').delete().eq('id', x['id']);
+      } catch (_) {}
+    }
+    await _loadSugg();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -222,6 +252,20 @@ class _AdminLessonLinksScreenState extends State<AdminLessonLinksScreen> {
     final cs = _courses;
     return Scaffold(
       appBar: AppBar(title: const Text('سحب روابط الملفات من أوصاف الفيديوهات')),
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(8, 6, 8, 8),
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            if (_msg.isNotEmpty) Padding(padding: const EdgeInsets.only(bottom: 6), child: Text(_msg)),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                  onPressed: _busy || _picked.isEmpty ? null : _run,
+                  child: Text(_busy ? 'جاري السحب...' : 'اسحب الروابط (${_picked.length} كورس)')),
+            ),
+          ]),
+        ),
+      ),
       body: ListView(padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16), children: [
         const Card(
           child: Padding(
@@ -249,20 +293,19 @@ class _AdminLessonLinksScreenState extends State<AdminLessonLinksScreen> {
                   : (v) => setState(() => v == true ? _picked.add('${c['id']}') : _picked.remove('${c['id']}')),
             ),
         ],
-        const SizedBox(height: 12),
-        FilledButton(
-            onPressed: _busy || _picked.isEmpty ? null : _run,
-            child: Text(_busy ? 'جاري السحب...' : 'اسحب الروابط (${_picked.length} كورس)')),
-        if (_msg.isNotEmpty) Padding(padding: const EdgeInsets.only(top: 12), child: Text(_msg)),
         if (_sugg.isNotEmpty) ...[
           const SizedBox(height: 16),
           const Text('روابط ذكرها المدرس في الفيديو (اقتراحات، راجعها قبل الإضافة)',
               style: TextStyle(fontWeight: FontWeight.w800)),
+          Row(children: [
+            TextButton(onPressed: () => _decideAll(true), child: Text('إضافة الكل (${_sugg.length})')),
+            TextButton(onPressed: () => _decideAll(false), child: const Text('حذف الكل')),
+          ]),
           for (final x in _sugg)
             Card(
               child: ListTile(
                 title: Text('${x['title']}', maxLines: 2, overflow: TextOverflow.ellipsis),
-                subtitle: Text('${(x['lessons'] is Map) ? x['lessons']['title'] : ''}\n${x['url']}',
+                subtitle: Text('${x['url']}\n${(x['lessons'] is Map) ? x['lessons']['title'] : ''}',
                     maxLines: 3, overflow: TextOverflow.ellipsis),
                 isThreeLine: true,
                 trailing: Row(mainAxisSize: MainAxisSize.min, children: [
