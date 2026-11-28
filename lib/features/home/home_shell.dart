@@ -195,6 +195,7 @@ class _HomeTabState extends State<_HomeTab> with WidgetsBindingObserver {
       _mentorPool = [..._allCourses]..shuffle(rnd);
       _fieldCourses.clear();
       _vid++;
+      _epoch++;
     });
   }
 
@@ -221,7 +222,10 @@ class _HomeTabState extends State<_HomeTab> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) _load();
+    if (state == AppLifecycleState.resumed) {
+      _reshuffleHome();
+      _load();
+    }
   }
 
   @override
@@ -652,10 +656,10 @@ class _HomeTabState extends State<_HomeTab> with WidgetsBindingObserver {
             if (RemoteUi.visible('home.videos')) HomeVideos(key: ValueKey('hv$_vid')),
       ],
       'home.new_courses': [
-            if (RemoteUi.visible('home.new_courses')) const HomeNewCourses(),
+            if (RemoteUi.visible('home.new_courses')) HomeNewCourses(key: ValueKey('nc$_vid')),
       ],
       'home.exams': [
-            if (RemoteUi.visible('home.exams')) const HomeSuggestedExams(),
+            if (RemoteUi.visible('home.exams')) HomeSuggestedExams(key: ValueKey('ex$_vid')),
       ],
       'home.quote': [
             if (RemoteUi.visible('home.quote')) const HomeQuote(),

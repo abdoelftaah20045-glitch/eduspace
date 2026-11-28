@@ -22,9 +22,18 @@ class _HomeBooksState extends State<HomeBooks> {
   bool _done = false;
   final int _seed = DateTime.now().microsecondsSinceEpoch;
 
+  // Kept in memory: a remount reshuffles instantly, no spinner or blank.
+  static List<LibraryItem> _cacheBooks = const [];
+  static Map<String, int> _cacheRecent = {};
+
   @override
   void initState() {
     super.initState();
+    if (_cacheBooks.isNotEmpty) {
+      _books = _cacheBooks;
+      _recent = _cacheRecent;
+      _done = true;
+    }
     _load();
   }
 
@@ -52,6 +61,8 @@ class _HomeBooksState extends State<HomeBooks> {
             : [...covered, ...books.where((b) => !covered.contains(b))];
         _recent = rec;
         _done = true;
+        _cacheBooks = _books;
+        _cacheRecent = rec;
       });
     } catch (_) {
       if (mounted) setState(() => _done = true);
@@ -76,7 +87,7 @@ class _HomeBooksState extends State<HomeBooks> {
         : _BooksRow(title: title, items: list.take(14).toList());
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       row('كمّل القراءة', continueList),
-      row('الكتب', newest),
+      row('الكتب', ([...b]..shuffle(math.Random(_seed + 3)))),
       row('الأكثر قراءة', popMix),
       row('كتب PDF مجانية', pdfMix),
       row('مقترحة ليك', mix),

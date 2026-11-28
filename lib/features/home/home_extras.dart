@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../courses/course_details_screen.dart';
+import '../courses/courses_screen.dart';
 
 import '../courses/data/course_models.dart';
 import '../courses/data/courses_repo.dart';
@@ -150,13 +151,18 @@ class HomeSuggestedExams extends StatefulWidget {
 }
 
 class _HomeSuggestedExamsState extends State<HomeSuggestedExams> {
+  static List<Exam> _pool = const [];
   List<Exam> _exams = const [];
+
+  void _pickE() => _exams = ([..._pool]..shuffle(math.Random())).take(8).toList();
 
   @override
   void initState() {
     super.initState();
+    if (_pool.isNotEmpty) _pickE();
     ExamsRepository.fetchExams().then((r) {
-      if (mounted) setState(() => _exams = r.take(8).toList());
+      _pool = r;
+      if (mounted && _exams.isEmpty) setState(_pickE);
     }).catchError((_) {});
   }
 
@@ -219,13 +225,20 @@ class HomeNewCourses extends StatefulWidget {
 class _HomeNewCoursesState extends State<HomeNewCourses> {
   List<Course> _list = const [];
 
+  List<Course> _pick(List<Course> r) {
+    final l = r.where((c) => !c.title.contains('مسودة')).toList()..shuffle(math.Random());
+    return l.take(8).toList();
+  }
+
   @override
   void initState() {
     super.initState();
-    CoursesRepository.fetchCourses().then((r) {
-      final l = r.where((c) => !c.title.contains('مسودة')).take(8).toList();
-      if (mounted) setState(() => _list = l);
-    }).catchError((_) {});
+    if (CoursesScreen.cache.isNotEmpty) _list = _pick(CoursesScreen.cache);
+    if (_list.isEmpty) {
+      CoursesRepository.fetchCourses(limit: 400).then((r) {
+        if (mounted) setState(() => _list = _pick(r));
+      }).catchError((_) {});
+    }
   }
 
   @override
