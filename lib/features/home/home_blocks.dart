@@ -322,7 +322,7 @@ class _HomeBlockState extends State<HomeBlock> {
         physics: const NeverScrollableScrollPhysics(),
         mainAxisSpacing: 10,
         crossAxisSpacing: 10,
-        childAspectRatio: 1.15,
+        childAspectRatio: 0.82,
         children: [for (final c in list) _card(context, c)],
       );
     } else if (style == 'list') {
@@ -344,7 +344,7 @@ class _HomeBlockState extends State<HomeBlock> {
       ]);
     } else {
       body = SizedBox(
-        height: 168,
+        height: 206,
         child: ListView.separated(
           scrollDirection: Axis.horizontal,
           itemCount: list.length,
@@ -493,7 +493,7 @@ class _HomeBlockState extends State<HomeBlock> {
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         _title(context, title),
         SizedBox(
-          height: 150,
+          height: 190,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             itemCount: list.length,
@@ -542,5 +542,5 @@ const List<Map<String, dynamic>> defaultHomeBlocks = [
   {'id': 'd_chips', 'type': 'chips', 'at': 0},
   {'id': 'd_best', 'type': 'numbered', 'title': 'الأفضل اليوم', 'at': 5, 'rows': 10, 'source': 'rated'},
   {'id': 'd_new', 'type': 'courses', 'title': 'أحدث الكورسات', 'at': 6, 'rows': 8, 'style': 'row', 'source': 'latest'},
-  {'id': 'd_free', 'type': 'courses', 'title': 'كورسات مجانية', 'at': 6, 'rows': 8, 'style': 'row', 'source': 'free'},
+  {'id': 'd_free', 'type': 'courses', 'title': 'كورسات مجانية', 'at': 7, 'rows': 8, 'style': 'row', 'source': 'free'},
 ];
