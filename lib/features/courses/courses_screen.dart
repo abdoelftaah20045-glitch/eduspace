@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import '../../core/cached_avatar.dart';
 import '../../core/maintenance.dart';
 import 'price_view.dart';
@@ -44,10 +45,39 @@ class _CoursesScreenState extends State<CoursesScreen> {
     super.dispose();
   }
 
+  // One random order per app session so the list does not jump around, but
+  // new imports of one subject never pile up at the top.
+  static final int _seed = DateTime.now().millisecondsSinceEpoch;
+
+  static List<Course> _mixed(List<Course> list) {
+    final groups = <String, List<Course>>{};
+    for (final c in list) {
+      groups.putIfAbsent((c.field ?? '').trim(), () => []).add(c);
+    }
+    final rnd = math.Random(_seed);
+    final keys = groups.keys.toList()..sort();
+    keys.shuffle(rnd);
+    for (final g in groups.values) {
+      g.shuffle(rnd);
+    }
+    final out = <Course>[];
+    var more = true;
+    for (var i = 0; more; i++) {
+      more = false;
+      for (final k in keys) {
+        final g = groups[k]!;
+        if (i < g.length) {
+          out.add(g[i]);
+          more = true;
+        }
+      }
+    }
+    return out;
+  }
+
   Future<void> _load() async {
     try {
-      final courses =
-          await CoursesRepository.fetchCourses();
+      final courses = _mixed(await CoursesRepository.fetchCourses(limit: 1000));
       try {
         final mine = await CoursesRepository.fetchMyCourses();
         _mine = {for (final c in mine) c.id: c};

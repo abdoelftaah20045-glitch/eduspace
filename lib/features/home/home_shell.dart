@@ -51,6 +51,11 @@ class HomeShell extends StatefulWidget {
 
 class _HomeShellState extends State<HomeShell> {
   int _index = 0;
+  // Tabs stay alive once opened (no reload on every switch); a tab that was
+  // left for more than 10 minutes is rebuilt fresh the next time.
+  final Set<String> _seen = {'home'};
+  final Map<String, DateTime> _left = {};
+  final Map<String, int> _gen = {};
 
   @override
   void initState() {
@@ -89,13 +94,24 @@ class _HomeShellState extends State<HomeShell> {
       ('account', const ProfileScreen(), Icons.person_outline, s.t('tab_account')),
     ];
     final idx = _index.clamp(0, tabs.length - 1);
+    _seen.add(tabs[idx].$1);
     return PopScope(
       canPop: idx == 0,
       onPopInvokedWithResult: (didPop, _) {
         if (!didPop && idx != 0) setState(() => _index = 0);
       },
       child: Scaffold(
-      body: tabs[idx].$2,
+      body: IndexedStack(
+        index: idx,
+        children: [
+          for (final t in tabs)
+            _seen.contains(t.$1)
+                ? KeyedSubtree(
+                    key: ValueKey('tab_${t.$1}_${_gen[t.$1] ?? 0}'),
+                    child: t.$2)
+                : const SizedBox.shrink(),
+        ],
+      ),
       bottomNavigationBar: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(4, 0, 4, 10),
@@ -108,7 +124,15 @@ class _HomeShellState extends State<HomeShell> {
         height: 64,
         labelBehavior: NavigationDestinationLabelBehavior.alwaysHide,
         selectedIndex: idx,
-        onDestinationSelected: (i) => setState(() => _index = i),
+        onDestinationSelected: (i) => setState(() {
+          final now = DateTime.now();
+          _left[tabs[idx].$1] = now;
+          final back = _left[tabs[i].$1];
+          if (back != null && now.difference(back).inMinutes >= 10) {
+            _gen[tabs[i].$1] = (_gen[tabs[i].$1] ?? 0) + 1;
+          }
+          _index = i;
+        }),
         destinations: [
           for (final t in tabs)
             NavigationDestination(icon: Icon(t.$3), label: t.$4),

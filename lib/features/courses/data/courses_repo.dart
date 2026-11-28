@@ -15,7 +15,7 @@ class CoursesRepository {
   static String get _uid => _c.auth.currentUser!.id;
 
   /// Published courses, newest first, optional free-text filter.
-  static Future<List<Course>> fetchCourses({String? query}) async {
+  static Future<List<Course>> fetchCourses({String? query, int limit = 300}) async {
     // The server (RLS) decides who may see drafts: tenant admins get them,
     // students only ever get published rows.
     const admin = true;
@@ -28,7 +28,7 @@ class CoursesRepository {
       final pattern = '%${query.trim()}%';
       q = q.or('title.ilike.$pattern,description.ilike.$pattern,field.ilike.$pattern');
     }
-    final rows = await q.order('created_at', ascending: false).limit(300);
+    final rows = await q.order('created_at', ascending: false).limit(limit);
     return _mergeSocial(rows.map((m) {
       // Admins also see drafts (marked); students only ever get published.
       if (admin && m['status'] == 'draft') {
