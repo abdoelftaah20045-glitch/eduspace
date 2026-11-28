@@ -14,6 +14,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../core/l10n.dart';
 import '../../core/paid_courses.dart';
 import '../../core/tenant.dart';
+import 'global_search_screen.dart';
 import '../../core/widgets.dart';
 import 'home_blocks.dart';
 import 'home_books.dart';
@@ -730,7 +731,7 @@ class _HomeTabState extends State<_HomeTab> with WidgetsBindingObserver {
                 InkWell(
                   borderRadius: BorderRadius.circular(28),
                   onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                      builder: (_) => const CoursesScreen())),
+                      builder: (_) => const GlobalSearchScreen())),
                   child: Container(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 16, vertical: 13),
