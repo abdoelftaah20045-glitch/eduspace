@@ -81,6 +81,8 @@ class _InAppWebPlayerState extends State<InAppWebPlayer> {
       'content="width=device-width, initial-scale=1"></head>'
       '<body style="margin:0;background:#000"><div id="p" '
       'style="position:absolute;top:0;left:0;width:100%;height:100%"></div>'
+      '<link rel="preconnect" href="https://www.youtube.com">'
+      '<link rel="preconnect" href="https://i.ytimg.com">'
       '<script src="https://www.youtube.com/iframe_api"></script><script>'
       'var pl;function onYouTubeIframeAPIReady(){pl=new YT.Player("p",{'
       'videoId:"$id",width:"100%",height:"100%",'
@@ -134,6 +136,10 @@ class _InAppWebPlayerState extends State<InAppWebPlayer> {
       ));
     final yt = _youtubeId(widget.url);
     final vm = _vimeoId(widget.url);
+    // Do not leave the spinner over the player: the player shows its own loading state.
+    Future.delayed(const Duration(milliseconds: 1500), () {
+      if (mounted && _loading) setState(() => _loading = false);
+    });
     if (yt != null) {
       _c.loadHtmlString(_ytPage(yt), baseUrl: 'https://www.youtube.com');
     } else if (vm != null) {

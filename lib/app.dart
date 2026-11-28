@@ -40,8 +40,19 @@ class EduSpaceApp extends StatelessWidget {
           theme: buildLightTheme(),
           darkTheme: buildDarkTheme(),
           themeMode: AppState.instance.themeMode.value,
-          builder: (context, child) =>
-              AiOverlay(child: child ?? const SizedBox.shrink()),
+          builder: (context, child) => AiOverlay(
+              child: LayoutBuilder(builder: (ctx, box) {
+            final inner = child ?? const SizedBox.shrink();
+            // Tablets: a centered column with equal side margins instead of stretched phone pages.
+            if (box.maxWidth <= 840) return inner;
+            return ColoredBox(
+              color: Theme.of(ctx).scaffoldBackgroundColor,
+              child: Center(
+                child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 820), child: inner),
+              ),
+            );
+          })),
           home: AppConfig.isConfigured
               ? const SplashScreen()
               : const MissingConfigScreen(),

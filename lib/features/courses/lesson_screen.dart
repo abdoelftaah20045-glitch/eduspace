@@ -30,7 +30,7 @@ class LessonScreen extends StatefulWidget {
   State<LessonScreen> createState() => _LessonScreenState();
 }
 
-class _LessonScreenState extends State<LessonScreen> {
+class _LessonScreenState extends State<LessonScreen> with WidgetsBindingObserver {
   bool _completed = false;
   bool _saving = false;
   final Set<int> _seen = {};
@@ -42,9 +42,14 @@ class _LessonScreenState extends State<LessonScreen> {
   int get _pct => RemoteUi.limit('lesson_watch_percent', 90).round().clamp(1, 100);
   int get _required => (_dur * _pct / 100).ceil();
   bool get _isVideo => lesson.type == 'video';
+  // Seconds inside the duration the SERVER uses (so the tick, the label and the lock agree).
+  int get _have => _dur <= 0 ? 0 : _seen.where((x) => x < _dur).length;
+  Future<String>? _urlFuture;
+  bool _srvDur = false;
+  bool _flushing = false;
   bool get _canComplete =>
-      !_isVideo || (_dur > 0 && _seen.length >= _required);
-  int get _shownPct => _dur <= 0 ? 0 : (_seen.length * 100 ~/ _dur).clamp(0, 100);
+      !_isVideo || (_dur > 0 && _have >= _required);
+  int get _shownPct => _dur <= 0 ? 0 : (_have * 100 ~/ _dur).clamp(0, 100);
 
   // Real watch time: only seconds actually played count. Skipping ahead does
   // not credit the skipped part; pauses and replays add nothing. Progress is
@@ -57,7 +62,7 @@ class _LessonScreenState extends State<LessonScreen> {
   bool _admin = false;
 
   void _onTick(int pos, int dur) {
-    if (dur > 0) _dur = dur;
+    if (dur > 0 && !_srvDur) _dur = dur;
     if (pos == _lastPos) return;
     final now = DateTime.now();
     var added = false;
@@ -109,23 +114,40 @@ class _LessonScreenState extends State<LessonScreen> {
 
   /// Sends the newly watched seconds; the server decides completion.
   Future<void> _flushWatch() async {
-    if (!_isVideo || !_serverTracking || _pending.isEmpty || _admin) return;
-    final sent = Set<int>.from(_pending);
+    if (!_isVideo || !_serverTracking || _pending.isEmpty || _admin || _flushing) return;
+    _flushing = true;
     try {
-      final r = await Supabase.instance.client.rpc('record_watch', params: {
-        'p_lesson': lesson.id,
-        'p_ranges': _rangesText(sent),
-        'p_duration': _dur,
-      });
-      _pending.removeAll(sent);
-      if (r is Map && r['done'] == true && !_completed && mounted) {
-        setState(() => _completed = true);
+      // Small chunks (max 12 s each) so the server's anti-cheat speed check never rejects honest time.
+      for (var i = 0; i < 40 && _pending.isNotEmpty; i++) {
+        final l = _pending.toList()..sort();
+        final sent = l.take(12).toSet();
+        final r = await Supabase.instance.client.rpc('record_watch', params: {
+          'p_lesson': lesson.id,
+          'p_ranges': _rangesText(sent),
+          'p_duration': _dur,
+        });
+        _pending.removeAll(sent);
+        if (r is Map) {
+          final d = (r['duration'] as num?)?.toInt() ?? 0;
+          if (d > 0 && d != _dur) {
+            _dur = d;
+            _srvDur = true;
+            if (mounted) setState(() {});
+          } else if (d > 0) {
+            _srvDur = true;
+          }
+          if (r['done'] == true && !_completed && mounted) {
+            setState(() => _completed = true);
+          }
+        }
       }
     } catch (e) {
       final m = '$e';
       if (m.contains('record_watch') && (m.contains('PGRST202') || m.contains('Could not find'))) {
         _serverTracking = false; // SQL part40 not run yet: old client-side rule
       }
+    } finally {
+      _flushing = false;
     }
   }
 
@@ -148,7 +170,10 @@ class _LessonScreenState extends State<LessonScreen> {
         }
       }
       final d = (r['duration'] as num?)?.toInt() ?? 0;
-      if (_dur == 0 && d > 0) _dur = d;
+      if (d > 0) {
+        _dur = d;
+        _srvDur = true;
+      }
       setState(() {});
     } catch (_) {}
   }
@@ -163,6 +188,11 @@ class _LessonScreenState extends State<LessonScreen> {
     _fallback = Timer.periodic(const Duration(seconds: 1), (_) => _onTick(n++, _dur));
   }
 
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state != AppLifecycleState.resumed) _flushWatch();
+  }
+
   Lesson get lesson => widget.lesson;
 
   bool get _locked => _isVideo && !_completed && !_admin;
@@ -171,6 +201,7 @@ class _LessonScreenState extends State<LessonScreen> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _fallback?.cancel();
     _flushTimer?.cancel();
     _flushWatch();
@@ -181,6 +212,7 @@ class _LessonScreenState extends State<LessonScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _completed = lesson.completed;
     AdminRepository.isAdmin().then((v) {
       if (mounted) setState(() => _admin = v);
@@ -312,8 +344,9 @@ class _LessonScreenState extends State<LessonScreen> {
       case 'video':
         final url = lesson.mediaUrl;
         if (url == null || url.isEmpty) return Padding(padding: const EdgeInsets.all(16), child: Text(s.t('no_content')));
+        _urlFuture ??= resolveStorageUrl(url);
         return FutureBuilder<String>(
-          future: resolveStorageUrl(url),
+          future: _urlFuture,
           builder: (context, snap) {
             final resolved = snap.data;
             if (resolved == null) {
