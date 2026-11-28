@@ -317,7 +317,7 @@ class _AdminAiQuizScreenState extends State<AdminAiQuizScreen> {
     final courses = _courses;
     return Scaffold(
       appBar: AppBar(title: const Text('اختبارات تدريبية بالذكاء الاصطناعي')),
-      body: ListView(padding: const EdgeInsets.all(16), children: [
+      body: ListView(padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16), children: [
         _topAction(),
         const SizedBox(height: 8),
         OutlinedButton.icon(

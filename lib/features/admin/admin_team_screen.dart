@@ -180,7 +180,7 @@ class _AdminTeamScreenState extends State<AdminTeamScreen> {
           : _failed
               ? Center(child: Text(s.t('generic_error')))
               : ListView(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16),
                   children: [
                     TextField(
                       controller: _search,

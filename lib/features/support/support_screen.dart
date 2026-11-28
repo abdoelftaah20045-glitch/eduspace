@@ -73,7 +73,7 @@ class _SupportScreenState extends State<SupportScreen> {
                     ],
                   )
                 : ListView.builder(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
+                    padding: const EdgeInsets.fromLTRB(4, 16, 4, 96),
                     itemCount: tickets.length,
                     itemBuilder: (context, i) {
                       final t = tickets[i];

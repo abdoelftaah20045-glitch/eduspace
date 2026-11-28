@@ -44,12 +44,13 @@ class EduSpaceApp extends StatelessWidget {
               child: LayoutBuilder(builder: (ctx, box) {
             final inner = child ?? const SizedBox.shrink();
             // Tablets: a centered column with equal side margins instead of stretched phone pages.
-            if (box.maxWidth <= 840) return inner;
+            final maxW = RemoteUi.limit('tablet_max_width', 0);
+            if (maxW <= 0 || box.maxWidth <= maxW + 20) return inner;
             return ColoredBox(
               color: Theme.of(ctx).scaffoldBackgroundColor,
               child: Center(
                 child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 820), child: inner),
+                    constraints: BoxConstraints(maxWidth: maxW.toDouble()), child: inner),
               ),
             );
           })),

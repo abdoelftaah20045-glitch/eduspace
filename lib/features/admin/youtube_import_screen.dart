@@ -429,7 +429,7 @@ class _YoutubeImportScreenState extends State<YoutubeImportScreen> {
         const SizedBox(width: 12),
       ]),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16),
         children: [
           if (_lists.isNotEmpty) ...[
             if (_importing) ...[

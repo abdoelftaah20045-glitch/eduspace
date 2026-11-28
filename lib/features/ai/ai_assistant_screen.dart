@@ -177,7 +177,7 @@ class _AiChatPanelState extends State<AiChatPanel> {
         Expanded(
           child: _history.isEmpty
               ? ListView(
-                  padding: const EdgeInsets.all(24),
+                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 24),
                   children: [
                     const SizedBox(height: 16),
                     Center(
@@ -221,7 +221,7 @@ class _AiChatPanelState extends State<AiChatPanel> {
                 )
               : ListView.builder(
                   controller: _scroll,
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16),
                   itemCount: _history.length + (_busy ? 1 : 0),
                   itemBuilder: (_, i) {
                     if (i == _history.length) return const _Typing();

@@ -20,7 +20,7 @@ class AdminIntegrationsScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: Text(s.t('integrations_label'))),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16),
         children: [
           for (final it in items)
             Card(

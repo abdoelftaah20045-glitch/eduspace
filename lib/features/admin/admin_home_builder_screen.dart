@@ -239,7 +239,7 @@ class _AdminHomeBuilderScreenState extends State<AdminHomeBuilderScreen> {
               ),
             )
           : ReorderableListView.builder(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
+              padding: const EdgeInsets.fromLTRB(4, 12, 4, 100),
               itemCount: _blocks.length,
               onReorder: (a, b) => setState(() {
                 if (b > a) b--;

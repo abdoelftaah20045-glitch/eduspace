@@ -89,7 +89,7 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
                       Center(child: Text(s.t('ann_empty'))),
                     ])
                   : ListView.builder(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16),
                       itemCount: items.length,
                       itemBuilder: (context, i) {
                         final a = items[i];
@@ -129,7 +129,7 @@ class _AnnDetail extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: Text(s.t('ann_title'))),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16),
         children: [
           if (a.images.isNotEmpty) ...[
             ImageCarousel(

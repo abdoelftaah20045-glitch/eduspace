@@ -222,7 +222,7 @@ class _AdminLessonLinksScreenState extends State<AdminLessonLinksScreen> {
     final cs = _courses;
     return Scaffold(
       appBar: AppBar(title: const Text('سحب روابط الملفات من أوصاف الفيديوهات')),
-      body: ListView(padding: const EdgeInsets.all(16), children: [
+      body: ListView(padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16), children: [
         const Card(
           child: Padding(
             padding: EdgeInsets.all(14),

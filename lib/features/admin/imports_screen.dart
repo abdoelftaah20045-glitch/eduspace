@@ -81,7 +81,7 @@ class _ImportsScreenState extends State<ImportsScreen> {
             for (final x in srcs)
               if (x is Map && x['enabled'] == true) Map<String, dynamic>.from(x),
           ];
-          return ListView(padding: const EdgeInsets.all(16), children: [
+          return ListView(padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16), children: [
             for (final j in _jobs)
               Card(
                 child: ListTile(

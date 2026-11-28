@@ -58,7 +58,7 @@ class _AdminSupportScreenState extends State<AdminSupportScreen> {
                     ],
                   )
                 : ListView.builder(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16),
                     itemCount: _shown.length,
                     itemBuilder: (context, i) {
                       final t = _shown[i];

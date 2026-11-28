@@ -277,7 +277,7 @@ class _LessonScreenState extends State<LessonScreen> with WidgetsBindingObserver
       ),
       bottomNavigationBar: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 10),
+          padding: const EdgeInsets.fromLTRB(4, 8, 4, 10),
           child: _completed
               ? Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -313,7 +313,7 @@ class _LessonScreenState extends State<LessonScreen> with WidgetsBindingObserver
         children: [
           _buildBody(s),
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            padding: const EdgeInsets.fromLTRB(4, 16, 4, 8),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -380,7 +380,7 @@ class _LessonScreenState extends State<LessonScreen> with WidgetsBindingObserver
         );
       case 'text':
         return Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+            padding: const EdgeInsets.fromLTRB(4, 16, 4, 0),
             child: Text(lesson.content.trim().isEmpty ? s.t('no_content') : lesson.content));
       case 'pdf':
       case 'document':
@@ -390,7 +390,7 @@ class _LessonScreenState extends State<LessonScreen> with WidgetsBindingObserver
         final url = lesson.mediaUrl;
         if (url == null || url.isEmpty) return Padding(padding: const EdgeInsets.all(16), child: Text(s.t('no_content')));
         return Padding(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+          padding: const EdgeInsets.fromLTRB(4, 16, 4, 0),
           child: SizedBox(
           width: double.infinity,
           child: OutlinedButton.icon(

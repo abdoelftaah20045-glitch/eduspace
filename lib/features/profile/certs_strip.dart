@@ -41,7 +41,7 @@ class _CertsStripState extends State<CertsStrip> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+          padding: const EdgeInsets.fromLTRB(4, 8, 4, 8),
           child: Row(children: [
             Expanded(
                 child: Text(s.t('my_certificates'),

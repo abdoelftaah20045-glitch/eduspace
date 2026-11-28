@@ -59,7 +59,7 @@ class _ExamsScreenState extends State<ExamsScreen> {
                   : RefreshIndicator(
                       onRefresh: _load,
                       child: ListView.builder(
-                        padding: const EdgeInsets.all(16),
+                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16),
                         itemCount: exams.length,
                         itemBuilder: (context, i) => FadeSlideIn(
                           delay: Duration(milliseconds: 60 * (i < 8 ? i : 8)),

@@ -93,7 +93,7 @@ class _AdminExamsScreenState extends State<AdminExamsScreen> {
       ),
       body: Column(children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+          padding: const EdgeInsets.fromLTRB(4, 10, 4, 0),
           child: Row(children: [
             Expanded(
               child: FilledButton.icon(
@@ -136,7 +136,7 @@ class _AdminExamsScreenState extends State<AdminExamsScreen> {
                     ],
                   )
                 : ListView.builder(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
+                    padding: const EdgeInsets.fromLTRB(4, 16, 4, 96),
                     itemCount: _shown.length,
                     itemBuilder: (context, i) {
                       final e = _shown[i];

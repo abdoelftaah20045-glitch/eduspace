@@ -75,7 +75,7 @@ class ExamResultScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: Text(s.t('res_title'))),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+        padding: const EdgeInsets.fromLTRB(4, 8, 4, 24),
         children: [
           Container(
             padding: const EdgeInsets.all(20),

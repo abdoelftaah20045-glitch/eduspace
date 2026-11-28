@@ -73,7 +73,7 @@ class _SelectTenantScreenState extends State<SelectTenantScreen> {
     return Scaffold(
       appBar: AppBar(title: Text(s.t('tenant_label'))),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16),
         children: [
           ValueListenableBuilder<String>(
             valueListenable: TenantContext.instance.currentId,

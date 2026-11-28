@@ -178,7 +178,7 @@ class _ExamCoverageScreenState extends State<ExamCoverageScreen> {
                   : Text(_error!))
           : RefreshIndicator(
               onRefresh: _load,
-              child: ListView(padding: const EdgeInsets.all(16), children: [
+              child: ListView(padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16), children: [
                 Row(children: [
                   stat('all', 'كل الدروس', all.length),
                   const SizedBox(width: 8),

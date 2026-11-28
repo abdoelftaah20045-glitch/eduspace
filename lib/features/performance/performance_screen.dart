@@ -109,7 +109,7 @@ class _PerformanceScreenState extends State<PerformanceScreen> {
               : rows.isEmpty
                   ? Center(child: Text(s.t('perf_empty')))
                   : ListView(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16),
                       children: [
                         Builder(builder: (context) {
                           final avg = rows.fold<double>(0, (a, b) => a + b.pct) /

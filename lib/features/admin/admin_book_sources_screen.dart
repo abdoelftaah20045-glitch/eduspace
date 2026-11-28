@@ -296,7 +296,7 @@ class _AdminBookSourcesScreenState extends State<AdminBookSourcesScreen> {
         children: [
           if (_busy) const LinearProgressIndicator(),
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+            padding: const EdgeInsets.fromLTRB(4, 10, 4, 0),
             child: Wrap(
               spacing: 8,
               children: [
@@ -357,7 +357,7 @@ class _AdminBookSourcesScreenState extends State<AdminBookSourcesScreen> {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+            padding: const EdgeInsets.fromLTRB(4, 8, 4, 0),
             child: Row(children: [
               Expanded(
                 child: TextField(
@@ -388,7 +388,7 @@ class _AdminBookSourcesScreenState extends State<AdminBookSourcesScreen> {
             ]),
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+            padding: const EdgeInsets.fromLTRB(4, 8, 4, 0),
             child: TextField(
               controller: _cat,
               decoration: InputDecoration(
@@ -398,7 +398,7 @@ class _AdminBookSourcesScreenState extends State<AdminBookSourcesScreen> {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 6, 16, 2),
+            padding: const EdgeInsets.fromLTRB(4, 6, 4, 2),
             child: Text(
               ar
                   ? 'تظهر فقط الكتب ذات الرخصة المفتوحة أو الملكية العامة. يُحفظ الرابط والترخيص فقط، بدون أي تخزين.'

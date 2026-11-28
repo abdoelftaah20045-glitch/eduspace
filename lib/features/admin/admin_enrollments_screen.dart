@@ -141,7 +141,7 @@ class _AdminEnrollmentsScreenState extends State<AdminEnrollmentsScreen> {
                 : _shown.isEmpty
                     ? Center(child: Text(_courses.isEmpty ? s.t('no_courses_yet') : s.t('empty_questions')))
                     : ListView.builder(
-                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 96),
+                        padding: const EdgeInsets.fromLTRB(4, 0, 4, 96),
                         itemCount: _shown.length,
                         itemBuilder: (context, i) {
                           final e = _shown[i];

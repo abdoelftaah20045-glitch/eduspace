@@ -123,7 +123,7 @@ class _DiscussionScreenState extends State<DiscussionScreen> {
                           Center(child: Text(s.t('disc_empty'))),
                         ])
                       : ListView.builder(
-                          padding: const EdgeInsets.fromLTRB(16, 12, 16, 90),
+                          padding: const EdgeInsets.fromLTRB(4, 12, 4, 90),
                           itemCount: threads.length,
                           itemBuilder: (context, i) {
                             final t = threads[i];
@@ -235,7 +235,7 @@ class _ThreadScreenState extends State<_ThreadScreen> {
         children: [
           Expanded(
             child: ListView(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16),
               children: [
                 Text('${t['title']}',
                     style: Theme.of(context)

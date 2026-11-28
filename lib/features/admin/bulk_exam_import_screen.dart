@@ -272,7 +272,7 @@ class _BulkExamImportScreenState extends State<BulkExamImportScreen> {
             child: Text('حفظ $todo')),
         const SizedBox(width: 12),
       ]),
-      body: ListView(padding: const EdgeInsets.all(16), children: [
+      body: ListView(padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16), children: [
         if (todo > 0) ...[
           SizedBox(
             width: double.infinity,

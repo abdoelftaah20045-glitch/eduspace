@@ -84,7 +84,7 @@ class _AdminMaintenanceScreenState extends State<AdminMaintenanceScreen> {
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : ListView(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16),
               children: [
                 Text(s.t('mt_admin_hint'),
                     style: const TextStyle(fontSize: 12, color: Colors.grey)),

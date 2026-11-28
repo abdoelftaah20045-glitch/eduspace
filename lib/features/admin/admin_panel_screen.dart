@@ -373,7 +373,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                         builder: (_) => const TenantMembersScreen()))
                     .then((_) => _load()),
                 child: Container(
-                  margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                  margin: const EdgeInsets.fromLTRB(4, 12, 4, 0),
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFFF3E0),
@@ -396,7 +396,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
               ),
             if (_accessWarn != null)
               Container(
-                margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                margin: const EdgeInsets.fromLTRB(4, 12, 4, 0),
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: const Color(0xFFFFEBEE),
@@ -413,7 +413,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                 ]),
               ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+              padding: const EdgeInsets.fromLTRB(4, 16, 4, 0),
               child: GridView.count(
                 crossAxisCount: 2,
                 shrinkWrap: true,

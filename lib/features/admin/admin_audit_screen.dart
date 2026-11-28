@@ -51,7 +51,7 @@ class _AdminAuditScreenState extends State<AdminAuditScreen> {
                   : RefreshIndicator(
                       onRefresh: _load,
                       child: ListView.builder(
-                        padding: const EdgeInsets.all(16),
+                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16),
                         itemCount: rows.length,
                         itemBuilder: (context, i) {
                           final r = rows[i];

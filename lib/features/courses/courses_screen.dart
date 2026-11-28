@@ -161,7 +161,7 @@ class _CoursesScreenState extends State<CoursesScreen> {
         children: [
           if (RemoteUi.visible('courses.search'))
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+            padding: const EdgeInsets.fromLTRB(4, 4, 4, 8),
             child: TextField(
               controller: _searchController,
               textInputAction: TextInputAction.search,
@@ -193,7 +193,7 @@ class _CoursesScreenState extends State<CoursesScreen> {
               height: 44,
               child: ListView(
                 scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 4),
                 children: [
                   _chip(s.t('cat_all'), _category.isEmpty,
                       () => setState(() => _category = '')),
@@ -207,7 +207,7 @@ class _CoursesScreenState extends State<CoursesScreen> {
             height: 44,
             child: ListView(
               scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 4),
               children: [
                 _chip(s.t('cat_all'), _filter == 'all',
                     () => setState(() => _filter = 'all')),
@@ -220,7 +220,7 @@ class _CoursesScreenState extends State<CoursesScreen> {
           ),
           if (cont.isNotEmpty && RemoteUi.visible('courses.continue') && _filter == 'all' && _category.isEmpty) ...[
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+              padding: const EdgeInsets.fromLTRB(4, 12, 4, 8),
               child: Text(s.t('continue_learning'),
                   style: theme.textTheme.titleMedium
                       ?.copyWith(fontWeight: FontWeight.w800)),
@@ -229,7 +229,7 @@ class _CoursesScreenState extends State<CoursesScreen> {
               height: 128,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 4),
                 itemCount: cont.length,
                 separatorBuilder: (_, __) => const SizedBox(width: 12),
                 itemBuilder: (_, i) => _ContinueTile(course: cont[i]),
@@ -237,7 +237,7 @@ class _CoursesScreenState extends State<CoursesScreen> {
             ),
           ],
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            padding: const EdgeInsets.fromLTRB(4, 16, 4, 8),
             child: Text('${s.t('cat_results')} (${list.length})',
                 style: theme.textTheme.titleMedium
                     ?.copyWith(fontWeight: FontWeight.w800)),

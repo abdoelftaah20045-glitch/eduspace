@@ -44,7 +44,7 @@ class _HelpScreenState extends State<HelpScreen> {
     return Scaffold(
       appBar: AppBar(title: Text(s.t('help_title'))),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16),
         children: [
           TextField(
             onChanged: (v) => setState(() => _q = v),
@@ -74,7 +74,7 @@ class _HelpScreenState extends State<HelpScreen> {
                   title: Text(e.$1,
                       style: const TextStyle(fontWeight: FontWeight.w700)),
                   childrenPadding:
-                      const EdgeInsets.fromLTRB(16, 0, 16, 14),
+                      const EdgeInsets.fromLTRB(4, 0, 4, 14),
                   expandedCrossAxisAlignment: CrossAxisAlignment.start,
                   children: [Text(e.$2)],
                 ),

@@ -116,7 +116,7 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
               : RefreshIndicator(
                   onRefresh: _load,
                   child: ListView(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16),
                     children: [
                       for (final g in groups.entries)
                         Card(

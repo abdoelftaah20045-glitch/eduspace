@@ -55,7 +55,7 @@ class _AdminAttemptsScreenState extends State<AdminAttemptsScreen> {
                     Center(child: Text(s.t('no_attempts'))),
                   ])
                 : ListView.builder(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16),
                     itemCount: attempts.length,
                     itemBuilder: (context, i) {
                       final a = attempts[i];
@@ -233,7 +233,7 @@ class _AttemptReviewScreenState extends State<AttemptReviewScreen> {
       body: answers == null
           ? const Center(child: CircularProgressIndicator())
           : ListView.builder(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16),
               itemCount: answers.length,
               itemBuilder: (context, i) {
                 final a = answers[i];

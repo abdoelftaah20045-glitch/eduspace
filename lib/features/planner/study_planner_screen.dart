@@ -157,7 +157,7 @@ class _StudyPlannerScreenState extends State<StudyPlannerScreen> {
       body: !_loaded
           ? const Center(child: CircularProgressIndicator())
           : ListView(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
+              padding: const EdgeInsets.fromLTRB(4, 8, 4, 96),
               children: [
                 Container(
                   padding: const EdgeInsets.all(18),

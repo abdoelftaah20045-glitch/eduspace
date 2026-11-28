@@ -95,7 +95,7 @@ class _AdminStudentDetailScreenState extends State<AdminStudentDetailScreen> {
       body: _failed
           ? Center(child: Text(s.t('generic_error')))
           : ListView(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16),
               children: [
                 Card(
                   shape: RoundedRectangleBorder(

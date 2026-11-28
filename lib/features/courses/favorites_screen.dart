@@ -60,7 +60,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                     ],
                   )
                 : ListView.builder(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16),
                     itemCount: courses.length,
                     itemBuilder: (context, i) =>
                         CourseCard(course: courses[i]),

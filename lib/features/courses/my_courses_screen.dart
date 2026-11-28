@@ -111,7 +111,7 @@ class _MyCoursesScreenState extends State<MyCoursesScreen> {
                           Center(child: Text(s.t('no_my_courses'))),
                         ])
                       : ListView.builder(
-                          padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
+                          padding: const EdgeInsets.fromLTRB(4, 4, 4, 24),
                           itemCount: shown.length,
                           itemBuilder: (_, i) {
                             final c = shown[i];
@@ -212,7 +212,7 @@ class _MyCoursesScreenState extends State<MyCoursesScreen> {
                                         ]),
                                       ),
                                       Padding(
-                                        padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
+                                        padding: const EdgeInsets.fromLTRB(4, 12, 4, 14),
                                         child: Column(
                                           crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [

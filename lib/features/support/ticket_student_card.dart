@@ -101,7 +101,7 @@ class _TicketStudentCardState extends State<TicketStudentCard> {
         title: Text(name, maxLines: 1, overflow: TextOverflow.ellipsis),
         subtitle: Text('${p['email'] ?? ''}${(p['phone'] ?? '').toString().isEmpty ? '' : '  ·  ${p['phone']}'}',
             maxLines: 1, overflow: TextOverflow.ellipsis),
-        childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+        childrenPadding: const EdgeInsets.fromLTRB(4, 0, 4, 12),
         expandedCrossAxisAlignment: CrossAxisAlignment.start,
         children: [
           for (final r in rows)

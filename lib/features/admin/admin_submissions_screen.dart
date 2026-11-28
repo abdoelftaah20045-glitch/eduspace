@@ -91,7 +91,7 @@ class _AdminSubmissionsScreenState extends State<AdminSubmissionsScreen> {
                     ],
                   )
                 : ListView.builder(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16),
                     itemCount: _shown.length,
                     itemBuilder: (context, i) {
                       final sub = _shown[i];

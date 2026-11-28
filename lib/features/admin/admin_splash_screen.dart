@@ -82,7 +82,7 @@ class _AdminSplashScreenState extends State<AdminSplashScreen> {
       appBar: AppBar(title: const Text('شاشة البداية'), actions: [
         TextButton(onPressed: _saving ? null : _save, child: const Text('حفظ')),
       ]),
-      body: ListView(padding: const EdgeInsets.all(16), children: [
+      body: ListView(padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16), children: [
         Container(
           height: 140,
           alignment: Alignment.center,

@@ -16,6 +16,7 @@ class _AdminLimitsScreenState extends State<AdminLimitsScreen> {
   // key, label key, default
   static const _defs = [
     ('lesson_watch_percent', 'lim_lesson_watch', 90),
+    ('tablet_max_width', 'lim_tablet_width', 0),
     ('lvl_excellent', 'lim_lvl_excellent', 80),
     ('lvl_good', 'lim_lvl_good', 60),
     ('lvl_average', 'lim_lvl_average', 40),
@@ -82,7 +83,7 @@ class _AdminLimitsScreenState extends State<AdminLimitsScreen> {
     return Scaffold(
       appBar: AppBar(title: Text(s.t('ui_limits'))),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16),
         children: [
           for (final d in _defs)
             Padding(

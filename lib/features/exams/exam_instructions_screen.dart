@@ -118,7 +118,7 @@ class _ExamInstructionsScreenState extends State<ExamInstructionsScreen> {
     return Scaffold(
       appBar: AppBar(title: Text(s.t('instructions_title'))),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16),
         children: [
           Text(
             exam.title,

@@ -273,7 +273,7 @@ class _AdminBooksScreenState extends State<AdminBooksScreen> {
         children: [
           if (_busy) const LinearProgressIndicator(),
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+            padding: const EdgeInsets.fromLTRB(4, 10, 4, 0),
             child: Row(children: [
               Expanded(
                 child: FilledButton.icon(
@@ -294,7 +294,7 @@ class _AdminBooksScreenState extends State<AdminBooksScreen> {
             ]),
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 10, 16, 4),
+            padding: const EdgeInsets.fromLTRB(4, 10, 4, 4),
             child: Text(
               ar
                   ? 'الكتب روابط فقط (Drive أو Archive أو PDF). لا يتم تخزين أي ملف في التطبيق أو السيرفر. ملف الاستيراد: title, author, category, link, cover_url.'

@@ -83,7 +83,7 @@ class _ExamQuestionsScreenState extends State<ExamQuestionsScreen> {
         child: qs == null
             ? const Center(child: CircularProgressIndicator())
             : ListView(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+                padding: const EdgeInsets.fromLTRB(4, 16, 4, 32),
                 children: [
                   Row(
                     children: [

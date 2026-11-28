@@ -59,7 +59,7 @@ class _VerifyCertificateScreenState extends State<VerifyCertificateScreen> {
     return Scaffold(
       appBar: AppBar(title: Text(s.t('verify_certificate_title'))),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16),
         children: [
           TextField(
             controller: _number,

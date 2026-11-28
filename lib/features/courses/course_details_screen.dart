@@ -169,7 +169,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                   SafeArea(
                     top: false,
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 6, 16, 10),
+                      padding: const EdgeInsets.fromLTRB(4, 6, 4, 10),
                       child: _buildAction(context, s, details),
                     ),
                   ),
@@ -426,7 +426,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
         ..._part('course.progress', [
         if (details.enrolled)
           Container(
-            margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+            margin: const EdgeInsets.fromLTRB(4, 16, 4, 0),
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(14),
@@ -458,7 +458,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
         ]),
         ..._part('course.stats', [
         Container(
-          margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+          margin: const EdgeInsets.fromLTRB(4, 16, 4, 0),
           padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 6),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(14),
@@ -583,7 +583,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
               String hm(DateTime d) => '${two(d.hour)}:${two(d.minute)}';
               final next = st != null && st.isAfter(DateTime.now());
               return Container(
-                margin: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                margin: const EdgeInsets.fromLTRB(4, 0, 4, 8),
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12),

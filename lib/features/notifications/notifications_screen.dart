@@ -92,7 +92,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       if (header != lastHeader) {
         lastHeader = header;
         rows.add(Padding(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
+          padding: const EdgeInsets.fromLTRB(4, 16, 4, 4),
           child: Text(header,
               style: theme.textTheme.labelLarge
                   ?.copyWith(color: theme.colorScheme.primary)),
@@ -166,7 +166,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             isScrollControlled: true,
             builder: (ctx) => SafeArea(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 20),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -214,7 +214,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           child: Column(
             children: [
               Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                padding: const EdgeInsets.fromLTRB(4, 0, 4, 8),
                 child: TextField(
                   controller: _search,
                   onChanged: (_) => setState(() {}),
@@ -226,7 +226,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                padding: const EdgeInsets.fromLTRB(4, 0, 4, 8),
                 child: Row(
                   children: [
                     ChoiceChip(

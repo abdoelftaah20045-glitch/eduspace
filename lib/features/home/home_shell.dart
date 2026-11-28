@@ -98,7 +98,7 @@ class _HomeShellState extends State<HomeShell> {
       body: tabs[idx].$2,
       bottomNavigationBar: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+          padding: const EdgeInsets.fromLTRB(4, 0, 4, 10),
           child: Material(
             elevation: 10,
             color: Theme.of(context).colorScheme.surface,
@@ -585,7 +585,7 @@ class _HomeTabState extends State<_HomeTab> with WidgetsBindingObserver {
       body: RefreshIndicator(
         onRefresh: _load,
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 150),
+          padding: const EdgeInsets.fromLTRB(4, 8, 4, 28),
           children: [
             SafeArea(
               bottom: false,

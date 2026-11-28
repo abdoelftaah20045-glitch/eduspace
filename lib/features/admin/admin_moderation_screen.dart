@@ -109,7 +109,7 @@ class _AdminModerationScreenState extends State<AdminModerationScreen> {
       Expanded(child: RefreshIndicator(
       onRefresh: _load,
       child: ListView.builder(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16),
         itemCount: rows.length,
         itemBuilder: (_, i) {
           final m = rows[i];

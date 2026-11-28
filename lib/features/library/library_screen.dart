@@ -114,7 +114,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(56),
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+            padding: const EdgeInsets.fromLTRB(4, 0, 4, 8),
             child: TextField(
               controller: _search,
               onChanged: (_) => _load(),
@@ -180,7 +180,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                         )
                       : (_grid
                           ? GridView.builder(
-                              padding: const EdgeInsets.all(16),
+                              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16),
                               gridDelegate:
                                   const SliverGridDelegateWithFixedCrossAxisCount(
                                 crossAxisCount: 2,
@@ -193,7 +193,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                                   _FileCard(item: items[i], onOpen: _open),
                             )
                           : ListView.builder(
-                              padding: const EdgeInsets.all(16),
+                              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16),
                               itemCount: items.length,
                               itemBuilder: (context, i) {
                                 final item = items[i];

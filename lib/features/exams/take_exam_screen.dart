@@ -219,7 +219,7 @@ class _TakeExamScreenState extends State<TakeExamScreen> {
               : questions.isEmpty
                   ? Center(child: Text(s.t('no_questions')))
                   : ListView.builder(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16),
                       itemCount: questions.length + 1,
                       itemBuilder: (context, i) {
                         if (i == questions.length) {

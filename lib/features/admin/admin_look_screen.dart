@@ -67,7 +67,7 @@ class _AdminLookScreenState extends State<AdminLookScreen> {
     return Scaffold(
       appBar: AppBar(title: Text(s.t('ui_look'))),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16),
         children: [
           Wrap(spacing: 12, runSpacing: 12, children: [
             for (final p in _presets)

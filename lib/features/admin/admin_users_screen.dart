@@ -75,7 +75,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+            padding: const EdgeInsets.fromLTRB(4, 12, 4, 0),
             child: TextField(
               controller: _search,
               decoration: InputDecoration(
@@ -121,7 +121,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                 : _users!.isEmpty
                     ? Center(child: Text(s.t('user_not_found')))
                     : ListView.builder(
-                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                        padding: const EdgeInsets.fromLTRB(4, 0, 4, 16),
                         itemCount: _users!.length,
                         itemBuilder: (context, i) {
                           final u = _users![i];

@@ -77,7 +77,7 @@ class _ExamReviewScreenState extends State<ExamReviewScreen> {
           : questions == null
               ? const Center(child: CircularProgressIndicator())
               : ListView.builder(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16),
                   itemCount: questions.length + 1,
                   itemBuilder: (context, i) {
                     if (i == 0) {

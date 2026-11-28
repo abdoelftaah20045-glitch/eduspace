@@ -100,7 +100,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                   : RefreshIndicator(
                       onRefresh: _load,
                       child: ListView.builder(
-                        padding: const EdgeInsets.all(16),
+                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16),
                         itemCount: _rows!.length,
                         itemBuilder: (_, i) {
                           final r = _rows![i];

@@ -94,7 +94,7 @@ class _LivesScreenState extends State<LivesScreen> {
               Center(child: Text(s.t('no_lives'))),
             ])
           : ListView.builder(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16),
               itemCount: items.length,
               itemBuilder: (context, i) {
                 final l = items[i];
@@ -272,7 +272,7 @@ class _LiveDetailScreenState extends State<LiveDetailScreen> {
     return Scaffold(
       appBar: AppBar(title: Text(l.title, maxLines: 1, overflow: TextOverflow.ellipsis)),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16),
         children: [
           Container(
             padding: const EdgeInsets.all(20),

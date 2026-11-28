@@ -75,7 +75,7 @@ class ProfileScreen extends StatelessWidget {
           final isAdmin = profile?['_is_admin'] == true;
           final scheme = Theme.of(context).colorScheme;
           return ListView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16),
             children: [
               // Coursera-style flat identity header.
               Container(

@@ -168,7 +168,7 @@ class _LessonEditScreenState extends State<LessonEditScreen> {
       body: Form(
         key: _formKey,
         child: ListView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16),
           children: [
             TextFormField(
               controller: _title,

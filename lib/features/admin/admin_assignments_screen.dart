@@ -135,7 +135,7 @@ class _AdminAssignmentsScreenState extends State<AdminAssignmentsScreen> {
                 : _items!.where((x) => matchesSearch(_q, [x.title])).isEmpty
                     ? Center(child: Text(_courses.isEmpty ? s.t('no_courses_yet') : s.t('no_assignments')))
                     : ListView.builder(
-                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 96),
+                        padding: const EdgeInsets.fromLTRB(4, 0, 4, 96),
                         itemCount: _items!.where((x) => matchesSearch(_q, [x.title])).length,
                         itemBuilder: (context, i) {
                           final a = _items!.where((x) => matchesSearch(_q, [x.title])).toList()[i];

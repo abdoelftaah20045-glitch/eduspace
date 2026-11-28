@@ -78,7 +78,7 @@ class _SuperAdminScreenState extends State<SuperAdminScreen> {
         child: tenants == null
             ? const Center(child: CircularProgressIndicator())
             : ListView.builder(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16),
                 itemCount: tenants.length,
                 itemBuilder: (context, i) {
                   final t = tenants[i];

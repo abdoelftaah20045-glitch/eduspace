@@ -144,7 +144,7 @@ class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
           child: rows.isEmpty
           ? Center(child: Text(s.t('no_items')))
           : ListView.builder(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 90),
+              padding: const EdgeInsets.fromLTRB(4, 16, 4, 90),
               itemCount: rows.length,
               itemBuilder: (context, i) {
                 final item = rows[i];

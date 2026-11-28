@@ -252,7 +252,7 @@ class _CustomSourceEditorState extends State<CustomSourceEditor> {
     return Scaffold(
       appBar: AppBar(title: Text(ar ? 'مصدر كتب مخصص' : 'Custom book source')),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16),
         children: [
           Container(
             padding: const EdgeInsets.all(10),

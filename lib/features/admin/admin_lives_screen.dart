@@ -127,7 +127,7 @@ class _AdminLivesScreenState extends State<AdminLivesScreen> {
                     ],
                   )
                 : ListView.builder(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
+                    padding: const EdgeInsets.fromLTRB(4, 16, 4, 96),
                     itemCount: _shown.length,
                     itemBuilder: (context, i) {
                       final l = _shown[i];

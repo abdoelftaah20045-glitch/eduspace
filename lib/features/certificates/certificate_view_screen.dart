@@ -216,7 +216,7 @@ class _CertificateViewScreenState extends State<CertificateViewScreen> {
         ],
       ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16),
         children: [
           for (final c in _variants)
             Padding(

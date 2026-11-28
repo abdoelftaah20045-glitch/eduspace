@@ -141,7 +141,7 @@ class _TenantMembersScreenState extends State<TenantMembersScreen> {
             ? const Center(child: CircularProgressIndicator())
             : true
                 ? ListView.builder(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 90),
+                    padding: const EdgeInsets.fromLTRB(4, 16, 4, 90),
                     itemCount: members.length + (_inviteCode == null ? 0 : 1) + (members.isEmpty ? 1 : 0),
                     itemBuilder: (context, i) {
                       if (_inviteCode != null && i == 0) {

@@ -65,7 +65,7 @@ class _AdminInsightsState extends State<AdminInsights> {
     final maxV = _top.isEmpty ? 1 : _top.first.$2;
     final navy = Theme.of(context).colorScheme.onSurface;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+      padding: const EdgeInsets.fromLTRB(4, 16, 4, 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

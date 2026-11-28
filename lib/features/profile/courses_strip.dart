@@ -39,7 +39,7 @@ class _CoursesStripState extends State<CoursesStrip> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+          padding: const EdgeInsets.fromLTRB(4, 8, 4, 8),
           child: Row(children: [
             Expanded(
                 child: Text(s.t('my_courses'),
@@ -68,7 +68,7 @@ class _CoursesStripState extends State<CoursesStrip> {
           SizedBox(
             height: 190,
             child: ListView.separated(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 4),
               scrollDirection: Axis.horizontal,
               itemCount: items.length,
               separatorBuilder: (_, __) => const SizedBox(width: 12),

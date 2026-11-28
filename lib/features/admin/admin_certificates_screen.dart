@@ -79,7 +79,7 @@ class _AdminCertificatesScreenState extends State<AdminCertificatesScreen> {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+            padding: const EdgeInsets.fromLTRB(4, 12, 4, 8),
             child: TextField(
               controller: _search,
               decoration: InputDecoration(
@@ -95,7 +95,7 @@ class _AdminCertificatesScreenState extends State<AdminCertificatesScreen> {
                 : _certs!.isEmpty
                     ? Center(child: Text(s.t('no_certificates')))
                     : ListView.builder(
-                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                        padding: const EdgeInsets.fromLTRB(4, 0, 4, 16),
                         itemCount: _certs!.length,
                         itemBuilder: (context, i) {
                           final c = _certs![i];

@@ -107,7 +107,7 @@ class _AdminNotifyScreenState extends State<AdminNotifyScreen> {
     return Scaffold(
       appBar: AppBar(title: Text(s.t('targeted_notify'))),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16),
         children: [
           for (final a in const ['all', 'course', 'student'])
             RadioListTile<String>(

@@ -194,7 +194,7 @@ class _QuestionEditScreenState extends State<QuestionEditScreen> {
       body: Form(
         key: _formKey,
         child: ListView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16),
           children: [
             DropdownButtonFormField<String>(
               initialValue: _type,

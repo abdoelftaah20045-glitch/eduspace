@@ -129,7 +129,7 @@ class _AdminLessonAssignmentsScreenState extends State<AdminLessonAssignmentsScr
     final drafts = rows?.where((r) => r['status'] == 'draft').length ?? 0;
     return Scaffold(
       appBar: AppBar(title: const Text('تكليفات الدروس')),
-      body: ListView(padding: const EdgeInsets.all(16), children: [
+      body: ListView(padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16), children: [
         Card(
           child: Padding(
             padding: const EdgeInsets.all(14),

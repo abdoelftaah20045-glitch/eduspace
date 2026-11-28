@@ -147,7 +147,7 @@ class _CertificateSettingsScreenState extends State<CertificateSettingsScreen> {
     return Scaffold(
       appBar: AppBar(title: Text(s.t('cert_settings'))),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16),
         children: [
           DropdownButtonFormField<String?>(
             value: _courseId,

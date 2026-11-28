@@ -76,7 +76,7 @@ class _MyCertificatesScreenState extends State<MyCertificatesScreen> {
                     ],
                   )
                 : ListView.builder(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16),
                     itemCount: groupCertsByCourse(_certs!).length,
                     itemBuilder: (context, i) {
                       final group = groupCertsByCourse(_certs!)[i];

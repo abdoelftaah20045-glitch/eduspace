@@ -115,7 +115,7 @@ class _CourseContentScreenState extends State<CourseContentScreen> {
           : sections.isEmpty
               ? Center(child: Text(s.t('no_sections')))
               : ListView.builder(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
+                  padding: const EdgeInsets.fromLTRB(4, 8, 4, 96),
                   itemCount: vis.length,
                   itemBuilder: (context, k) => _SectionCard(
                     section: sections[vis[k]],

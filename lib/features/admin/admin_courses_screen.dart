@@ -272,7 +272,7 @@ class _AdminCoursesScreenState extends State<AdminCoursesScreen> {
       ),
       body: Column(children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+          padding: const EdgeInsets.fromLTRB(4, 10, 4, 0),
           child: Row(children: [
             Expanded(
               child: FilledButton.icon(
@@ -295,11 +295,11 @@ class _AdminCoursesScreenState extends State<AdminCoursesScreen> {
             ),
           ]),
         ),
-        Padding(padding: const EdgeInsets.fromLTRB(16, 12, 16, 0), child: _filters(s)),
+        Padding(padding: const EdgeInsets.fromLTRB(4, 12, 4, 0), child: _filters(s)),
         Expanded(child: courses == null
           ? const Center(child: CircularProgressIndicator())
           : courses.isEmpty
-              ? ListView(padding: const EdgeInsets.all(16), children: [
+              ? ListView(padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16), children: [
                   const SizedBox(height: 40),
                   if (_loadError != null && (all ?? const []).isEmpty) ...[
                     Center(child: Text(s.t('generic_error'))),
@@ -318,7 +318,7 @@ class _AdminCoursesScreenState extends State<AdminCoursesScreen> {
               : RefreshIndicator(
                   onRefresh: _load,
                   child: ListView.builder(
-                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
+                    padding: const EdgeInsets.fromLTRB(4, 8, 4, 96),
                     itemCount: courses.length,
                     itemBuilder: (context, i) {
                       final c = courses[i];

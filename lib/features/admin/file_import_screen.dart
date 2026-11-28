@@ -314,7 +314,7 @@ class _FileImportScreenState extends State<FileImportScreen> {
         ),
       ]),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16),
         children: [
           if (_job.rows.isNotEmpty) ...[
             SizedBox(

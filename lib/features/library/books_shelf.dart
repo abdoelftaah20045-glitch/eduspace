@@ -171,7 +171,7 @@ class _BooksShelfScreenState extends State<BooksShelfScreen> {
       height: 44,
       child: ListView(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
         children: [
           for (final o in opts)
             Padding(
@@ -188,7 +188,7 @@ class _BooksShelfScreenState extends State<BooksShelfScreen> {
   }
 
   Widget _title(String t, {VoidCallback? onMore, String? more}) => Padding(
-        padding: const EdgeInsets.fromLTRB(16, 14, 16, 6),
+        padding: const EdgeInsets.fromLTRB(4, 14, 4, 6),
         child: Row(children: [
           Expanded(
               child: Text(t,
@@ -203,7 +203,7 @@ class _BooksShelfScreenState extends State<BooksShelfScreen> {
         height: 196,
         child: ListView(
           scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 4),
           children: [
             for (final b in items)
               Padding(
@@ -343,7 +343,7 @@ class _BooksShelfScreenState extends State<BooksShelfScreen> {
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(56),
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+            padding: const EdgeInsets.fromLTRB(4, 0, 4, 8),
             child: TextField(
               controller: _search,
               onChanged: (_) => setState(() {}),

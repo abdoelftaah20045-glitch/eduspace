@@ -175,7 +175,7 @@ class _AdminLayoutScreenState extends State<AdminLayoutScreen> {
   }
 
   Widget _title(String t) => Padding(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 6),
+        padding: const EdgeInsets.fromLTRB(4, 16, 4, 6),
         child: Text(t,
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
       );
