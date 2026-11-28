@@ -21,6 +21,7 @@ class _ImportsScreenState extends State<ImportsScreen> {
   Map<String, dynamic>? _books;
   bool _booksMissing = false;
   List<Map<String, dynamic>> _jobs = const [];
+  List<Map<String, dynamic>> _plJobs = const [];
   Timer? _t;
 
   @override
@@ -44,6 +45,10 @@ class _ImportsScreenState extends State<ImportsScreen> {
       if (j.any((x) => x['status'] == 'running' || x['status'] == 'queued')) {
         ServerImport.kick();
       }
+    } catch (_) {}
+    try {
+      final pj = await ServerPlaylist.list();
+      if (mounted) setState(() => _plJobs = pj);
     } catch (_) {}
     try {
       final r = await _c.rpc('book_import_progress', params: {'t': TenantContext.id});
@@ -82,6 +87,59 @@ class _ImportsScreenState extends State<ImportsScreen> {
               if (x is Map && x['enabled'] == true) Map<String, dynamic>.from(x),
           ];
           return ListView(padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16), children: [
+            for (final j in _plJobs)
+              Card(
+                child: ListTile(
+                  title: Text('قوائم كورسات: ${j['title'] == '' ? '' : j['title']}',
+                      maxLines: 1, overflow: TextOverflow.ellipsis),
+                  subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 6),
+                        LinearProgressIndicator(
+                            value: ((j['total'] as num?) ?? 0) > 0
+                                ? (((j['done'] as num?) ?? 0) + ((j['failed'] as num?) ?? 0)) /
+                                    (j['total'] as num)
+                                : 0),
+                        const SizedBox(height: 4),
+                        Text(
+                            '${j['status']}  ·  ${j['done']}/${j['total']}${((j['failed'] as num?) ?? 0) > 0 ? '  ·  فشل ${j['failed']}' : ''}',
+                            style: const TextStyle(fontSize: 12)),
+                        Builder(builder: (_) {
+                          final its = (j['items'] as List?) ?? const [];
+                          final cur = its.firstWhere(
+                              (i) => i is Map && (i['state'] == 'wait' || i['state'] == 'enrich'),
+                              orElse: () => null);
+                          final txt = cur is Map
+                              ? '${cur['note'] ?? ''}'.isEmpty
+                                  ? '${cur['url'] ?? ''}'
+                                  : '${cur['note']}'
+                              : '${j['last_error'] ?? ''}';
+                          return txt.isEmpty
+                              ? const SizedBox.shrink()
+                              : Text(txt,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(fontSize: 11));
+                        }),
+                      ]),
+                  trailing: (j['status'] == 'running' || j['status'] == 'queued')
+                      ? OutlinedButton(
+                          onPressed: () async {
+                            await ServerPlaylist.stop('${j['id']}');
+                            _poll();
+                          },
+                          child: Text(s.t('bg_stop')))
+                      : (j['status'] == 'stopped' || ((j['failed'] as num?) ?? 0) > 0)
+                          ? FilledButton(
+                              onPressed: () async {
+                                await ServerPlaylist.resume('${j['id']}');
+                                _poll();
+                              },
+                              child: const Text('كمّل'))
+                          : const Icon(Icons.check_circle_outline),
+                ),
+              ),
             for (final j in _jobs)
               Card(
                 child: ListTile(
