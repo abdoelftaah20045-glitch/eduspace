@@ -6,9 +6,10 @@ import 'data/admin_tools_repo.dart';
 
 /// One controllable element: id used by the app, label key for its name.
 class _Item {
-  const _Item(this.id, this.label);
+  const _Item(this.id, this.label, [this.name]);
   final String id;
   final String label;
+  final String? name;
 }
 
 const _courseItems = [
@@ -36,17 +37,17 @@ const _coursePage = [
 ];
 
 const _home = [
-  _Item('home.continue', 'continue_learning'),
-  _Item('home.banner', 'ann_title'),
-  _Item('home.my_courses', 'my_courses'),
-  _Item('home.lives', 'lv_title'),
-  _Item('home.plan', 'planner_title'),
-  _Item('home.books', 'library_label'),
-  _Item('home.new_courses', 'tab_courses'),
-  _Item('home.exams', 'tab_exams'),
-  _Item('home.quote', 'discover_label'),
-  _Item('home.discover', 'discover_label'),
-  _Item('home.tiles', 'sections_label'),
+  _Item('home.continue', 'continue_learning', 'كمّل من حيث وقفت'),
+  _Item('home.banner', 'ann_title', 'الإعلانات (البانر)'),
+  _Item('home.my_courses', 'my_courses', 'كورساتي'),
+  _Item('home.lives', 'lv_title', 'البث المباشر'),
+  _Item('home.plan', 'planner_title', 'خطة المذاكرة'),
+  _Item('home.books', 'library_label', 'الكتب'),
+  _Item('home.new_courses', 'tab_courses', 'كورسات جديدة'),
+  _Item('home.exams', 'tab_exams', 'امتحانات مقترحة'),
+  _Item('home.quote', 'discover_label', 'اقتباس اليوم'),
+  _Item('home.discover', 'discover_label', 'الأكثر رواجًا'),
+  _Item('home.tiles', 'sections_label', 'الأيقونات السريعة'),
 ];
 const _quick = [
   _Item('quick.courses', 'my_courses'),
@@ -187,22 +188,73 @@ class _AdminLayoutScreenState extends State<AdminLayoutScreen> {
         onChanged: (v) => setState(() => _vis[it.id] = v),
       );
 
+  Future<void> _rename(S s, _Item it) async {
+    final lang = Localizations.localeOf(context).languageCode;
+    final c = TextEditingController(text: s.t(it.label));
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(it.name ?? s.t(it.label)),
+        content: TextField(controller: c, decoration: const InputDecoration(labelText: 'النص الظاهر')),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(s.t('cancel'))),
+          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(s.t('save'))),
+        ],
+      ),
+    );
+    final v = c.text.trim();
+    if (ok != true || v.isEmpty) return;
+    try {
+      final next = {
+        for (final e in RemoteUi.texts.entries) e.key: Map<String, String>.from(e.value),
+      };
+      next[it.label] = {...(next[it.label] ?? <String, String>{}), lang: v};
+      RemoteUi.setTexts(next);
+      await AdminToolsRepository.saveSetting('ui_texts', {
+        for (final e in RemoteUi.texts.entries) e.key: e.value,
+      });
+      if (mounted) setState(() {});
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(s.t('generic_error'))));
+      }
+    }
+  }
+
   Widget _reorder(S s, List<_Item> list) => ReorderableListView(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
+        buildDefaultDragHandles: false,
         onReorder: (a, b) => setState(() {
           if (b > a) b -= 1;
           list.insert(b, list.removeAt(a));
         }),
         children: [
-          for (final it in list)
+          for (var i = 0; i < list.length; i++)
             SwitchListTile(
-              key: ValueKey(it.id),
+              key: ValueKey(list[i].id),
               dense: true,
-              secondary: const Icon(Icons.drag_handle),
-              value: _vis[it.id] ?? true,
-              title: Text(s.t(it.label)),
-              onChanged: (v) => setState(() => _vis[it.id] = v),
+              secondary: Row(mainAxisSize: MainAxisSize.min, children: [
+                ReorderableDragStartListener(index: i, child: const Icon(Icons.drag_handle)),
+                IconButton(
+                  visualDensity: VisualDensity.compact,
+                  icon: const Icon(Icons.arrow_upward),
+                  onPressed: i == 0 ? null : () => setState(() => list.insert(i - 1, list.removeAt(i))),
+                ),
+                IconButton(
+                  visualDensity: VisualDensity.compact,
+                  icon: const Icon(Icons.arrow_downward),
+                  onPressed: i == list.length - 1 ? null : () => setState(() => list.insert(i + 1, list.removeAt(i))),
+                ),
+                IconButton(
+                  visualDensity: VisualDensity.compact,
+                  icon: const Icon(Icons.edit),
+                  onPressed: () => _rename(s, list[i]),
+                ),
+              ]),
+              value: _vis[list[i].id] ?? true,
+              title: Text(list[i].name ?? s.t(list[i].label)),
+              onChanged: (v) => setState(() => _vis[list[i].id] = v),
             ),
         ],
       );
