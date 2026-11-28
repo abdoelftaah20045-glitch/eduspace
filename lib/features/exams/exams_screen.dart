@@ -32,7 +32,7 @@ class _ExamsScreenState extends State<ExamsScreen> {
       final exams = await ExamsRepository.fetchExams();
       if (!mounted) return;
       setState(() {
-        _exams = exams;
+        _exams = [...exams.where((e) => e.isFinal), ...exams.where((e) => !e.isFinal)];
         _error = null;
       });
     } catch (_) {
@@ -146,6 +146,12 @@ class _ExamCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      if (exam.isFinal)
+                        Text('اختبار كبير',
+                            style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w800,
+                                color: theme.colorScheme.primary)),
                       Text(
                         exam.title,
                         style: theme.textTheme.titleMedium

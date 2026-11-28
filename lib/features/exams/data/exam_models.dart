@@ -20,6 +20,7 @@ class Exam {
     this.imageUrl,
     this.certificateEnabled = false,
     this.certificatePercent = 60,
+    this.isFinal = false,
   });
 
   final String id;
@@ -42,6 +43,9 @@ class Exam {
   final bool certificateEnabled;
   final double certificatePercent;
 
+  /// Big / final exam (column is_final, SQL part50); false before the SQL.
+  final bool isFinal;
+
   bool get isOpen {
     final now = DateTime.now();
     if (availableFrom != null && now.isBefore(availableFrom!)) return false;
@@ -63,6 +67,7 @@ class Exam {
       imageUrl: (m['image_url'] as String?)?.trim().isEmpty == true ? null : m['image_url'] as String?,
       certificateEnabled: (m['certificate_enabled'] as bool?) ?? false,
       certificatePercent: (m['certificate_percent'] as num?)?.toDouble() ?? 60,
+      isFinal: (m['is_final'] as bool?) ?? false,
       shuffleQuestions: (m['shuffle_questions'] as bool?) ?? false,
       status: (m['status'] as String?) ?? 'draft',
       availableFrom: m['available_from'] != null

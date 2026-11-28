@@ -64,6 +64,7 @@ class ExamsRepository {
         imageUrl: exam.imageUrl,
         certificateEnabled: exam.certificateEnabled,
         certificatePercent: exam.certificatePercent,
+        isFinal: exam.isFinal,
       );
     }).toList();
   }

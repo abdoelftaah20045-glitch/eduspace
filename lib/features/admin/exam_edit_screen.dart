@@ -32,6 +32,7 @@ class _ExamEditScreenState extends State<ExamEditScreen> {
   late final _image = TextEditingController(text: widget.exam?['image_url'] as String? ?? '');
   late final _certPct = TextEditingController(
       text: ((widget.exam?['certificate_percent'] as num?)?.toDouble() ?? 60).toStringAsFixed(0));
+  late bool _isFinal = widget.exam?['is_final'] as bool? ?? false;
   late bool _certOn = widget.exam?['certificate_enabled'] as bool? ?? false;
   String? _courseId;
   late String _status = widget.exam?['status'] as String? ?? 'draft';
@@ -106,6 +107,10 @@ class _ExamEditScreenState extends State<ExamEditScreen> {
     final hasCols = widget.exam?.containsKey('image_url') ?? false;
     if (hasCols || _image.text.trim().isNotEmpty) {
       values['image_url'] = _image.text.trim().isEmpty ? null : _image.text.trim();
+    }
+    // Big/final exam flag (part50): only sent once the column exists or is used.
+    if ((widget.exam?.containsKey('is_final') ?? false) || _isFinal) {
+      values['is_final'] = _isFinal;
     }
     if (hasCols || _certOn) {
       values['certificate_enabled'] = _certOn;
@@ -247,6 +252,13 @@ class _ExamEditScreenState extends State<ExamEditScreen> {
               controller: _image,
               decoration: const InputDecoration(labelText: 'رابط صورة الامتحان (اختياري)'),
               keyboardType: TextInputType.url,
+            ),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('اختبار كبير (نهائي)'),
+              subtitle: const Text('يظهر في أول قائمة الامتحانات للطلاب بعلامة "اختبار كبير"'),
+              value: _isFinal,
+              onChanged: (v) => setState(() => _isFinal = v),
             ),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,

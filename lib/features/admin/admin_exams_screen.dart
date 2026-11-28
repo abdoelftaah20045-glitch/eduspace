@@ -160,7 +160,7 @@ class _AdminExamsScreenState extends State<AdminExamsScreen> {
                         child: ListTile(
                           leading: const Icon(Icons.quiz_outlined),
                           title: Text(
-                            (e['title'] as String?) ?? '',
+                            '${e['is_final'] == true ? '★ ' : ''}${(e['title'] as String?) ?? ''}',
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(fontWeight: FontWeight.w600),
