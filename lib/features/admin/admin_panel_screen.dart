@@ -422,14 +422,34 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                 mainAxisSpacing: 10,
                 crossAxisSpacing: 10,
                 children: [
-                  _statCard(s.t('tab_courses'), c?['courses'],
-                      Icons.menu_book_outlined, const Color(0xFF2196F3)),
-                  _statCard(s.t('enrollments_label'), c?['enrollments'],
-                      Icons.how_to_reg_outlined, const Color(0xFF2E9E5B)),
-                  _statCard(s.t('tab_exams'), c?['exams'],
-                      Icons.quiz_outlined, const Color(0xFFF29900)),
-                  _statCard(s.t('pending_students'), c?['pending'],
-                      Icons.hourglass_bottom, const Color(0xFFE53935)),
+                  GestureDetector(
+                    onTap: () => Navigator.of(context)
+                        .push(MaterialPageRoute(builder: (_) => const AdminCoursesScreen()))
+                        .then((_) => _load()),
+                    child: _statCard(s.t('tab_courses'), c?['courses'],
+                        Icons.menu_book_outlined, const Color(0xFF2196F3)),
+                  ),
+                  GestureDetector(
+                    onTap: () => Navigator.of(context)
+                        .push(MaterialPageRoute(builder: (_) => const AdminEnrollmentsScreen()))
+                        .then((_) => _load()),
+                    child: _statCard(s.t('enrollments_label'), c?['enrollments'],
+                        Icons.how_to_reg_outlined, const Color(0xFF2E9E5B)),
+                  ),
+                  GestureDetector(
+                    onTap: () => Navigator.of(context)
+                        .push(MaterialPageRoute(builder: (_) => const AdminExamsScreen()))
+                        .then((_) => _load()),
+                    child: _statCard(s.t('tab_exams'), c?['exams'],
+                        Icons.quiz_outlined, const Color(0xFFF29900)),
+                  ),
+                  GestureDetector(
+                    onTap: () => Navigator.of(context)
+                        .push(MaterialPageRoute(builder: (_) => const AdminEnrollmentsScreen()))
+                        .then((_) => _load()),
+                    child: _statCard(s.t('pending_students'), c?['pending'],
+                        Icons.hourglass_bottom, const Color(0xFFE53935)),
+                  ),
                   if (_fullAdmin || _scopes.contains('support'))
                     GestureDetector(
                       onTap: () => Navigator.of(context)
