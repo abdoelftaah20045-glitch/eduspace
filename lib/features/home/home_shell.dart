@@ -3,6 +3,7 @@ import '../../core/cached_avatar.dart';
 import '../../core/security.dart';
 import '../../core/maintenance.dart';
 import 'dart:async';
+import 'dart:math' as math;
 import '../../core/in_app_player.dart';
 import 'package:flutter/material.dart';
 import '../../core/pressable.dart';
@@ -164,6 +165,17 @@ class _HomeTabState extends State<_HomeTab> with WidgetsBindingObserver {
   Map<String, String> _fieldCovers = const {};
   final Map<String, List<Course>> _fieldCourses = {};
   bool _loaded = false;
+  // Home content rotates: a new random pick on app open and pull-to-refresh,
+  // but it stays put while switching tabs or coming back from another app.
+  bool _dirty = true;
+  int _epoch = 0;
+  List<Course> _mentorPool = [];
+  Future<void> _refresh() {
+    _dirty = true;
+    _epoch++;
+    return _load();
+  }
+
   String _name = '';
   String? _avatarUrl;
 
@@ -210,10 +222,19 @@ class _HomeTabState extends State<_HomeTab> with WidgetsBindingObserver {
       try {
         lives = await LivesRepository.fetchUpcoming();
       } catch (_) {}
-      var trending = <Course>[];
-      try {
-        trending = (await CoursesRepository.fetchCourses()).take(30).toList();
-      } catch (_) {}
+      var trending = _trending;
+      var pool = _mentorPool;
+      if (_trending.isEmpty || _dirty) {
+        try {
+          final all = await CoursesRepository.fetchCourses(limit: 400);
+          final rnd = math.Random();
+          final fresh = all.take(4).toList();
+          final rest = all.skip(4).toList()..shuffle(rnd);
+          trending = [...fresh, ...rest.take(26)];
+          pool = [...all]..shuffle(rnd);
+          _dirty = false;
+        } catch (_) {}
+      }
       // Discover categories come from ALL courses (by how many each has),
       // not from the 30 newest ones, so one big import cannot hide the rest.
       var fieldList = <String>[];
@@ -285,6 +306,7 @@ class _HomeTabState extends State<_HomeTab> with WidgetsBindingObserver {
         _announcements = announcements;
         _lives = lives;
         _trending = trending;
+        _mentorPool = pool;
         if (fieldList.isNotEmpty) _fields = fieldList;
         _fieldCourses.clear();
         _loaded = true;
@@ -590,7 +612,7 @@ class _HomeTabState extends State<_HomeTab> with WidgetsBindingObserver {
                           builder: (_) => LessonScreen(lesson: item.lesson)))),
       ],
       'home.books': [
-            if (RemoteUi.visible('home.books')) const HomeBooks(),
+            if (RemoteUi.visible('home.books')) HomeBooks(key: ValueKey(_epoch)),
       ],
       'home.new_courses': [
             if (RemoteUi.visible('home.new_courses')) const HomeNewCourses(),
@@ -644,7 +666,7 @@ class _HomeTabState extends State<_HomeTab> with WidgetsBindingObserver {
                       fontWeight: FontWeight.w800,
                       color: Theme.of(context).colorScheme.onSurface)),
               const SizedBox(height: 10),
-              TopMentors(courses: _trending),
+              TopMentors(courses: _mentorPool.isNotEmpty ? _mentorPool : _trending),
               const SizedBox(height: 20),
             ],
       ],
@@ -671,7 +693,7 @@ class _HomeTabState extends State<_HomeTab> with WidgetsBindingObserver {
     return Scaffold(
       drawer: AppDrawer(name: _name, avatarUrl: _avatarUrl),
       body: RefreshIndicator(
-        onRefresh: _load,
+        onRefresh: _refresh,
         child: ListView(
           padding: const EdgeInsets.fromLTRB(4, 8, 4, 28),
           children: [

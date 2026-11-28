@@ -20,6 +20,7 @@ class _HomeBooksState extends State<HomeBooks> {
   List<LibraryItem> _books = const [];
   Map<String, int> _recent = {};
   bool _done = false;
+  final int _seed = DateTime.now().microsecondsSinceEpoch;
 
   @override
   void initState() {
@@ -66,16 +67,18 @@ class _HomeBooksState extends State<HomeBooks> {
     final newest = [...b]..sort((x, y) => y.createdAt.compareTo(x.createdAt));
     final popular = [...b]..sort((x, y) => y.downloads.compareTo(x.downloads));
     final pdfs = b.where((x) => x.fileType.toLowerCase() == 'pdf').toList();
-    final seed = DateTime.now().day;
-    final mix = [...b]..shuffle(math.Random(seed));
+    final mix = [...b]..shuffle(math.Random(_seed));
+    popular.sort((x, y) => y.downloads.compareTo(x.downloads));
+    final popMix = popular.where((x) => x.downloads > 0).toList()..shuffle(math.Random(_seed + 1));
+    final pdfMix = [...pdfs]..shuffle(math.Random(_seed + 2));
     Widget row(String title, List<LibraryItem> list) => list.isEmpty
         ? const SizedBox.shrink()
         : _BooksRow(title: title, items: list.take(14).toList());
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       row('كمّل القراءة', continueList),
       row('الكتب', newest),
-      row('الأكثر قراءة', popular.where((x) => x.downloads > 0).toList()),
-      row('كتب PDF مجانية', pdfs),
+      row('الأكثر قراءة', popMix),
+      row('كتب PDF مجانية', pdfMix),
       row('مقترحة ليك', mix),
       const SizedBox(height: 8),
     ]);
