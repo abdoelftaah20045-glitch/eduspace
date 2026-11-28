@@ -76,6 +76,8 @@ class _InAppWebPlayerState extends State<InAppWebPlayer> {
   bool _loading = true;
   bool _failed = false;
   bool _blocked = false;
+  bool _ready = false;
+  String? get _yid => _youtubeId(widget.url);
 
   String _ytPage(String id) => '<html><head><meta name="viewport" '
       'content="width=device-width, initial-scale=1"></head>'
@@ -86,15 +88,18 @@ class _InAppWebPlayerState extends State<InAppWebPlayer> {
       '<script src="https://www.youtube.com/iframe_api"></script><script>'
       'var pl;function onYouTubeIframeAPIReady(){pl=new YT.Player("p",{'
       'videoId:"$id",width:"100%",height:"100%",'
-      'playerVars:{playsinline:1,rel:0,origin:"https://www.youtube.com"},'
-      'events:{onError:function(e){Flutter.postMessage("err:"+e.data)}}})}'
+      'playerVars:{playsinline:1,rel:0,autoplay:1,origin:"https://eduspace.app"},'
+      'events:{onReady:function(e){Flutter.postMessage("rdy");try{e.target.playVideo()}catch(x){}},'
+      'onError:function(e){Flutter.postMessage("err:"+e.data)}}})}'
       'setInterval(function(){try{if(pl&&pl.getPlayerState()==1){'
       'Flutter.postMessage("t:"+Math.floor(pl.getCurrentTime())+":"+'
       'Math.floor(pl.getDuration()))}}catch(e){}},1000);'
       '</script></body></html>';
 
   void _onMsg(String m) {
-    if (m.startsWith('t:')) {
+    if (m == 'rdy') {
+      if (mounted && !_ready) setState(() => _ready = true);
+    } else if (m.startsWith('t:')) {
       final p = m.split(':');
       final pos = int.tryParse(p[1]) ?? 0;
       final dur = int.tryParse(p[2]) ?? 0;
@@ -137,11 +142,14 @@ class _InAppWebPlayerState extends State<InAppWebPlayer> {
     final yt = _youtubeId(widget.url);
     final vm = _vimeoId(widget.url);
     // Do not leave the spinner over the player: the player shows its own loading state.
+    Future.delayed(const Duration(seconds: 8), () {
+      if (mounted && !_ready) setState(() => _ready = true);
+    });
     Future.delayed(const Duration(milliseconds: 1500), () {
       if (mounted && _loading) setState(() => _loading = false);
     });
     if (yt != null) {
-      _c.loadHtmlString(_ytPage(yt), baseUrl: 'https://www.youtube.com');
+      _c.loadHtmlString(_ytPage(yt), baseUrl: 'https://eduspace.app');
     } else if (vm != null) {
       _c.loadHtmlString(
         _iframePage('https://player.vimeo.com/video/$vm?autoplay=1'),
@@ -168,7 +176,18 @@ class _InAppWebPlayerState extends State<InAppWebPlayer> {
     return Stack(
       children: [
         WebViewWidget(controller: _c),
-        if (_loading) const Center(child: CircularProgressIndicator()),
+        if (_yid != null && !_ready && !_blocked && !_failed)
+          Positioned.fill(
+            child: IgnorePointer(
+              child: Stack(fit: StackFit.expand, children: [
+                Image.network('https://i.ytimg.com/vi/$_yid/hqdefault.jpg',
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => const ColoredBox(color: Colors.black)),
+                const Center(child: CircularProgressIndicator()),
+              ]),
+            ),
+          ),
+        if (_loading && _yid == null) const Center(child: CircularProgressIndicator()),
         if (_blocked)
           Positioned(
             left: 0,
