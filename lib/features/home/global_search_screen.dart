@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/html_text.dart';
+import '../../core/search_norm.dart';
 import '../../core/tenant.dart';
 import '../courses/course_details_screen.dart';
 import '../exams/data/exam_models.dart';
@@ -59,7 +60,12 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
       return;
     }
     setState(() => _busy = true);
-    final pat = '%$q%';
+    // Arabic-friendly pattern: letter variants (أ إ آ ا, ى ي, ة ه) become a
+    // one-letter wildcard, diacritics are dropped, words may sit apart.
+    final inner = normSearch(q)
+        .replaceAll(RegExp(r'[اهيى]'), '_')
+        .replaceAll(' ', '%');
+    final pat = '%$inner%';
     Future<List<Map<String, dynamic>>> safe(
         Future<dynamic> Function() f) async {
       try {
@@ -95,7 +101,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
     ]);
     var books = <LibraryItem>[];
     try {
-      books = await LibraryRepository.fetchItems(query: q, limit: 15);
+      books = await LibraryRepository.fetchItems(query: inner, limit: 15);
     } catch (_) {}
     if (!mounted || _c.text.replaceAll(RegExp(r'[,()%*]'), ' ').trim() != q) {
       return;
