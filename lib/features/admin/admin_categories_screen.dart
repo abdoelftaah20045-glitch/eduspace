@@ -1,6 +1,9 @@
 import '../../core/admin_search.dart';
 import '../../core/search_norm.dart';
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+import '../../core/tenant.dart';
 
 import '../../core/l10n.dart';
 import 'data/admin_tools_repo.dart';
@@ -84,6 +87,54 @@ class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
         () => AdminToolsRepository.renameCategory(item['id'] as String, name));
   }
 
+  Future<void> _setImage(Map<String, dynamic> item) async {
+    final name = item['name'] as String;
+    final c = Supabase.instance.client;
+    Map<String, dynamic> map = {};
+    try {
+      final r = await c
+          .from('tenant_settings')
+          .select('setting_value')
+          .eq('tenant_id', TenantContext.id)
+          .eq('setting_key', 'category_images')
+          .maybeSingle();
+      final v = r?['setting_value'];
+      if (v is Map) map = Map<String, dynamic>.from(v);
+    } catch (_) {}
+    if (!mounted) return;
+    final ctl = TextEditingController(text: '${map[name] ?? ''}');
+    final url = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('صورة القسم: $name'),
+        content: TextField(
+          controller: ctl,
+          autofocus: true,
+          keyboardType: TextInputType.url,
+          decoration: const InputDecoration(
+              labelText: 'رابط الصورة (فاضي = صورة من أحد كورسات القسم)'),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('إلغاء')),
+          FilledButton(onPressed: () => Navigator.pop(ctx, ctl.text.trim()), child: const Text('حفظ')),
+        ],
+      ),
+    );
+    if (url == null) return;
+    if (url.isEmpty) {
+      map.remove(name);
+    } else {
+      map[name] = url;
+    }
+    await _run(() async {
+      await c.from('tenant_settings').upsert({
+        'tenant_id': TenantContext.id,
+        'setting_key': 'category_images',
+        'setting_value': map,
+      }, onConflict: 'tenant_id,setting_key');
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final s = S.of(context);
@@ -156,6 +207,11 @@ class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
+                        IconButton(
+                          tooltip: 'صورة القسم',
+                          icon: const Icon(Icons.image_outlined),
+                          onPressed: () => _setImage(item),
+                        ),
                         IconButton(
                           tooltip: s.t('rename'),
                           icon: const Icon(Icons.edit_outlined),

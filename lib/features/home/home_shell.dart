@@ -161,6 +161,7 @@ class _HomeTabState extends State<_HomeTab> with WidgetsBindingObserver {
   int _unread = 0;
   List<Course> _trending = [];
   List<String> _fields = const [];
+  Map<String, String> _fieldCovers = const {};
   final Map<String, List<Course>> _fieldCourses = {};
   bool _loaded = false;
   String _name = '';
@@ -219,15 +220,45 @@ class _HomeTabState extends State<_HomeTab> with WidgetsBindingObserver {
       try {
         final fr = await Supabase.instance.client
             .from('courses')
-            .select('field')
+            .select('field,cover_url,status')
             .inFilter('status', ['published', 'draft'])
             .eq('tenant_id', TenantContext.id)
             .limit(4000);
         final cnt = <String, int>{};
+        final best = <String, String>{};
+        final bestScore = <String, int>{};
         for (final m in fr as List) {
           final f = '${(m as Map)['field'] ?? ''}'.trim();
           if (f.isNotEmpty) cnt[f] = (cnt[f] ?? 0) + 1;
+          final u = '${m['cover_url'] ?? ''}'.trim();
+          if (f.isEmpty || !u.startsWith('http')) continue;
+          // Prefer real wide covers (no letterbox bars): maxres/hq720 or own
+          // uploads, published first; plain hqdefault has black bars.
+          final low = u.toLowerCase();
+          var sc = 1;
+          if (low.contains('maxresdefault') || low.contains('hq720') || !low.contains('ytimg.com')) sc = 3;
+          if (low.contains('/default.') || low.contains('mqdefault') || low.contains('sddefault')) sc = 0;
+          if (m['status'] == 'published') sc += 1;
+          if (sc > (bestScore[f] ?? -1)) {
+            bestScore[f] = sc;
+            best[f] = u;
+          }
         }
+        try {
+          final cr = await Supabase.instance.client
+              .from('tenant_settings')
+              .select('setting_value')
+              .eq('tenant_id', TenantContext.id)
+              .eq('setting_key', 'category_images')
+              .maybeSingle();
+          final v = cr?['setting_value'];
+          if (v is Map) {
+            v.forEach((k, val) {
+              if ('$val'.startsWith('http')) best['$k'] = '$val';
+            });
+          }
+        } catch (_) {}
+        _fieldCovers = best;
         final keys = cnt.keys.toList()
           ..sort((a, b) => cnt[b]!.compareTo(cnt[a]!));
         fieldList = keys.take(24).toList();
@@ -591,7 +622,7 @@ class _HomeTabState extends State<_HomeTab> with WidgetsBindingObserver {
                         .where((x) => x.trim().isNotEmpty)
                         .toSet()
                         .toList(),
-                covers: const {},
+                covers: _fieldCovers,
                 selected: _discoverField,
                 onSelect: _pickField,
               ),
