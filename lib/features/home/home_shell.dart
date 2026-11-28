@@ -135,6 +135,8 @@ class _HomeTabState extends State<_HomeTab> with WidgetsBindingObserver {
   List<LiveSession> _lives = const [];
   int _unread = 0;
   List<Course> _trending = [];
+  List<String> _fields = const [];
+  final Map<String, List<Course>> _fieldCourses = {};
   bool _loaded = false;
   String _name = '';
   String? _avatarUrl;
@@ -186,6 +188,25 @@ class _HomeTabState extends State<_HomeTab> with WidgetsBindingObserver {
       try {
         trending = (await CoursesRepository.fetchCourses()).take(30).toList();
       } catch (_) {}
+      // Discover categories come from ALL courses (by how many each has),
+      // not from the 30 newest ones, so one big import cannot hide the rest.
+      var fieldList = <String>[];
+      try {
+        final fr = await Supabase.instance.client
+            .from('courses')
+            .select('field')
+            .inFilter('status', ['published', 'draft'])
+            .eq('tenant_id', TenantContext.id)
+            .limit(4000);
+        final cnt = <String, int>{};
+        for (final m in fr as List) {
+          final f = '${(m as Map)['field'] ?? ''}'.trim();
+          if (f.isNotEmpty) cnt[f] = (cnt[f] ?? 0) + 1;
+        }
+        final keys = cnt.keys.toList()
+          ..sort((a, b) => cnt[b]!.compareTo(cnt[a]!));
+        fieldList = keys.take(24).toList();
+      } catch (_) {}
       try {
         final uid = Supabase.instance.client.auth.currentUser?.id;
         if (uid != null) {
@@ -208,6 +229,8 @@ class _HomeTabState extends State<_HomeTab> with WidgetsBindingObserver {
         _announcements = announcements;
         _lives = lives;
         _trending = trending;
+        if (fieldList.isNotEmpty) _fields = fieldList;
+        _fieldCourses.clear();
         _loaded = true;
       });
     } catch (_) {
@@ -227,7 +250,19 @@ class _HomeTabState extends State<_HomeTab> with WidgetsBindingObserver {
 
   List<Course> get _discoverList => _discoverField == null
       ? _trending
-      : _trending.where((c) => c.field == _discoverField).toList();
+      : (_fieldCourses[_discoverField!] ??
+          _trending.where((c) => c.field == _discoverField).toList());
+
+  Future<void> _pickField(String? f) async {
+    setState(() => _discoverField = f);
+    if (f == null || _fieldCourses.containsKey(f)) return;
+    try {
+      final all = await CoursesRepository.fetchCourses(query: f);
+      final list = all.where((c) => (c.field ?? '').trim() == f).take(30).toList();
+      if (!mounted) return;
+      setState(() => _fieldCourses[f] = list);
+    } catch (_) {}
+  }
 
   Widget _sqBtn(BuildContext context, IconData icon, VoidCallback onTap,
       {int badge = 0}) {
@@ -523,20 +558,17 @@ class _HomeTabState extends State<_HomeTab> with WidgetsBindingObserver {
             ]),
             const SizedBox(height: 10),
               CategoryChips(
-                fields: _trending
-                    .map((c) => c.field)
-                    .whereType<String>()
-                    .where((x) => x.trim().isNotEmpty)
-                    .toSet()
-                    .toList(),
-                covers: {
-                  for (final c in _trending)
-                    if ((c.field ?? '').trim().isNotEmpty &&
-                        (c.coverUrl ?? '').isNotEmpty)
-                      c.field!: c.coverUrl!
-                },
+                fields: _fields.isNotEmpty
+                    ? _fields
+                    : _trending
+                        .map((c) => c.field)
+                        .whereType<String>()
+                        .where((x) => x.trim().isNotEmpty)
+                        .toSet()
+                        .toList(),
+                covers: const {},
                 selected: _discoverField,
-                onSelect: (f) => setState(() => _discoverField = f),
+                onSelect: _pickField,
               ),
               const SizedBox(height: 10),
               SizedBox(
