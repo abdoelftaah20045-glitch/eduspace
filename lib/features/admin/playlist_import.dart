@@ -19,6 +19,49 @@ String _mmss(int sec) {
 class PlaylistImport {
   PlaylistImport._();
 
+  /// Fills real YouTube descriptions into lessons that still hold the
+  /// placeholder text. Safe to repeat; each lesson is saved on its own.
+  static Future<void> _enrich(dynamic db, String courseId, YtPlaylist p, S s,
+      void Function(String text)? onProgress) async {
+    try {
+      final prefix = '${s.t('yt_lesson')} ';
+      final rows = await db
+          .from('lessons')
+          .select('id, media_url, content')
+          .eq('course_id', courseId)
+          .limit(5000);
+      final re = RegExp(r'[?&]v=([A-Za-z0-9_-]{11})');
+      final todo = <(String, String)>[];
+      for (final r in rows as List) {
+        final m = r as Map;
+        final c = '${m['content'] ?? ''}';
+        final mt = re.firstMatch('${m['media_url'] ?? ''}');
+        if (mt != null && (c.trim().isEmpty || c.startsWith(prefix))) {
+          todo.add(('${m['id']}', mt.group(1)!));
+        }
+      }
+      for (var i = 0; i < todo.length; i += 4) {
+        final batch = todo.skip(i).take(4).toList();
+        onProgress?.call(
+            '${p.title}: ${s.t('yt_reading')} ${i + 1}/${todo.length}');
+        final res = await Future.wait(batch.map((k) async {
+          try {
+            return await YtImporter.fetchDescription(k.$2);
+          } catch (_) {
+            return '';
+          }
+        }));
+        for (var k = 0; k < batch.length; k++) {
+          final d = res[k].trim();
+          if (d.isEmpty) continue;
+          try {
+            await db.from('lessons').update({'content': d}).eq('id', batch[k].$1);
+          } catch (_) {}
+        }
+      }
+    } catch (_) {}
+  }
+
   /// Returns the number of lessons added, or -1 when the playlist was
   /// already fully imported.
   static Future<(int, String)> run(
@@ -59,6 +102,12 @@ class PlaylistImport {
         }
       }
       if (p.videos.every((v) => have.contains(v.id))) {
+        if (withDesc) {
+          await _enrich(db, courseId, p, s, onProgress);
+          try {
+            await LessonLinks.pull([courseId]);
+          } catch (_) {}
+        }
         if (p.avatar.isNotEmpty) {
           try {
             await db
@@ -77,18 +126,6 @@ class PlaylistImport {
       if (!have.contains(p.videos[i].id)) todo.add(i);
     }
 
-    if (withDesc) {
-      for (var i = 0; i < todo.length; i += 4) {
-        final batch = todo.skip(i).take(4).toList();
-        onProgress?.call(
-            '${p.title}: ${s.t('yt_reading')} ${i + 1}/${todo.length}');
-        final res = await Future.wait(
-            batch.map((k) => YtImporter.fetchDescription(p.videos[k].id)));
-        for (var k = 0; k < batch.length; k++) {
-          p.videos[batch[k]].description = res[k];
-        }
-      }
-    }
     for (final i in todo) {
       final v = p.videos[i];
       if (v.description.trim().isEmpty) {
@@ -178,6 +215,11 @@ class PlaylistImport {
     }
     for (var i = 0; i < rows.length; i += 50) {
       await db.from('lessons').insert(rows.skip(i).take(50).toList());
+    }
+    // The course is already usable here. Real descriptions are filled in
+    // afterwards, lesson by lesson, so stopping half way loses nothing.
+    if (withDesc) {
+      await _enrich(db, courseId, p, s, onProgress);
     }
     try {
       await LessonLinks.pull([courseId]);

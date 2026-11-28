@@ -273,6 +273,27 @@ class _AdminBooksScreenState extends State<AdminBooksScreen> {
         children: [
           if (_busy) const LinearProgressIndicator(),
           Padding(
+            padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+            child: Row(children: [
+              Expanded(
+                child: FilledButton.icon(
+                  onPressed: _busy ? null : _bulk,
+                  icon: const Icon(Icons.upload_file),
+                  label: Text(ar ? 'استيراد من ملف' : 'Import from file'),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+                      builder: (_) => const AdminBookSourcesScreen())),
+                  icon: const Icon(Icons.search),
+                  label: Text(ar ? 'مصادر مفتوحة' : 'Open sources'),
+                ),
+              ),
+            ]),
+          ),
+          Padding(
             padding: const EdgeInsets.fromLTRB(16, 10, 16, 4),
             child: Text(
               ar

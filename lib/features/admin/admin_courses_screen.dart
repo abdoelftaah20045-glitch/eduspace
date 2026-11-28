@@ -1,3 +1,5 @@
+import 'file_import_screen.dart';
+import 'youtube_import_screen.dart';
 import '../../core/search_norm.dart';
 import 'package:flutter/material.dart';
 
@@ -269,6 +271,30 @@ class _AdminCoursesScreenState extends State<AdminCoursesScreen> {
         label: Text(s.t('new_course')),
       ),
       body: Column(children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+          child: Row(children: [
+            Expanded(
+              child: FilledButton.icon(
+                onPressed: () => Navigator.of(context)
+                    .push(MaterialPageRoute<void>(builder: (_) => const YoutubeImportScreen()))
+                    .then((_) => _load()),
+                icon: const Icon(Icons.cloud_download_outlined),
+                label: const Text('استيراد من يوتيوب'),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: () => Navigator.of(context)
+                    .push(MaterialPageRoute<void>(builder: (_) => const FileImportScreen()))
+                    .then((_) => _load()),
+                icon: const Icon(Icons.upload_file),
+                label: const Text('استيراد من ملف'),
+              ),
+            ),
+          ]),
+        ),
         Padding(padding: const EdgeInsets.fromLTRB(16, 12, 16, 0), child: _filters(s)),
         Expanded(child: courses == null
           ? const Center(child: CircularProgressIndicator())

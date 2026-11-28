@@ -1,3 +1,5 @@
+import 'question_import_screen.dart';
+import 'bulk_exam_import_screen.dart';
 import '../../core/admin_search.dart';
 import '../../core/search_norm.dart';
 import 'package:flutter/material.dart';
@@ -90,6 +92,30 @@ class _AdminExamsScreenState extends State<AdminExamsScreen> {
         label: Text(s.t('new_exam')),
       ),
       body: Column(children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+          child: Row(children: [
+            Expanded(
+              child: FilledButton.icon(
+                onPressed: () => Navigator.of(context)
+                    .push(MaterialPageRoute<void>(builder: (_) => const BulkExamImportScreen()))
+                    .then((_) => _load()),
+                icon: const Icon(Icons.cloud_download_outlined),
+                label: const Text('استيراد اختبارات'),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: () => Navigator.of(context)
+                    .push(MaterialPageRoute<void>(builder: (_) => const QuestionImportScreen()))
+                    .then((_) => _load()),
+                icon: const Icon(Icons.upload_file),
+                label: const Text('استيراد أسئلة'),
+              ),
+            ),
+          ]),
+        ),
         AdminSearchField(onChanged: (v) => setState(() => _q = v)),
         Expanded(child: RefreshIndicator(
         onRefresh: _load,
