@@ -5,6 +5,27 @@ import '../../core/tenant.dart';
 import '../library/books_shelf.dart';
 import '../library/data/library_repo.dart';
 
+
+/// Strict rights rule (same as the server): explicit CC0 / CC BY / CC BY-SA /
+/// public domain only. NC, ND, unknown, "verify", per-page labels fail.
+bool rightsOk(String lic, String? url, String source) {
+  if (source.toLowerCase().contains('wikisource')) return false;
+  final t = lic.toLowerCase().replaceAll(RegExp(r'\s+'), ' ').trim();
+  final u = (url ?? '').toLowerCase();
+  if (RegExp(r'creativecommons\.org/publicdomain/(zero|mark)/').hasMatch(u)) return true;
+  if (RegExp(r'creativecommons\.org/licenses/by(-sa)?/').hasMatch(u)) return true;
+  if (u.contains('creativecommons.org/')) return false;
+  if (RegExp(r'creativecommons\.org/publicdomain/(zero|mark)/').hasMatch(t) ||
+      RegExp(r'creativecommons\.org/licenses/by(-sa)?/').hasMatch(t)) return true;
+  if (t.isEmpty ||
+      RegExp(r'non ?-?commercial|no ?-?deriv|\bnc\b|\bnd\b|by-nc|by-nd|all rights|unknown|review|licen[cs]e per|verify|/|\bor\b').hasMatch(t)) {
+    return false;
+  }
+  return RegExp(r'^(cc0( 1\.0)?|public domain( \(cc0\))?|public domain mark( 1\.0)?)$').hasMatch(t) ||
+      RegExp(r'^cc[ -]by([ -]sa)?( [0-9.]+)?$').hasMatch(t) ||
+      RegExp(r'^creative commons attribution([ -]share ?alike)?( licen[cs]e)?( [0-9.]+)?$').hasMatch(t);
+}
+
 /// Admin: books waiting in status 'review'. Filter by source / licence, then
 /// approve or delete one book or everything in the current filter.
 class AdminBooksReviewScreen extends StatefulWidget {
@@ -68,6 +89,52 @@ class _AdminBooksReviewScreenState extends State<AdminBooksReviewScreen> {
       _items = [for (final r in rows as List) LibraryItem.fromMap(Map<String, dynamic>.from(r as Map))];
     } catch (_) {}
     if (mounted) setState(() => _loading = false);
+  }
+
+
+  Future<void> _auto() async {
+    setState(() => _busy = true);
+    try {
+      final ok = <String>[];
+      final bySrc = <String, int>{};
+      var total = 0;
+      for (var from = 0; from < 10000; from += 1000) {
+        final rows = await _c
+            .from('library_items')
+            .select('id, source, license, rights_url')
+            .eq('tenant_id', TenantContext.id)
+            .eq('kind', 'book')
+            .eq('status', 'review')
+            .order('id')
+            .range(from, from + 999);
+        for (final r in rows) {
+          total++;
+          final src = ((r['source'] as String?) ?? '').trim();
+          if (rightsOk((r['license'] as String?) ?? '', r['rights_url'] as String?, src)) {
+            ok.add(r['id'] as String);
+            bySrc[src] = (bySrc[src] ?? 0) + 1;
+          }
+        }
+        if (rows.length < 1000) break;
+      }
+      if (!mounted) return;
+      final go = await _confirm(
+        'مراجعة تلقائية',
+        'تحت المراجعة: $total\nآمن وهيتنشر: ${ok.length}\nهيفضل تحت المراجعة: ${total - ok.length}\n'
+        '${bySrc.entries.map((e) => '${e.key.isEmpty ? '(بدون)' : e.key}: ${e.value}').join('\n')}\n\n'
+        'الآمن = ترخيص صريح CC0 أو CC BY أو CC BY-SA أو ملكية عامة فقط. NC/ND والمجهول وويكيسورس بيفضلوا تحت المراجعة. مفيش حذف.',
+      );
+      if (!go || ok.isEmpty) return;
+      for (var i = 0; i < ok.length; i += 150) {
+        await _c.from('library_items').update({'status': 'published'}).inFilter('id', ok.sublist(i, i + 150 > ok.length ? ok.length : i + 150));
+      }
+      _snack('تم نشر ${ok.length} كتاب');
+    } catch (_) {
+      _snack('حصل خطأ');
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+    await _load(counts: true);
   }
 
   void _snack(String m) {
@@ -184,6 +251,14 @@ class _AdminBooksReviewScreenState extends State<AdminBooksReviewScreen> {
           _license = v;
           _load();
         }),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(4, 0, 4, 4),
+          child: SizedBox(
+            width: double.infinity,
+            child: FilledButton.tonal(
+                onPressed: _busy ? null : _auto, child: const Text('مراجعة تلقائية (نشر الآمن فقط)')),
+          ),
+        ),
         Padding(
           padding: const EdgeInsets.fromLTRB(4, 0, 4, 4),
           child: Row(children: [
