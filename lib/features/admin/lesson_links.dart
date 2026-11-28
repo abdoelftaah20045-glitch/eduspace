@@ -294,20 +294,6 @@ class _AdminLessonLinksScreenState extends State<AdminLessonLinksScreen> {
     final cs = _courses;
     return Scaffold(
       appBar: AppBar(title: const Text('سحب روابط الملفات من أوصاف الفيديوهات')),
-      bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(8, 6, 8, 8),
-          child: Column(mainAxisSize: MainAxisSize.min, children: [
-            if (_msg.isNotEmpty) Padding(padding: const EdgeInsets.only(bottom: 6), child: Text(_msg)),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton(
-                  onPressed: _busy || _picked.isEmpty ? null : _run,
-                  child: Text(_busy ? 'جاري السحب...' : 'اسحب الروابط (${_picked.length} كورس)')),
-            ),
-          ]),
-        ),
-      ),
       body: ListView(padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16), children: [
         Row(children: [
           Expanded(
@@ -322,6 +308,7 @@ class _AdminLessonLinksScreenState extends State<AdminLessonLinksScreen> {
                 child: Text('مراجعة وقبول تلقائي (${_sugg.length})')),
           ),
         ]),
+        if (_msg.isNotEmpty) Padding(padding: const EdgeInsets.only(top: 8), child: Text(_msg)),
         const SizedBox(height: 6),
         const Card(
           child: Padding(
