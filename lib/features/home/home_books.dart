@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../library/book_links.dart';
 import '../library/books_shelf.dart';
 import '../library/data/library_repo.dart';
 
@@ -37,7 +38,17 @@ class _HomeBooksState extends State<HomeBooks> {
       }
       if (!mounted) return;
       setState(() {
-        _books = all.where((b) => b.kind == 'book').toList();
+        final books = all.where((b) => b.kind == 'book').toList();
+        // Home shows image cards: books with a real cover first; books without one
+        // only fill in when there are too few covered books.
+        final covered = books
+            .where((b) =>
+                BookLinks.resolve(b.fileUrl, coverOverride: b.coverUrl).coverUrl !=
+                null)
+            .toList();
+        _books = covered.length >= 8
+            ? covered
+            : [...covered, ...books.where((b) => !covered.contains(b))];
         _recent = rec;
         _done = true;
       });
